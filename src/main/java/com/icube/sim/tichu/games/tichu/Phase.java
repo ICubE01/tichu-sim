@@ -4,6 +4,7 @@ import com.icube.sim.tichu.games.common.exceptions.InvalidTimeOfActionException;
 import com.icube.sim.tichu.games.tichu.cards.*;
 import com.icube.sim.tichu.games.tichu.events.*;
 import com.icube.sim.tichu.games.tichu.exceptions.InvalidBombException;
+import com.icube.sim.tichu.games.tichu.exceptions.InvalidPassException;
 import com.icube.sim.tichu.games.tichu.exceptions.InvalidTrickException;
 import com.icube.sim.tichu.games.tichu.tricks.*;
 import org.jspecify.annotations.Nullable;
@@ -173,24 +174,31 @@ public class Phase {
             throw new InvalidTimeOfActionException();
         }
 
+        // Must fulfill the wish if it's possible.
+        var player = game.getPlayer(playerIndex);
+        var prevTrick = tricks.getLast();
+        if (round.getWish() != null && player.canPlayWishCard(round.getWish(), prevTrick)
+        ) {
+            throw new InvalidPassException();
+        }
+
         game.addEvent(new TichuPassEvent(playerId));
-        var lastTrick = tricks.getLast();
         do {
             turn = (turn + 1) % 4;
 
-            if (turn == lastTrick.getPlayerIndex()) {
-                if (lastTrick instanceof SingleTrick singleTrick && singleTrick.getCard() instanceof DragonCard) {
+            if (turn == prevTrick.getPlayerIndex()) {
+                if (prevTrick instanceof SingleTrick singleTrick && singleTrick.getCard() instanceof DragonCard) {
                     status = PhaseStatus.WAITING_DRAGON_SELECTION;
-                    game.addEvent(new TichuPhaseEndWithDragonEvent(lastTrick.getPlayerIndex()));
+                    game.addEvent(new TichuPhaseEndWithDragonEvent(prevTrick.getPlayerIndex()));
                     break;
                 }
 
-                var player = game.getPlayer(lastTrick.getPlayerIndex());
+                var lastTrickedPlayer = game.getPlayer(prevTrick.getPlayerIndex());
                 var allPlayedCards = tricks.stream().flatMap(trick -> trick.getCards().stream()).toList();
-                player.addScoreCards(allPlayedCards);
+                lastTrickedPlayer.addScoreCards(allPlayedCards);
 
                 status = PhaseStatus.FINISHED;
-                round.nextPhase(lastTrick.getPlayerIndex());
+                round.nextPhase(prevTrick.getPlayerIndex());
 
                 break;
             }
