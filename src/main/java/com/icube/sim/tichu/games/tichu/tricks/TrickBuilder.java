@@ -48,7 +48,7 @@ public class TrickBuilder {
         }
 
         if (cards.size() == 1) {
-            var card = cards.get(0);
+            var card = cards.getFirst();
             if (card instanceof DogCard) {
                 trickType = TrickType.DOG;
             } else if (prevTrick == null || prevTrick.getType() == TrickType.SINGLE) {

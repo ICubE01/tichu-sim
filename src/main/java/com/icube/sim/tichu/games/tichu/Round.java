@@ -29,10 +29,10 @@ public class Round {
 
     public Round(Tichu game) {
         this.game = game;
-        this.tichuDeclarations = new TichuDeclaration[] { null, null, null, null };
+        this.tichuDeclarations = new TichuDeclaration[]{null, null, null, null};
         this.exchangePhase = new ExchangePhase(game, this);
         this.phases = new ArrayList<>();
-        this.exitOrder = new int[] { 0, 0, 0, 0 };
+        this.exitOrder = new int[]{0, 0, 0, 0};
         this.scores = null;
 
         this.deck = Cards.getDeck();
@@ -173,7 +173,7 @@ public class Round {
         assert scores == null;
 
         status = RoundStatus.FINISHED;
-        scores = new int[] { 0, 0 };
+        scores = new int[]{0, 0};
 
         calcTichuDeclarationScores();
         for (var i = 0; i < 4; i++) {
@@ -199,7 +199,7 @@ public class Round {
         assert scores == null;
 
         status = RoundStatus.FINISHED;
-        scores = new int[] { 0, 0 };
+        scores = new int[]{0, 0};
 
         calcTichuDeclarationScores();
         for (var i = 0; i < 4; i++) {
