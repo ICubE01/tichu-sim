@@ -1,0 +1,443 @@
+.tichu-game-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  background: radial-gradient(circle at center, #1a4a1a 0%, #0d2a0d 100%);
+  overflow: hidden;
+  color: white;
+  font-family: 'Inter', sans-serif;
+}
+
+.game-board {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  height: 90%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Player Sections */
+.player-section {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.player-bottom {
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.player-top {
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.player-left {
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%) rotate(90deg);
+}
+
+.player-right {
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%) rotate(-90deg);
+}
+
+.player-info {
+  text-align: center;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(5px);
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  min-width: 120px;
+}
+
+.player-name {
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.card-count {
+  font-size: 0.9em;
+  opacity: 0.8;
+}
+
+.declaration {
+  color: #ffd700;
+  font-size: 0.8em;
+  margin-top: 4px;
+}
+
+.status-pass {
+  color: #ff6b6b;
+  font-size: 0.8em;
+  margin-top: 4px;
+}
+
+/* Hand Styles */
+.hand {
+  display: flex;
+  gap: -30px;
+  /* Overlap cards */
+  justify-content: center;
+}
+
+.card {
+  width: 80px;
+  height: 120px;
+  background: white;
+  border-radius: 8px;
+  border: 2px solid #333;
+  color: #333;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 8px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  user-select: none;
+  position: relative;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.card:not(:first-child) {
+  margin-left: -40px;
+}
+
+.card.selected {
+  transform: translateY(-30px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+  border-color: #4facfe;
+}
+
+.card.back {
+  background: repeating-linear-gradient(45deg,
+      #2c3e50,
+      #2c3e50 10px,
+      #34495e 10px,
+      #34495e 20px);
+  border: 2px solid #ecf0f1;
+}
+
+.card-top {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.card-bottom {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  transform: rotate(180deg);
+}
+
+.suit-SPADES {
+  color: #2c3e50;
+}
+
+.suit-HEARTS {
+  color: #e74c3c;
+}
+
+.suit-DIAMONDS {
+  color: #f39c12;
+}
+
+.suit-CLUBS {
+  color: #27ae60;
+}
+
+.special-card {
+  color: #8e44ad;
+  font-weight: bold;
+}
+
+/* Trick Area */
+.trick-area {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 400px;
+  height: 250px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+}
+
+.played-cards {
+  display: flex;
+  gap: 10px;
+}
+
+.played-by {
+  font-size: 0.9em;
+  opacity: 0.7;
+}
+
+/* Controls */
+.controls {
+  position: absolute;
+  bottom: 180px;
+  right: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.btn-game {
+  padding: 12px 24px;
+  border-radius: 8px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+}
+
+.btn-trick {
+  background: #4facfe;
+  color: white;
+}
+
+.btn-trick:disabled {
+  background: #555;
+  cursor: not-allowed;
+}
+
+.btn-pass {
+  background: #ff6b6b;
+  color: white;
+}
+
+.btn-pass:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Glassmorphism overlays */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.overlay h2 {
+  font-size: 3em;
+  margin-bottom: 20px;
+}
+
+/* Exchange Controls */
+.exchange-controls {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn-exchange {
+  background: #f39c12;
+  color: white;
+  font-size: 0.8em;
+  padding: 8px 16px;
+}
+
+.btn-exchange:disabled {
+  background: #555;
+  opacity: 0.5;
+}
+
+/* Exchange Summary (Bottom Player Area) */
+.exchange-summary {
+  display: flex;
+  gap: 15px;
+  margin-top: 20px;
+  justify-content: center;
+}
+
+.exchange-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.slot-label {
+  font-size: 0.7em;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.6;
+  text-align: center;
+}
+
+.exchange-slot .card {
+  transform: scale(0.6);
+  margin-left: 0 !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.card-placeholder {
+  width: 48px;
+  /* 80 * 0.6 */
+  height: 72px;
+  /* 120 * 0.6 */
+  border: 1px dashed rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2em;
+  color: rgba(255, 255, 255, 0.2);
+}
+
+/* Score Modal Styles */
+.score-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.score-modal-content {
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+  padding: 40px;
+  border-radius: 24px;
+  width: 90%;
+  max-width: 700px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+  animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.score-modal-content h2 {
+  font-size: 2.5em;
+  margin-bottom: 30px;
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  background: linear-gradient(to right, #fff, #4facfe);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.score-table-container {
+  max-height: 400px;
+  overflow-y: auto;
+  margin-bottom: 30px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.score-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 1.1em;
+}
+
+.score-table th {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 15px;
+  text-align: center;
+  position: sticky;
+  top: 0;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.score-table td {
+  padding: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.score-table tr.total-row {
+  background: rgba(79, 172, 254, 0.2);
+  font-weight: bold;
+  font-size: 1.25em;
+}
+
+.score-table tr.total-row td {
+  border-top: 2px solid rgba(79, 172, 254, 0.5);
+  border-bottom: none;
+}
+
+.btn-modal-close {
+  background: #4facfe;
+  color: white;
+  border: none;
+  padding: 15px 40px;
+  border-radius: 30px;
+  font-size: 1.1em;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+}
+
+.btn-modal-close:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(79, 172, 254, 0.6);
+  background: #00f2fe;
+}
+
+.btn-modal-close:active {
+  transform: translateY(1px);
+}

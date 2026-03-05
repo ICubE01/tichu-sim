@@ -1,14 +1,17 @@
-import React, {useEffect, useState} from 'react';
-import {useParams, useNavigate} from 'react-router-dom';
-import {useRoom} from "./useRoom.jsx";
-import {useStomp} from "./useStomp.jsx"
+import React, { useEffect, useState, useCallback } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import './RoomDetailPage.css';
-import {useAxios} from "./useAxios.jsx";
+import { useAuth } from './useAuth.jsx';
+import { useAxios } from "./useAxios.jsx";
+import { useRoom } from "./useRoom.jsx";
+import { useStomp } from "./useStomp.jsx"
+import TichuPage from "./TichuPage.jsx";
 
 const RoomDetailPage = () => {
-  const {roomId} = useParams();
+  const { roomId } = useParams();
   const navigate = useNavigate();
-  const {fetchMyRoom, enterRoom, leaveRoom, fetchRoom} = useRoom();
+  const { user } = useAuth();
+  const { fetchMyRoom, enterRoom, leaveRoom, fetchRoom } = useRoom();
   const [room, setRoom] = useState(null);
   const [loading, setLoading] = useState(true);
   const stomp = useStomp();
@@ -60,7 +63,7 @@ const RoomDetailPage = () => {
     init().then();
   }, [roomId]);
 
-  const handleMemberChange = (memberMessage) => {
+  const handleMemberChange = useCallback((memberMessage) => {
     setRoom((prevRoom) => {
       if (!prevRoom) {
         return prevRoom;
@@ -77,11 +80,11 @@ const RoomDetailPage = () => {
 
       return { ...prevRoom, members: members };
     });
-  };
+  }, []);
 
-  const handleReceiveChatMessage = (chatMessage) => {
+  const handleReceiveChatMessage = useCallback((chatMessage) => {
     setChatMessages((prev) => [...prev, chatMessage]);
-  };
+  }, []);
 
   const handleSendChatMessage = () => {
     if (chatInput.trim() === '') {
@@ -102,16 +105,44 @@ const RoomDetailPage = () => {
   };
 
   useEffect(() => {
+    if (!user) return;
+
+    const handleGameStart = (message) => {
+      if (message.type === 'START') {
+        setRoom(prev => ({
+          ...prev,
+          hasGameStarted: true,
+        }));
+      }
+    };
+    const handleError = (error) => {
+      alert(`Error: ${error.message || 'Unknown error'}`);
+    };
+
     stomp.subscribe(`/topic/rooms/${roomId}/members`, handleMemberChange);
     stomp.subscribe(`/topic/rooms/${roomId}/chat`, handleReceiveChatMessage);
+    stomp.subscribe(`/user/${user.id}/queue/game/tichu`, handleGameStart);
+    stomp.subscribe(`/user/${user.id}/queue/errors`, handleError);
+
     api.get('/auth/issue/web-socket-token')
       .then(response => response.data.token)
       .then(token => stomp.connect(token));
-    return stomp.disconnect;
-  }, [roomId]);
+
+    return () => {
+      stomp.unsubscribe(`/topic/rooms/${roomId}/members`, handleMemberChange);
+      stomp.unsubscribe(`/topic/rooms/${roomId}/chat`, handleReceiveChatMessage);
+      stomp.unsubscribe(`/user/${user.id}/queue/game/tichu`, handleGameStart);
+      stomp.unsubscribe(`/user/${user.id}/queue/errors`, handleError);
+      stomp.disconnect();
+    };
+  }, [roomId, user, handleMemberChange, handleReceiveChatMessage]);
 
   if (loading || room === null) {
-    return <div style={{padding: '20px'}}>Loading...</div>;
+    return <div style={{ padding: '20px' }}>Loading...</div>;
+  }
+
+  if (room.hasGameStarted) {
+    return <TichuPage roomId={room.id} stomp={stomp} />
   }
 
   return (
@@ -138,6 +169,21 @@ const RoomDetailPage = () => {
             <h3>Rules</h3>
             <div className="rule-box">
               <p>TODO</p>
+              <button
+                onClick={() => stomp.publish(`/app/rooms/${roomId}/game/tichu/start`, {})}
+                className="start-button"
+                style={{
+                  marginTop: '10px',
+                  padding: '10px 20px',
+                  background: '#4facfe',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '5px',
+                  cursor: 'pointer'
+                }}
+              >
+                Start Tichu Game
+              </button>
               {<pre>{JSON.stringify(room.gameRule, null, 2)}</pre>}
             </div>
           </div>
