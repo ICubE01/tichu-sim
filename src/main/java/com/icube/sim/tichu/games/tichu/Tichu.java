@@ -8,6 +8,7 @@ import com.icube.sim.tichu.rooms.Member;
 import lombok.Locked;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Tichu extends AbstractGame {
     private final TichuRule rule;
@@ -72,17 +73,24 @@ public class Tichu extends AbstractGame {
     }
 
     public void nextRound() {
-        var scoresHistory = rounds.stream().map(Round::getScores).toList();
-        addEvent(new TichuRoundEndEvent(scoresHistory));
-
+        var scoresHistory = getScoresHistory();
         var redTotalScore = scoresHistory.stream().mapToInt(score -> score[0]).sum();
         var blueTotalScore = scoresHistory.stream().mapToInt(score -> score[1]).sum();
+
         // todo: set max score in rules
         if (redTotalScore < 1000 && blueTotalScore < 1000) {
+            addEvent(new TichuRoundEndEvent(scoresHistory));
             rounds.add(new Round(this));
         } else {
             addEvent(new TichuEndEvent(scoresHistory));
-            // todo: manage room.game in event handler
         }
+    }
+
+    public List<int[]> getScoresHistory() {
+        var scoresHistory = rounds.stream().map(Round::getScores).collect(Collectors.toList());
+        if (scoresHistory.getLast() == null) {
+            scoresHistory.removeLast();
+        }
+        return scoresHistory;
     }
 }
