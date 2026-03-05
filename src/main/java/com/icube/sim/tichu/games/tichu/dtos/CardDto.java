@@ -2,8 +2,10 @@ package com.icube.sim.tichu.games.tichu.dtos;
 
 import com.icube.sim.tichu.games.tichu.cards.CardSuit;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.jspecify.annotations.Nullable;
 
+@NoArgsConstructor
 @Data
 public class CardDto {
     private CardType type;
