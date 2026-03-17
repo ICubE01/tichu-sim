@@ -26,7 +26,7 @@ public class SingleTrick extends Trick {
             if (prevTrick == null) {
                 rank = 1.5f;
             } else {
-                rank = ((SingleTrick) prevTrick).getRank() + 0.5f;
+                rank = Math.min(((SingleTrick) prevTrick).getRank() + 0.5f, 15);
             }
         } else if (card instanceof DragonCard) {
             rank = 20;
