@@ -644,7 +644,7 @@ const TichuPage = ({ roomId, stomp, chatMessages }) => {
 
   return (
     <div className="tichu-game-container">
-      <div className="game-board">
+      <div className="game-board content">
         {/* Top Player (Partner) */}
         {renderPlayer(getPlayerAt(2), 'top')}
 

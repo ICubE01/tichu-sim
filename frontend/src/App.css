@@ -3,6 +3,24 @@
   flex-direction: column;
   align-items: center;
   min-height: 100vh;
-  max-width: 1200px;
   margin: 0 auto;
+  width: 100%;
+}
+
+.container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.content {
+  --content-max-width: none;
+}
+
+@media screen and (min-width: 1200px) {
+  .content {
+    --content-max-width: 1200px;
+  }
 }

@@ -9,33 +9,35 @@ const NavBar = () => {
 
   return (
     <>
-      <nav className="navbar">
-        <div className="nav-left">
-          <span
-            className="settings-btn"
-            onClick={() => setShowSettings(!showSettings)}
-            title="Settings"
-          >
-            ⚙️
-          </span>
-        </div>
-
-        <div className="nav-right">
-          <span
-            className="user-name"
-            onClick={() => setShowLogout(!showLogout)}
-          >
-            {user?.name || 'User'}
-          </span>
-          {showLogout && (
-            <button
-              className="logout-btn"
-              onClick={logout}
-              title="Logout"
+      <nav className="navbar-container">
+        <div className="navbar-content content">
+          <div className="nav-left">
+            <span
+              className="settings-btn"
+              onClick={() => setShowSettings(!showSettings)}
+              title="Settings"
             >
-              🚪
-            </button>
-          )}
+              ⚙️
+            </span>
+          </div>
+
+          <div className="nav-right">
+            <span
+              className="user-name"
+              onClick={() => setShowLogout(!showLogout)}
+            >
+              {user?.name || 'User'}
+            </span>
+            {showLogout && (
+              <button
+                className="logout-btn"
+                onClick={logout}
+                title="Logout"
+              >
+                🚪
+              </button>
+            )}
+          </div>
         </div>
       </nav>
 

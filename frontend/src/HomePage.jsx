@@ -63,7 +63,7 @@ const HomePage = () => {
   }, []);
 
   return (
-    <div className="home-container">
+    <div className="home-container content">
       <div className="home-header">
         <h2>Rooms List</h2>
         <div className="header-buttons">
