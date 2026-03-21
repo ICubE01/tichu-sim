@@ -126,6 +126,17 @@ const TichuPage = ({ roomId, stomp, chatMessages }) => {
         }));
         break;
       case 'GET':
+        const getPassed = (index, phaseStatus, turn, lastTrick) => {
+          if (phaseStatus === 'WAITING_DRAGON_SELECTION') {
+            return index !== turn;
+          }
+          if (index === turn) return false;
+          if (lastTrick.playerIndex < turn) {
+            return lastTrick.playerIndex < index && index < turn;
+          } else {
+            return index < turn || lastTrick.playerIndex < index;
+          }
+        }
         setGameState({
           rule: data.rule,
           players: data.players.map((p, i) => ({
@@ -133,8 +144,12 @@ const TichuPage = ({ roomId, stomp, chatMessages }) => {
             index: i,
             cardCount: data.handCounts[p.id],
             tichuDeclaration: data.tichuDeclarations[i],
-            exitOrder: 0,
-            passed: false,
+            exitOrder: data.exitOrder[i],
+            passed: data.roundStatus !== 'PLAYING' ? false : (
+              data.exitOrder[i] !== 0 ? false : (
+                data.tricks.length === 0 ? false : getPassed(i, data.phaseStatus, data.turn, data.tricks[data.tricks.length - 1])
+              )
+            ),
           })),
           scoresHistory: data.scoresHistory,
           hand: data.myHand,
