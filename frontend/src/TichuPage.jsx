@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useAuth } from "./useAuth.jsx";
 import {
   areCardsEqual,
@@ -112,6 +112,21 @@ const TichuPage = ({ roomId, stomp, chatMessages }) => {
   const [exchangeSelection, setExchangeSelection] = useState({ left: null, mid: null, right: null });
   const [scoreModalType, setScoreModalType] = useState(null); // null, 'ROUND_END', 'END'
   const [isWishModalOpen, setIsWishModalOpen] = useState(false);
+  const messageQueue = useRef([]);
+  const isPaused = useRef(false);
+  const handleTichuMessageRef = useRef(null);
+
+  // Resume processing when delay ends
+  const processQueue = useCallback(() => {
+    while (messageQueue.current.length > 0 && !isPaused.current) {
+      const msg = messageQueue.current.shift();
+      if (handleTichuMessageRef.current) {
+        handleTichuMessageRef.current(msg);
+      }
+      // If handleTichuMessage triggered another pause, stop processing
+      if (isPaused.current) break;
+    }
+  }, []); // No dependencies needed as it uses Refs
 
   const handleTichuMessage = useCallback((message) => {
     console.log('Tichu Message:', message);
@@ -272,6 +287,13 @@ const TichuPage = ({ roomId, stomp, chatMessages }) => {
             tricks: [...prev.tricks, data.trick],
           };
         });
+        if (data.trick.type === TrickType.DOG) {
+          isPaused.current = true;
+          setTimeout(() => {
+            isPaused.current = false;
+            processQueue();
+          }, 1000);
+        }
         break;
       case 'PLAY_BOMB':
         setGameState(prev => {
@@ -339,8 +361,11 @@ const TichuPage = ({ roomId, stomp, chatMessages }) => {
           ...prev,
           scoresHistory: data,
         }));
+        isPaused.current = true;
         setTimeout(() => {
           setScoreModalType('ROUND_END');
+          isPaused.current = false;
+          processQueue();
         }, 1000);
         break;
       case 'END':
@@ -348,27 +373,42 @@ const TichuPage = ({ roomId, stomp, chatMessages }) => {
           ...prev,
           scoresHistory: data,
         }));
+        isPaused.current = true;
         setTimeout(() => {
           setScoreModalType('END');
+          isPaused.current = false;
+          processQueue();
         }, 1000);
         break;
       default:
         break;
     }
-  }, [user.id]);
+  }, [user.id, processQueue]);
+
+  useEffect(() => {
+    handleTichuMessageRef.current = handleTichuMessage;
+  }, [handleTichuMessage]);
 
   useEffect(() => {
     if (!user) {
       return;
     }
 
+    const onMessageReceived = (message) => {
+      if (isPaused.current) {
+        messageQueue.current.push(message);
+      } else {
+        handleTichuMessage(message);
+      }
+    };
+
     const destination = `/user/${user.id}/queue/game/tichu`;
-    stomp.subscribe(destination, handleTichuMessage);
+    stomp.subscribe(destination, onMessageReceived);
 
     stomp.publish(`/app/rooms/${roomId}/game/tichu/get`, {});
 
-    return () => stomp.unsubscribe(destination, handleTichuMessage);
-  }, [roomId, handleTichuMessage, user]);
+    return () => stomp.unsubscribe(destination, onMessageReceived);
+  }, [roomId, handleTichuMessage, user, processQueue]);
 
   const toggleCardSelection = (card) => {
     setSelectedCards(prev => {
