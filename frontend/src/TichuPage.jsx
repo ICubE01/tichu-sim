@@ -543,7 +543,7 @@ const TichuPage = ({ roomId, stomp, chatMessages }) => {
           <div className="player-name">{p.name}</div>
           <div className="card-count">{p.cardCount} Cards</div>
           {p.tichuDeclaration !== null && p.tichuDeclaration !== 'NONE' &&
-            <div className="tichuDeclaration">{p.tichuDeclaration}</div>}
+            <div className="tichu-declaration">{p.tichuDeclaration}</div>}
           {isMyTurn && <div className="status-turn">Turn</div>}
           {p.passed && <div className="status-pass">PASS</div>}
         </div>
@@ -597,7 +597,7 @@ const TichuPage = ({ roomId, stomp, chatMessages }) => {
             <div className="player-name">{user.name} (ME)</div>
             <div className="card-count">{gameState.hand.length} Cards</div>
             {gameState.players[myIndex] && gameState.players[myIndex].tichuDeclaration !== null && gameState.players[myIndex].tichuDeclaration !== 'NONE' &&
-              <div className="tichuDeclaration">{gameState.players[myIndex].tichuDeclaration}</div>}
+              <div className="tichu-declaration">{gameState.players[myIndex].tichuDeclaration}</div>}
             {gameState.turn === myIndex && <div className="status-turn">Turn</div>}
             {gameState.players[myIndex] && gameState.players[myIndex].passed && <div className="status-pass">PASS</div>}
           </div>
