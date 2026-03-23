@@ -3,6 +3,7 @@ package com.icube.sim.tichu.rooms;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -23,6 +24,7 @@ public interface RoomMapper {
         }
 
         return map.values().stream()
+                .sorted(Comparator.comparing(Member::getSeq))
                 .map(member -> new MemberDto(member.getId(), member.getName()))
                 .toList();
     }
