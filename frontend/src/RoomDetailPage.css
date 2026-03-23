@@ -10,6 +10,27 @@
   align-items: center;
 }
 
+.room-detail-header-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.game-start-button {
+  background: #4facfe;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  transition: background 0.2s ease;
+}
+
+.game-start-button:hover {
+  background: #46a0f0;
+}
+
+.game-start-button:active {
+  background: #3a86cc;
+}
+
 .leave-button {
   background: #ff6b6b;
   color: white;

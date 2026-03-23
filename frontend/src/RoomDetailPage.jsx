@@ -137,6 +137,10 @@ const RoomDetailPage = () => {
     };
   }, [roomId, user, handleMemberChange, handleReceiveChatMessage]);
 
+  const handleStartGame = () => {
+    stomp.publish(`/app/rooms/${roomId}/game/tichu/start`, {});
+  }
+
   if (loading || room === null) {
     return <div style={{ padding: '20px' }}>Loading...</div>;
   }
@@ -156,10 +160,13 @@ const RoomDetailPage = () => {
   }
 
   return (
-    <div className="room-detail-container">
+    <div className="room-detail-container content">
       <div className="room-detail-header">
         <h2>[{room.id}] {room.name}</h2>
-        <button onClick={handleLeaveRoom} className="leave-button">Leave</button>
+        <div className="room-detail-header-buttons">
+          <button onClick={handleStartGame} className="game-start-button">Start Game</button>
+          <button onClick={handleLeaveRoom} className="leave-button">Leave</button>
+        </div>
       </div>
 
       <div className="room-content">
@@ -179,21 +186,6 @@ const RoomDetailPage = () => {
             <h3>Rules</h3>
             <div className="rule-box">
               <p>TODO</p>
-              <button
-                onClick={() => stomp.publish(`/app/rooms/${roomId}/game/tichu/start`, {})}
-                className="start-button"
-                style={{
-                  marginTop: '10px',
-                  padding: '10px 20px',
-                  background: '#4facfe',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '5px',
-                  cursor: 'pointer'
-                }}
-              >
-                Start Tichu Game
-              </button>
               {<pre>{JSON.stringify(room.gameRule, null, 2)}</pre>}
             </div>
           </div>
@@ -205,7 +197,7 @@ const RoomDetailPage = () => {
           </div>
           <div className="chat-messages">
             {chatMessages.length === 0 ? (
-              <p className="chat-placeholder">No messages yet.</p>
+              <div className="chat-placeholder">No messages yet.</div>
             ) : (
               chatMessages.map((msg, index) => (
                 <div key={index} className="chat-message">
@@ -217,6 +209,7 @@ const RoomDetailPage = () => {
           <div className="chat-input-area">
             <input
               type="text"
+              name="message"
               placeholder="Enter a message..."
               value={chatInput}
               onChange={(e) => setChatInput(e.target.value)}
