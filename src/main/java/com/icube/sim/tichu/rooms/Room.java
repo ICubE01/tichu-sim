@@ -82,9 +82,6 @@ public class Room {
 
     @Locked.Write
     public void startGame() {
-        if (members.size() < getGameRule().getMinPlayers() || members.size() > getGameRule().getMaxPlayers()) {
-            throw new InvalidMemberCountException();
-        }
         if (hasGameStarted()) {
             throw new GameHasAlreadyStartedException();
         }

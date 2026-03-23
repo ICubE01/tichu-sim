@@ -13,6 +13,12 @@ public class GameExceptionHandler {
         return new ErrorMessage("Game has already been playing.");
     }
 
+    @MessageExceptionHandler(InvalidMemberCountException.class)
+    @SendToUser("/queue/errors")
+    public ErrorMessage handleInvalidMemberCount() {
+        return new ErrorMessage("Invalid member count.");
+    }
+
     @MessageExceptionHandler(ImmutableGameRuleException.class)
     @SendToUser("/queue/errors")
     public ErrorMessage handleImmutableGameRule() {

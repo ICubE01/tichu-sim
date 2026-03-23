@@ -3,7 +3,6 @@ package com.icube.sim.tichu.games.tichu.controllers;
 import com.icube.sim.tichu.common.websocket.ErrorMessage;
 import com.icube.sim.tichu.games.tichu.TichuService;
 import com.icube.sim.tichu.games.tichu.exceptions.InvalidTeamAssignmentException;
-import com.icube.sim.tichu.rooms.InvalidMemberCountException;
 import lombok.AllArgsConstructor;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageExceptionHandler;
@@ -19,12 +18,6 @@ public class TichuStartController {
     @MessageMapping("/rooms/{roomId}/game/tichu/start")
     public void start(@DestinationVariable("roomId") String roomId) {
         tichuService.start(roomId);
-    }
-
-    @MessageExceptionHandler(InvalidMemberCountException.class)
-    @SendToUser("/queue/errors")
-    public ErrorMessage handleInvalidMemberCount() {
-        return new ErrorMessage("Invalid member count.");
     }
 
     @MessageExceptionHandler(InvalidTeamAssignmentException.class)
