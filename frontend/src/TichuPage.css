@@ -106,9 +106,17 @@
   flex-direction: column-reverse;
 }
 
+@media screen and (max-width: 1024px) {
+  .player-top .hand, .player-left .hand, .player-right .hand {
+    display: none;
+  }
+}
+
 .card {
-  width: 100px;
-  height: 140px;
+  --card-width: min(6rem, 100vw / 16 * 3);
+  --card-height: calc(var(--card-width) * 1.4);
+  width: var(--card-width);
+  height: var(--card-height);
   background: white;
   border-radius: 8px;
   border: 2px solid #333;
@@ -125,24 +133,30 @@
 }
 
 .player-left .card, .player-right .card {
-  width: 140px;
-  height: 100px;
+  width: var(--card-height);
+  height: var(--card-width);
+}
+
+.card:not(:first-child) {
+  --min-card-margin: calc(var(--card-width) / 3);
+  --max-card-margin: calc(var(--card-width) / 3 * 2);
+  --card-margin: max(var(--min-card-margin), min(calc((14 * var(--card-width) - 100vw) / 13), var(--max-card-margin)));
 }
 
 .player-bottom .card:not(:first-child) {
-  margin-left: -40px;
+  margin-left: calc(var(--card-margin) * -1);
 }
 
 .player-top .card:not(:first-child) {
-  margin-right: -40px;
+  margin-right: calc(var(--max-card-margin) * -1);
 }
 
 .player-left .card:not(:first-child) {
-  margin-top: -40px;
+  margin-top: calc(var(--max-card-margin) * -1);
 }
 
 .player-right .card:not(:first-child) {
-  margin-bottom: -40px;
+  margin-bottom: calc(var(--max-card-margin) * -1);
 }
 
 .card.selected {
@@ -178,12 +192,12 @@
 }
 
 .card-rank {
-  font-size: 1.2rem;
+  font-size: 1rem;
   font-weight: bold;
 }
 
 .card-suit {
-  font-size: 1.1rem;
+  font-size: 0.8rem;
 }
 
 .card-center {
@@ -195,7 +209,7 @@
 }
 
 .card-center-icon {
-  font-size: 2.5rem;
+  font-size: calc(var(--card-width) * 0.4);
   opacity: 0.8;
 }
 
@@ -217,10 +231,6 @@
   font-weight: bold;
   text-transform: uppercase;
   color: #8e44ad;
-}
-
-.special-card {
-  border-color: #8e44ad;
 }
 
 .suit-SPADE {
