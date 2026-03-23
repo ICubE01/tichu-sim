@@ -31,6 +31,10 @@
   background: #3a86cc;
 }
 
+.game-start-button:disabled {
+  background: #cccccc;
+}
+
 .leave-button {
   background: #ff6b6b;
   color: white;

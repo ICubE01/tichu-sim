@@ -137,7 +137,7 @@ const RoomDetailPage = () => {
     };
   }, [roomId, user, handleMemberChange, handleReceiveChatMessage]);
 
-  const handleStartGame = () => {
+  const handleGameStartRequest = () => {
     stomp.publish(`/app/rooms/${roomId}/game/tichu/start`, {});
   }
 
@@ -159,12 +159,15 @@ const RoomDetailPage = () => {
     />
   }
 
+  const canStartGame = room.gameRule.minPlayers <= room.members.length
+    && room.members.length <= room.gameRule.maxPlayers;
+
   return (
     <div className="room-detail-container content">
       <div className="room-detail-header">
         <h2>[{room.id}] {room.name}</h2>
         <div className="room-detail-header-buttons">
-          <button onClick={handleStartGame} className="game-start-button">Start Game</button>
+          <button onClick={handleGameStartRequest} className="game-start-button" disabled={!canStartGame}>Start Game</button>
           <button onClick={handleLeaveRoom} className="leave-button">Leave</button>
         </div>
       </div>
