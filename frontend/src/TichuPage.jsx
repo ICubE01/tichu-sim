@@ -115,6 +115,7 @@ const TichuPage = ({ roomId, stomp, chatMessages }) => {
   const messageQueue = useRef([]);
   const isPaused = useRef(false);
   const handleTichuMessageRef = useRef(null);
+  const [isRulePopupOpen, setIsRulePopupOpen] = useState(false);
 
   // Resume processing when delay ends
   const processQueue = useCallback(() => {
@@ -646,11 +647,30 @@ const TichuPage = ({ roomId, stomp, chatMessages }) => {
   const redTotal = gameState.scoresHistory.reduce((sum, score) => sum + score[0], 0);
   const blueTotal = gameState.scoresHistory.reduce((sum, score) => sum + score[1], 0);
 
+  const parseWinningScore = (winningScore) => {
+    switch (winningScore) {
+      case "ZERO": return "단판";
+      case "TWO_HUNDRED": return "200";
+      case "FIVE_HUNDRED": return "500";
+      case "ONE_THOUSAND": return "1000";
+      default: return 1000;
+    }
+  };
+
   return (
     <div className="tichu-game-container">
       <div className="game-board content">
-        <div className="score-display-top-left">
-          <span className="team-red-label">RED</span> {redTotal} : {blueTotal} <span className="team-blue-label">BLUE</span>
+        <div className="display-top-left">
+          <div className="score-display-top-left">
+            <span className="team-red-label">RED</span> {redTotal} : {blueTotal} <span className="team-blue-label">BLUE</span>
+          </div>
+          <input type="checkbox" className="show-rule-button" checked={isRulePopupOpen} onClick={() => setIsRulePopupOpen(!isRulePopupOpen)}/>
+          {isRulePopupOpen &&
+            <div className="rule-popup">
+              <ul>
+                <li><strong>승리 점수</strong>: {parseWinningScore(gameState.rule.winningScore)}</li>
+              </ul>
+            </div>}
         </div>
         {/* Top Player (Partner) */}
         {renderPlayer(getPlayerAt(2), 'top')}

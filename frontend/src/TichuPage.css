@@ -14,10 +14,18 @@
   align-items: center;
 }
 
-.score-display-top-left {
+.display-top-left {
   position: absolute;
   top: 10px;
   left: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.score-display-top-left {
+  position: relative;
   background: rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(10px);
   padding: 10px 20px;
@@ -38,6 +46,59 @@
 
 .team-blue-label {
   color: #3498db;
+}
+
+.show-rule-button {
+  appearance: none;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0.5rem 0.7rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.show-rule-button::before {
+  content: "📋";
+}
+
+.show-rule-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.show-rule-button:checked {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.show-rule-button:checked:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.rule-popup {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(5px);
+  border-radius: 12px;
+  padding: 20px;
+  /*box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);*/
+  z-index: 100;
+}
+
+.rule-popup::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 1rem;
+  transform: translateY(-100%);
+  border-width: 0.5rem;
+  border-style: solid;
+  border-color: transparent transparent rgba(255, 255, 255, 0.1) transparent ;
+}
+
+.rule-popup ul {
+  margin: 0;
+  list-style: none;
+  padding: 0;
 }
 
 .game-board {
