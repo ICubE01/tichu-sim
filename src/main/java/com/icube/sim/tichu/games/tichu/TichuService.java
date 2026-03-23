@@ -36,7 +36,7 @@ public class TichuService extends AbstractGameService {
         assert gameRule instanceof TichuRule;
 
         var tichuRule = (TichuRule) gameRule;
-        if (tichuRule.getTeamAssignment().size() > 4) {
+        if (tichuRule.teamAssignment().size() > 4) {
             throw new InvalidTeamAssignmentException();
         }
     }

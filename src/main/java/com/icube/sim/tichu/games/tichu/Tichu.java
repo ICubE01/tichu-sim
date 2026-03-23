@@ -89,8 +89,8 @@ public class Tichu extends AbstractGame {
         var redTotalScore = scoresHistory.stream().mapToInt(score -> score[0]).sum();
         var blueTotalScore = scoresHistory.stream().mapToInt(score -> score[1]).sum();
 
-        // todo: set max score in rules
-        if (redTotalScore < 1000 && blueTotalScore < 1000) {
+        var winningScore = rule.winningScore().getValue();
+        if (redTotalScore < winningScore && blueTotalScore < winningScore) {
             addEvent(new TichuRoundEndEvent(scoresHistory));
             rounds.add(new Round(this));
         } else {

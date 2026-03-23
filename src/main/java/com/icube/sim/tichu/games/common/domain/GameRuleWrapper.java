@@ -19,7 +19,7 @@ public class GameRuleWrapper {
 
     public static GameRuleWrapper of(GameName gameName) {
         return switch (gameName) {
-            case TICHU -> new GameRuleWrapper(new TichuRule());
+            case TICHU -> new GameRuleWrapper(TichuRule.createDefault());
         };
     }
 

@@ -3,17 +3,17 @@ package com.icube.sim.tichu.games.tichu;
 import com.icube.sim.tichu.games.common.domain.GameName;
 import com.icube.sim.tichu.games.common.domain.GameRule;
 import com.icube.sim.tichu.games.tichu.exceptions.InvalidTeamAssignmentException;
-import lombok.Data;
+import lombok.Getter;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Data
-public class TichuRule implements GameRule {
-    private final Map<Long, Team> teamAssignment = new HashMap<>();
-    private final int timeLimit = 30;
+public record TichuRule(WinningScore winningScore, Map<Long, Team> teamAssignment, int timeLimit) implements GameRule {
+    public static TichuRule createDefault() {
+        return new TichuRule(WinningScore.ONE_THOUSAND, new HashMap<>(), 30);
+    }
 
     @Override
     public GameName getGameName() {
@@ -59,5 +59,20 @@ public class TichuRule implements GameRule {
         assert red == 2 && blue == 2;
         assert determinedTeams.size() == 4;
         return determinedTeams;
+    }
+
+    @Getter
+    public enum WinningScore {
+        ZERO(0),
+        TWO_HUNDRED(200),
+        FIVE_HUNDRED(500),
+        ONE_THOUSAND(1000),
+        ;
+
+        private final int value;
+
+        WinningScore(int value) {
+            this.value = value;
+        }
     }
 }
