@@ -172,7 +172,7 @@ const TichuPage = ({ roomId, stomp, chatMessages }) => {
             ),
           })),
           scoresHistory: data.scoresHistory,
-          hand: data.myHand,
+          hand: data.myHand.filter(card => !areCardsEqual(card, exchangeSelection.left) && !areCardsEqual(card, exchangeSelection.mid) && !areCardsEqual(card, exchangeSelection.right)),
           roundStatus: data.roundStatus,
           wish: data.wish,
           phaseStatus: data.phaseStatus,
