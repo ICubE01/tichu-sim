@@ -657,6 +657,26 @@ const TichuPage = ({ roomId, stomp, chatMessages }) => {
     }
   };
 
+  const playerMe = gameState.players[myIndex];
+
+  const canDeclareLargeTichu = gameState.roundStatus === 'WAITING_LARGE_TICHU' && playerMe && playerMe.tichuDeclaration === null;
+
+  const decideLargeTichuDeclaration = (isLargeTichuDeclared) => {
+    stomp.publish(`/app/rooms/${roomId}/game/tichu/large-tichu`, { isLargeTichuDeclared });
+  }
+
+  const canDeclareSmallTichu = (gameState.roundStatus === 'EXCHANGING' || gameState.hand.length === 14)
+    && playerMe && playerMe.tichuDeclaration !== 'LARGE' && playerMe.tichuDeclaration !== 'SMALL';
+
+  const declareSmallTichu = () => stomp.publish(`/app/rooms/${roomId}/game/tichu/small-tichu`, {});
+
+  const haveToSelectDragonReceiver = gameState.phaseStatus === 'WAITING_DRAGON_SELECTION' && gameState.turn === myIndex;
+
+  const myTrick = identifyTrick(selectedCards, getLastTrick());
+
+  const canPlayCards = gameState.phaseStatus === "PLAYING"
+    && myTrick && canCoverUp(myTrick, getLastTrick()) && (gameState.turn === myIndex || isBomb(myTrick.type) && getLastTrick() !== null);
+
   return (
     <div className="tichu-game-container">
       <div className="game-board content">
@@ -712,6 +732,81 @@ const TichuPage = ({ roomId, stomp, chatMessages }) => {
             {gameState.turn === myIndex && <div className="status-turn">Turn</div>}
             {gameState.players[myIndex] && gameState.players[myIndex].passed && <div className="status-pass">PASS</div>}
           </div>
+          <div className="controls">
+            {canDeclareLargeTichu &&
+              <>
+                <button className="large-tichu-button" onClick={() => decideLargeTichuDeclaration(true)}>
+                  Large Tichu
+                </button>
+                <button className="pass-button" onClick={() => decideLargeTichuDeclaration(false)}>
+                  Pass
+                </button>
+              </>}
+            {canDeclareSmallTichu &&
+              <button className="small-tichu-button" onClick={declareSmallTichu}>
+                Small Tichu
+              </button>}
+            {gameState.roundStatus === 'EXCHANGING' && (
+              <>
+                <button
+                  className="exchange-button"
+                  onClick={() => handleExchange('left')}
+                  disabled={selectedCards.length !== 1 || !!exchangeSelection.left}
+                >
+                  To Left ({getPlayerAt(3)?.name})
+                </button>
+                <button
+                  className="exchange-button"
+                  onClick={() => handleExchange('mid')}
+                  disabled={selectedCards.length !== 1 || !!exchangeSelection.mid}
+                >
+                  To Partner ({getPlayerAt(2)?.name})
+                </button>
+                <button
+                  className="exchange-button"
+                  onClick={() => handleExchange('right')}
+                  disabled={selectedCards.length !== 1 || !!exchangeSelection.right}
+                >
+                  To Right ({getPlayerAt(1)?.name})
+                </button>
+              </>
+            )}
+            {gameState.roundStatus === 'PLAYING' && !haveToSelectDragonReceiver &&
+              <>
+                {(myTrick || (selectedCards.length === 1 && selectedCards[0].type === CardType.PHOENIX)) && !isBomb(myTrick?.type) &&
+                  <button
+                    className="play-trick-button"
+                    onClick={handlePlayTrick}
+                    disabled={!canPlayCards}
+                  >
+                    {getTrickLabel(myTrick) || (selectedCards.length === 1 && selectedCards[0].type === CardType.PHOENIX && 'Phoenix') || 'Invalid'}
+                  </button>
+                }
+                {myTrick && isBomb(myTrick.type) &&
+                  <button
+                    className="play-bomb-button"
+                    onClick={handlePlayBomb}
+                    disabled={!canPlayCards}
+                  >
+                    {getTrickLabel(myTrick) || 'Invalid'}
+                  </button>
+                }
+                <button className="pass-button" onClick={handlePass} disabled={gameState.turn !== myIndex || getLastTrick() === null}>
+                  Pass
+                </button>
+              </>
+            }
+            {haveToSelectDragonReceiver && (
+              <>
+                <button onClick={() => handleSelectDragonReceiver(false)}>
+                  To Left ({getPlayerAt(3)?.name})
+                </button>
+                <button onClick={() => handleSelectDragonReceiver(true)}>
+                  To Right ({getPlayerAt(1)?.name})
+                </button>
+              </>
+            )}
+          </div>
           <div className="hand">
             {sortCards(gameState.hand).map(card => renderCard(card))}
           </div>
@@ -737,96 +832,6 @@ const TichuPage = ({ roomId, stomp, chatMessages }) => {
         </div>
       </div>
 
-      <div className="controls">
-        {selectedCards.length > 0 && (
-          <div className="selected-trick-feedback">
-            {identifyTrick(selectedCards, getLastTrick())?.label || 'Invalid Trick'}
-          </div>
-        )}
-        <button
-          className="btn-game btn-trick"
-          onClick={handlePlayTrick}
-          disabled={gameState.phaseStatus !== "PLAYING" || selectedCards.length === 0 || gameState.turn !== myIndex || isBomb(identifyTrick(selectedCards, getLastTrick())?.type) || !canCoverUp(identifyTrick(selectedCards, getLastTrick()), getLastTrick())}
-        >
-          Play Trick
-        </button>
-        <button
-          className="btn-game btn-trick"
-          onClick={handlePlayBomb}
-          disabled={gameState.phaseStatus !== "PLAYING" || selectedCards.length === 0 || (gameState.turn !== myIndex && getLastTrick() === null) || !isBomb(identifyTrick(selectedCards, getLastTrick())?.type) || !canCoverUp(identifyTrick(selectedCards, getLastTrick()), getLastTrick())}
-        >
-          Play Bomb
-        </button>
-        <button
-          className="btn-game btn-pass"
-          onClick={handlePass}
-          disabled={gameState.phaseStatus !== "PLAYING" || gameState.turn !== myIndex || getLastTrick() === null}
-        >
-          Pass
-        </button>
-        <button
-          className="btn-game btn-large-tichu"
-          onClick={() => stomp.publish(`/app/rooms/${roomId}/game/tichu/large-tichu`, { isLargeTichuDeclared: true })}
-          disabled={gameState.roundStatus !== 'WAITING_LARGE_TICHU' || (gameState.players[myIndex] && gameState.players[myIndex].tichuDeclaration !== null)}
-        >
-          Large Tichu
-        </button>
-        <button
-          className="btn-game btn-pass-large-tichu"
-          onClick={() => stomp.publish(`/app/rooms/${roomId}/game/tichu/large-tichu`, { isLargeTichuDeclared: false })}
-          disabled={gameState.roundStatus !== 'WAITING_LARGE_TICHU' || (gameState.players[myIndex] && gameState.players[myIndex].tichuDeclaration !== null)}
-        >
-          Large Tichu Pass
-        </button>
-        <button
-          className="btn-game btn-small-tichu"
-          onClick={() => stomp.publish(`/app/rooms/${roomId}/game/tichu/small-tichu`, {})}
-          disabled={gameState.hand.length !== 14 || (gameState.players[myIndex] && (gameState.players[myIndex].tichuDeclaration === 'LARGE' || gameState.players[myIndex].tichuDeclaration === 'SMALL'))}
-        >
-          Small Tichu
-        </button>
-        {gameState.roundStatus === 'EXCHANGING' && (
-          <div className="exchange-controls">
-            <button
-              className="btn-game btn-exchange"
-              onClick={() => handleExchange('left')}
-              disabled={selectedCards.length !== 1 || !!exchangeSelection.left}
-            >
-              To Left
-            </button>
-            <button
-              className="btn-game btn-exchange"
-              onClick={() => handleExchange('mid')}
-              disabled={selectedCards.length !== 1 || !!exchangeSelection.mid}
-            >
-              To Partner
-            </button>
-            <button
-              className="btn-game btn-exchange"
-              onClick={() => handleExchange('right')}
-              disabled={selectedCards.length !== 1 || !!exchangeSelection.right}
-            >
-              To Right
-            </button>
-          </div>
-        )}
-        {gameState.phaseStatus === 'WAITING_DRAGON_SELECTION' && gameState.turn === myIndex && (
-          <div className="dragon-controls">
-            <button
-              className="btn-game btn-dragon-give"
-              onClick={() => handleSelectDragonReceiver(false)}
-            >
-              Give Dragon to Left ({getPlayerAt(3)?.name})
-            </button>
-            <button
-              className="btn-game btn-dragon-give"
-              onClick={() => handleSelectDragonReceiver(true)}
-            >
-              Give Dragon to Right ({getPlayerAt(1)?.name})
-            </button>
-          </div>
-        )}
-      </div>
       {scoreModalType && (
         <ScoreModal
           scoresHistory={gameState.scoresHistory}
