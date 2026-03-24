@@ -518,6 +518,7 @@ const TichuPage = ({ roomId, stomp, chatMessages }) => {
   }
 
   const getTrickLabel = (trick) => {
+    if (trick === null) return null;
     switch (trick.type) {
       case TrickType.SINGLE:
         const card = trick.cards[0];
