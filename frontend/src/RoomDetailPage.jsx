@@ -107,11 +107,16 @@ const RoomDetailPage = () => {
   useEffect(() => {
     if (!user) return;
 
-    const handleGameStart = (message) => {
+    const handleTichuMessage = (message) => {
       if (message.type === 'START') {
         setRoom(prev => ({
           ...prev,
           hasGameStarted: true,
+        }));
+      } else if (message.type === 'SET_RULE') {
+        setRoom(prev => ({
+          ...prev,
+          gameRule: message.data
         }));
       }
     };
@@ -121,7 +126,7 @@ const RoomDetailPage = () => {
 
     stomp.subscribe(`/topic/rooms/${roomId}/members`, handleMemberChange);
     stomp.subscribe(`/topic/rooms/${roomId}/chat`, handleReceiveChatMessage);
-    stomp.subscribe(`/user/${user.id}/queue/game/tichu`, handleGameStart);
+    stomp.subscribe(`/user/${user.id}/queue/game/tichu`, handleTichuMessage);
     stomp.subscribe(`/user/${user.id}/queue/errors`, handleError);
 
     api.get('/auth/issue/web-socket-token')
@@ -131,7 +136,7 @@ const RoomDetailPage = () => {
     return () => {
       stomp.unsubscribe(`/topic/rooms/${roomId}/members`, handleMemberChange);
       stomp.unsubscribe(`/topic/rooms/${roomId}/chat`, handleReceiveChatMessage);
-      stomp.unsubscribe(`/user/${user.id}/queue/game/tichu`, handleGameStart);
+      stomp.unsubscribe(`/user/${user.id}/queue/game/tichu`, handleTichuMessage);
       stomp.unsubscribe(`/user/${user.id}/queue/errors`, handleError);
       stomp.disconnect();
     };
@@ -140,6 +145,29 @@ const RoomDetailPage = () => {
   const handleGameStartRequest = () => {
     stomp.publish(`/app/rooms/${roomId}/game/tichu/start`, {});
   }
+
+  const handleSetRule = (newRule) => {
+    stomp.publish(`/app/rooms/${roomId}/game/tichu/set-rule`, newRule);
+  };
+
+  const handleWinningScoreChange = (score) => {
+    const newRule = {
+      ...room.gameRule,
+      winningScore: score
+    };
+    handleSetRule(newRule);
+  };
+
+  const handleTeamChange = (member, team) => {
+    const newRule = {
+      ...room.gameRule,
+      teamAssignment: {
+        ...room.gameRule.teamAssignment,
+        [member.id]: team
+      }
+    };
+    handleSetRule(newRule);
+  };
 
   if (loading || room === null) {
     return <div style={{ padding: '20px' }}>Loading...</div>;
@@ -161,6 +189,21 @@ const RoomDetailPage = () => {
 
   const canStartGame = room.gameRule.minPlayers <= room.members.length
     && room.members.length <= room.gameRule.maxPlayers;
+
+  const formatWinningScore = (winningScore) => {
+    switch (winningScore) {
+      case 'ZERO':
+        return 'Single Round';
+      case 'TWO_HUNDRED':
+        return '200';
+      case 'FIVE_HUNDRED':
+        return '500';
+      case 'ONE_THOUSAND':
+        return '1000';
+      default:
+        return '';
+    }
+  }
 
   return (
     <div className="room-detail-container content">
@@ -188,8 +231,40 @@ const RoomDetailPage = () => {
           <div className="info-card">
             <h3>Rules</h3>
             <div className="rule-box">
-              <p>TODO</p>
-              {<pre>{JSON.stringify(room.gameRule, null, 2)}</pre>}
+              <div className="rule-item">
+                <span>Winning Score</span>
+                <div className="rule-button-group">
+                  {['ZERO', 'TWO_HUNDRED', 'FIVE_HUNDRED', 'ONE_THOUSAND'].map((score) => (
+                    <button
+                      key={score}
+                      className={`rule-button ${room.gameRule.winningScore === score ? 'active' : ''}`}
+                      onClick={() => handleWinningScoreChange(score)}
+                    >
+                      {formatWinningScore(score) || score}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="rule-item">
+                <span>Team selection</span>
+                <div className="rule-item-box">
+                  {room.members.map((member) => (
+                    <div className="rule-item">
+                      <span>{member.name}</span>
+                      <div className="rule-button-group">
+                        {['RED', 'NONE', 'BLUE'].map((team) => (
+                          <button
+                            className={`rule-button team-${team.toLowerCase()} ${room.gameRule.teamAssignment?.[member.id] === team || (!room.gameRule.teamAssignment?.[member.id] && team === 'NONE') ? 'active' : ''}`}
+                            onClick={() => handleTeamChange(member, team)}
+                          >
+                            {team === 'NONE' ? 'Auto' : team}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>
