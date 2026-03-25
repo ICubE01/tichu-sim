@@ -649,7 +649,8 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }) => {
           {p.tichuDeclaration !== null && p.tichuDeclaration !== 'NONE' &&
             <div className="tichu-declaration">{p.tichuDeclaration}</div>}
           {isMyTurn && <div className="status-turn">Turn</div>}
-          {p.passed && <div className="status-pass">PASS</div>}
+          {(p.passed || gameState.roundStatus === 'WAITING_LARGE_TICHU' && p.tichuDeclaration === 'NONE') &&
+            <div className="status-pass">PASS</div>}
         </div>
         {position !== 'bottom' && (
           <div className="hand">
@@ -784,12 +785,13 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }) => {
         {/* Bottom Player (Me) */}
         <div className="player-section player-bottom">
           <div className="player-info">
-            <div className={`player-name team-${gameState.players[myIndex]?.team}`}>{user.name}</div>
+            <div className={`player-name team-${playerMe?.team}`}>{user.name}</div>
             <div className="card-count">{gameState.hand.length} Cards</div>
-            {gameState.players[myIndex] && gameState.players[myIndex].tichuDeclaration !== null && gameState.players[myIndex].tichuDeclaration !== 'NONE' &&
-              <div className="tichu-declaration">{gameState.players[myIndex].tichuDeclaration}</div>}
+            {playerMe && playerMe.tichuDeclaration !== null && playerMe.tichuDeclaration !== 'NONE' &&
+              <div className="tichu-declaration">{playerMe.tichuDeclaration}</div>}
             {gameState.turn === myIndex && <div className="status-turn">Turn</div>}
-            {gameState.players[myIndex] && gameState.players[myIndex].passed && <div className="status-pass">PASS</div>}
+            {playerMe && (playerMe.passed || gameState.roundStatus === 'WAITING_LARGE_TICHU' && playerMe.tichuDeclaration === 'NONE') &&
+              <div className="status-pass">PASS</div>}
           </div>
           <div className="controls">
             {canDeclareLargeTichu &&
