@@ -10,10 +10,13 @@ public class Member {
 
     @Setter
     private Room room;
+    @Setter
+    private int seq;
 
     public Member(Long id, String name) {
         this.id = id;
         this.name = name;
         this.room = null;
+        this.seq = 0;
     }
 }

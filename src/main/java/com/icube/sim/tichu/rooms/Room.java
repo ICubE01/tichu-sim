@@ -15,6 +15,7 @@ public class Room {
     @Getter
     private final String name;
     private final Map<Long, Member> members;
+    private int memberCounter = 0;
     @Getter
     private final GameName gameName;
     private final GameRuleWrapper gameRuleWrapper;
@@ -46,6 +47,7 @@ public class Room {
 
         members.put(member.getId(), member);
         member.setRoom(this);
+        member.setSeq(++memberCounter);
     }
 
     @Locked.Write
