@@ -93,7 +93,7 @@ const WishModal = ({ onSelect, onClose }) => {
   );
 };
 
-const TichuPage = ({ roomId, stomp, chatMessages }) => {
+const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }) => {
   const { user } = useAuth();
 
   const [gameState, setGameState] = useState({
@@ -878,7 +878,13 @@ const TichuPage = ({ roomId, stomp, chatMessages }) => {
           scoresHistory={gameState.scoresHistory}
           players={gameState.players}
           type={scoreModalType}
-          onClose={() => setScoreModalType(null)}
+          onClose={() => {
+            if (scoreModalType === 'ROUND_END') {
+              setScoreModalType(null);
+            } else {
+              onGameEnd();
+            }
+          }}
         />
       )}
       {isWishModalOpen && (

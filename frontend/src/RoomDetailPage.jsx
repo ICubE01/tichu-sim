@@ -146,6 +146,12 @@ const RoomDetailPage = () => {
       roomId={room.id}
       stomp={stomp}
       chatMessages={chatMessages}
+      onGameEnd={() => {
+        setRoom(prev => ({
+          ...prev,
+          hasGameStarted: false,
+        }))
+      }}
     />
   }
 
