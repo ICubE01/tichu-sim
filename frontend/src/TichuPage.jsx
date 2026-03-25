@@ -708,18 +708,33 @@ const TichuPage = ({ roomId, stomp, chatMessages }) => {
               Wish: {formatRank(gameState.wish)}
             </div>
           )}
-          {
-            getLastTrick() ? (
-              <>
-                <div className="played-by">Played by: {gameState.players[getLastTrick().playerIndex]?.name}</div>
-                <div className="played-cards">
-                  {sortCards(getLastTrick().cards || []).map(c => renderCard(c, false))}
-                </div>
-                <div className="played-trick-label">{getTrickLabel(getLastTrick())}</div>
-              </>
-            ) : (
-              <div className="trick-placeholder">Trick Area</div>
-            )}
+          {getLastTrick() &&
+            <>
+              <div className="played-by">Played by: {gameState.players[getLastTrick().playerIndex]?.name}</div>
+              <div className="played-cards">
+                {sortCards(getLastTrick().cards || []).map(c => renderCard(c, false))}
+              </div>
+              <div className="played-trick-label">{getTrickLabel(getLastTrick())}</div>
+            </>}
+          {gameState.roundStatus === 'EXCHANGING' && (
+            <div className="exchange-summary">
+              <div className="exchange-slot">
+                <div className="slot-label">To Left</div>
+                {exchangeSelection.left ? renderCard(exchangeSelection.left, false) :
+                  <div className="card card-placeholder">?</div>}
+              </div>
+              <div className="exchange-slot">
+                <div className="slot-label">To Partner</div>
+                {exchangeSelection.mid ? renderCard(exchangeSelection.mid, false) :
+                  <div className="card card-placeholder">?</div>}
+              </div>
+              <div className="exchange-slot">
+                <div className="slot-label">To Right</div>
+                {exchangeSelection.right ? renderCard(exchangeSelection.right, false) :
+                  <div className="card card-placeholder">?</div>}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Bottom Player (Me) */}
@@ -810,25 +825,6 @@ const TichuPage = ({ roomId, stomp, chatMessages }) => {
           <div className="hand">
             {sortCards(gameState.hand).map(card => renderCard(card))}
           </div>
-          {gameState.roundStatus === 'EXCHANGING' && (
-            <div className="exchange-summary">
-              <div className="exchange-slot">
-                <div className="slot-label">To Left</div>
-                {exchangeSelection.left ? renderCard(exchangeSelection.left, false) :
-                  <div className="card-placeholder">?</div>}
-              </div>
-              <div className="exchange-slot">
-                <div className="slot-label">To Partner</div>
-                {exchangeSelection.mid ? renderCard(exchangeSelection.mid, false) :
-                  <div className="card-placeholder">?</div>}
-              </div>
-              <div className="exchange-slot">
-                <div className="slot-label">To Right</div>
-                {exchangeSelection.right ? renderCard(exchangeSelection.right, false) :
-                  <div className="card-placeholder">?</div>}
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
