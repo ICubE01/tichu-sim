@@ -14,6 +14,122 @@ import dragonImg from './assets/tichu/dragon.png';
 import phoenixImg from './assets/tichu/phoenix.png';
 import sparrowImg from './assets/tichu/sparrow.png';
 
+const formatRank = (rank) => {
+  if (rank === 11) return 'J';
+  if (rank === 12) return 'Q';
+  if (rank === 13) return 'K';
+  if (rank === 14) return 'A';
+  return rank;
+};
+
+const Card = ({ card, isSelected, onClick, isSelectable = false }) => {
+  const getSuitIcon = (suit) => {
+    switch (suit) {
+      case 'SPADE': return '♠';
+      case 'HEART': return '♥';
+      case 'DIAMOND': return '♦';
+      case 'CLUB': return '♣';
+      default: return '';
+    }
+  };
+
+  const isSpecial = card.type !== CardType.STANDARD;
+  const suitIcon = getSuitIcon(card.suit);
+  const rankLabel = isSpecial ? null : formatRank(card.rank);
+
+  let centerContent = null;
+  if (isSpecial) {
+    let imgSrc = null;
+    switch (card.type) {
+      case CardType.SPARROW: imgSrc = sparrowImg; break;
+      case CardType.PHOENIX: imgSrc = phoenixImg; break;
+      case CardType.DRAGON: imgSrc = dragonImg; break;
+      case CardType.DOG: imgSrc = dogImg; break;
+      default: break;
+    }
+    if (imgSrc) {
+      centerContent = <img src={imgSrc} alt={card.type} className="card-image" />;
+    } else {
+      centerContent = <span className="special-label">{card.type}</span>;
+    }
+  } else {
+    centerContent = <span className="card-center-icon">{suitIcon}</span>;
+  }
+
+  return (
+    <div
+      key={`${card.type}-${card.suit}-${card.rank}`}
+      className={`card ${isSelected ? 'selected' : ''} suit-${card.suit} ${isSpecial ? 'special-card' : ''} ${isSelectable ? 'selectable' : ''}`}
+      onClick={onClick}
+    >
+      <div className="card-top">
+        {rankLabel && <span className="card-rank">{rankLabel}</span>}
+        {suitIcon && <span className="card-suit">{suitIcon}</span>}
+        {isSpecial && <span className="special-tiny-label">{card.type}</span>}
+      </div>
+      <div className="card-center">
+        {centerContent}
+      </div>
+      <div className="card-bottom">
+        {rankLabel && <span className="card-rank">{rankLabel}</span>}
+        {suitIcon && <span className="card-suit">{suitIcon}</span>}
+        {isSpecial && <span className="special-tiny-label">{card.type}</span>}
+      </div>
+    </div>
+  );
+};
+
+const ExchangeResultModal = ({ result, players, myIndex, onClose }) => {
+  if (!result) return null;
+
+  const getPartnerIndex = (idx) => (idx + 2) % 4;
+  const getLeftIndex = (idx) => (idx + 3) % 4;
+  const getRightIndex = (idx) => (idx + 1) % 4;
+
+  const exchanges = [
+    { label: 'Left', index: getLeftIndex(myIndex), gave: result.gaveToLeft, received: result.receivedFromLeft },
+    { label: 'Partner', index: getPartnerIndex(myIndex), gave: result.gaveToMid, received: result.receivedFromMid },
+    { label: 'Right', index: getRightIndex(myIndex), gave: result.gaveToRight, received: result.receivedFromRight },
+  ];
+
+  return (
+    <div className="exchange-modal-overlay">
+      <div className="exchange-modal-content">
+        <h2>Exchange Results</h2>
+        <div className="exchange-results-container">
+          <div className="exchange-section">
+            <h3>You Gave</h3>
+            <div className="exchange-grid">
+              {exchanges.map((ex, i) => (
+                <div key={`gave-${i}`} className="exchange-item">
+                  <div className="target-player-name">{players[ex.index]?.name || ex.label}</div>
+                  <div className="card-wrapper">
+                    {ex.gave ? <Card card={ex.gave} /> : <div className="card card-placeholder">?</div>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="exchange-section">
+            <h3>You Received</h3>
+            <div className="exchange-grid">
+              {exchanges.map((ex, i) => (
+                <div key={`received-${i}`} className="exchange-item">
+                  <div className="target-player-name">{players[ex.index]?.name || ex.label}</div>
+                  <div className="card-wrapper">
+                    {ex.received ? <Card card={ex.received} /> : <div className="card card-placeholder">?</div>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        <button className="btn-modal-close" onClick={onClose}>OK</button>
+      </div>
+    </div>
+  );
+};
+
 const ScoreModal = ({ scoresHistory, players, type, onClose }) => {
   if (!type) return null;
 
@@ -112,6 +228,9 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }) => {
   const [exchangeSelection, setExchangeSelection] = useState({ left: null, mid: null, right: null });
   const [scoreModalType, setScoreModalType] = useState(null); // null, 'ROUND_END', 'END'
   const [isWishModalOpen, setIsWishModalOpen] = useState(false);
+  const [isExchangeModalOpen, setIsExchangeModalOpen] = useState(false);
+  const [exchangeResult, setExchangeResult] = useState(null);
+
   const messageQueue = useRef([]);
   const isPaused = useRef(false);
   const handleTichuMessageRef = useRef(null);
@@ -229,6 +348,8 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }) => {
         break;
       case 'EXCHANGE':
         setExchangeSelection({ left: null, mid: null, right: null });
+        setExchangeResult(data);
+        setIsExchangeModalOpen(true);
         setGameState(prev => {
           const cardsToExclude = [data.gaveToLeft, data.gaveToMid, data.gaveToRight].filter(Boolean);
           const newHand = excludeCards(prev.hand, cardsToExclude);
@@ -528,14 +649,6 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }) => {
     }
   };
 
-  const formatRank = (rank) => {
-    if (rank === 11) return 'J';
-    if (rank === 12) return 'Q';
-    if (rank === 13) return 'K';
-    if (rank === 14) return 'A';
-    return rank;
-  }
-
   const getTrickLabel = (trick) => {
     if (trick === null) return null;
     switch (trick.type) {
@@ -582,59 +695,14 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }) => {
   };
 
   const renderCard = (card, isSelectable = true) => {
-    const getSuitIcon = (suit) => {
-      switch (suit) {
-        case 'SPADE': return '♠';
-        case 'HEART': return '♥';
-        case 'DIAMOND': return '♦';
-        case 'CLUB': return '♣';
-        default: return '';
-      }
-    };
-
-    const isSpecial = card.type !== CardType.STANDARD;
-    const suitIcon = getSuitIcon(card.suit);
-    const rankLabel = isSpecial ? null : formatRank(card.rank);
-
-    let centerContent = null;
-    if (isSpecial) {
-      let imgSrc = null;
-      switch (card.type) {
-        case CardType.SPARROW: imgSrc = sparrowImg; break;
-        case CardType.PHOENIX: imgSrc = phoenixImg; break;
-        case CardType.DRAGON: imgSrc = dragonImg; break;
-        case CardType.DOG: imgSrc = dogImg; break;
-        default: break;
-      }
-      if (imgSrc) {
-        centerContent = <img src={imgSrc} alt={card.type} className="card-image" />;
-      } else {
-        centerContent = <span className="special-label">{card.type}</span>;
-      }
-    } else {
-      centerContent = <span className="card-center-icon">{suitIcon}</span>;
-    }
-
     return (
-      <div
+      <Card
         key={`${card.type}-${card.suit}-${card.rank}`}
-        className={`card ${includesCard(selectedCards, card) ? 'selected' : ''} suit-${card.suit} ${isSpecial ? 'special-card' : ''}`}
+        card={card}
+        isSelected={includesCard(selectedCards, card)}
+        isSelectable={isSelectable}
         onClick={() => isSelectable && toggleCardSelection(card)}
-      >
-        <div className="card-top">
-          {rankLabel && <span className="card-rank">{rankLabel}</span>}
-          {suitIcon && <span className="card-suit">{suitIcon}</span>}
-          {isSpecial && <span className="special-tiny-label">{card.type}</span>}
-        </div>
-        <div className="card-center">
-          {centerContent}
-        </div>
-        <div className="card-bottom">
-          {rankLabel && <span className="card-rank">{rankLabel}</span>}
-          {suitIcon && <span className="card-suit">{suitIcon}</span>}
-          {isSpecial && <span className="special-tiny-label">{card.type}</span>}
-        </div>
-      </div>
+      />
     );
   };
 
@@ -695,6 +763,11 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }) => {
 
   const canPlayCards = gameState.phaseStatus === "PLAYING"
     && myTrick && canCoverUp(myTrick, getLastTrick()) && (gameState.turn === myIndex || isBomb(myTrick.type) && getLastTrick() !== null);
+
+  const closeExchangeModal = () => {
+    setIsExchangeModalOpen(false);
+    setExchangeResult(null);
+  };
 
   return (
     <div className="tichu-game-container">
@@ -886,6 +959,14 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }) => {
               onGameEnd();
             }
           }}
+        />
+      )}
+      {isExchangeModalOpen && (
+        <ExchangeResultModal
+          result={exchangeResult}
+          players={gameState.players}
+          myIndex={myIndex}
+          onClose={closeExchangeModal}
         />
       )}
       {isWishModalOpen && (
