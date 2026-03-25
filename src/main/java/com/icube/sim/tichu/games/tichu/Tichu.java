@@ -57,6 +57,8 @@ public class Tichu extends AbstractGame {
     }
 
     private static Player[] initPlayers(TichuRule rule, Map<Long, Member> members) {
+        assert members.size() == 4;
+
         var memberIds = new ArrayList<>(members.keySet());
         Collections.shuffle(memberIds);
         var teams = rule.getDeterminedTeams(memberIds);

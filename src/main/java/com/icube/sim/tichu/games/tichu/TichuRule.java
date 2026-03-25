@@ -20,6 +20,16 @@ public record TichuRule(WinningScore winningScore, Map<Long, Team> teamAssignmen
         return GameName.TICHU;
     }
 
+    @Override
+    public int getMinPlayers() {
+        return 4;
+    }
+
+    @Override
+    public int getMaxPlayers() {
+        return 4;
+    }
+
     public Map<Long, Team> getDeterminedTeams(List<Long> userIds) {
         assert userIds.size() == 4;
 

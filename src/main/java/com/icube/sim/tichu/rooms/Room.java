@@ -38,7 +38,7 @@ public class Room {
     @Locked.Write
     public void addMember(Member member) {
         assert !members.containsKey(member.getId());
-        if (members.size() == 4) {
+        if (members.size() >= getGameRule().getMaxPlayers()) {
             throw new TooManyMembersException();
         }
         if (hasGameStarted()) {
@@ -84,9 +84,6 @@ public class Room {
 
     @Locked.Write
     public void startGame() {
-        if (members.size() != 4) {
-            throw new InvalidMemberCountException();
-        }
         if (hasGameStarted()) {
             throw new GameHasAlreadyStartedException();
         }
