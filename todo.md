@@ -9,6 +9,7 @@
 * 방 생성 시 게임 이름(GameName) 받기, prompt 대체
 * 방장만 게임 시작, 룰 변경 가능하게 하기
   * 준비가 되어야 게임 시작 가능
+* 유저 이름, 비밀번호 수정 기능
 * 언어 선택 기능
 * 라이트/다크 테마
 * preserve path and navigate after login
