@@ -1,0 +1,11 @@
+version: 1.0
+runtime: corretto21
+build:
+  commands:
+    build:
+      - chmod +x mvnw
+      - ./mvnw clean package -DskipTests
+run:
+  command: java -jar target/tichu-sim-1.0.0.jar
+  network:
+    port: 8080
