@@ -2,9 +2,9 @@ spring:
   application:
     name: tichu-sim
   datasource:
-    url: jdbc:mysql://localhost:3306/tichu?createDatabaseIfNotExist=true
-    username: root
-    password: MyPassword!
+    url: ${DATASOURCE_URL}
+    username: ${DATASOURCE_USERNAME}
+    password: ${DATASOURCE_PASSWORD}
   jpa:
     show-sql: true
   jwt:
@@ -13,6 +13,6 @@ spring:
     refreshTokenExpiration: 7200  # 2 hrs
     webSocketTokenExpiration: 60  # 1 min
   cors:
-    allowed-origin: http://localhost:5173
+    allowed-origin: ${CORS_ALLOWED_ORIGIN}
   rooms:
     id-length: 5
