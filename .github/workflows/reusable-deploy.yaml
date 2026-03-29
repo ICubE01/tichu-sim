@@ -1,0 +1,55 @@
+name: Reusable Deploy Lightsail
+
+on:
+  workflow_call:
+    secrets:
+      SSH_HOST:
+        required: true
+      SSH_USER:
+        required: true
+      SSH_KEY:
+        required: true
+      GH_PAT:
+        required: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Copy docker-compose.yaml to Lightsail
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          source: "docker-compose.yaml"
+          target: "~/tichu-sim/"
+
+      - name: SSH and Deploy
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            mkdir -p ~/tichu-sim
+            cd ~/tichu-sim
+
+            # Check if .env file exists
+            if [ ! -f .env ]; then
+              echo "No .env file exists."
+              exit 1
+            fi
+
+            # Log in to GHCR
+            echo "${{ secrets.GH_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            # Pull and Run
+            docker-compose pull
+            docker-compose up -d
+
+            # Clean up old images
+            docker image prune -f
