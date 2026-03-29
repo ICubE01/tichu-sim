@@ -31,7 +31,7 @@ jobs:
           chmod +x mvnw
           ./mvnw clean test
         env:
-          DATASOURCE_URL: jdbc:mysql://localhost:3306/tichu
+          DATASOURCE_URL: jdbc:mysql://localhost:3306/tichu?createDatabaseIfNotExist=true
           DATASOURCE_USERNAME: root
           DATASOURCE_PASSWORD: rootpasswd
           JWT_SECRET: dummy_secret
