@@ -6,9 +6,18 @@ on:
 jobs:
   check-backend:
     runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8
+        env:
+          MYSQL_ROOT_PASSWORD: rootpasswd
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up JDK 21
         uses: actions/setup-java@v5
@@ -21,6 +30,12 @@ jobs:
         run: |
           chmod +x mvnw
           ./mvnw clean test
+        env:
+          DATASOURCE_URL: jdbc:mysql://localhost:3306/tichu
+          DATASOURCE_USERNAME: root
+          DATASOURCE_PASSWORD: rootpasswd
+          JWT_SECRET: dummy_secret
+          CORS_ALLOWED_ORIGIN: http://localhost
 
   check-frontend:
     runs-on: ubuntu-latest
