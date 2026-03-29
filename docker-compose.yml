@@ -17,7 +17,7 @@ services:
 
   # 2. Backend (Spring Boot)
   backend:
-    image: ghcr.io/icube-/tichu-sim-backend:latest
+    image: ghcr.io/icube01/tichu-sim-backend:latest
     build: .
     container_name: tichu-sim-backend
     restart: always
@@ -30,7 +30,7 @@ services:
 
   # 3. Frontend (React + Nginx)
   frontend:
-    image: ghcr.io/icube-/tichu-sim-frontend:latest
+    image: ghcr.io/icube01/tichu-sim-frontend:latest
     build: ./frontend
     container_name: tichu-sim-frontend
     restart: always
