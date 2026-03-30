@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { useAuth } from "./useAuth.jsx";
+import { useAuth } from "./useAuth.tsx";
 import {
   areCardsEqual,
   includesCard,

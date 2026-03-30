@@ -1,6 +1,6 @@
 import axios from 'axios';
 import {useEffect} from 'react';
-import {useAuth} from './useAuth.jsx';
+import {useAuth} from './useAuth.tsx';
 
 const api = axios.create({
   baseURL: '/api',

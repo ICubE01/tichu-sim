@@ -1,4 +1,4 @@
-import {useAxios} from "./useAxios.jsx";
+import {useAxios} from "./useAxios.tsx";
 import {HttpStatusCode} from "axios";
 
 export const useRoom = () => {

@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {useNavigate} from 'react-router-dom';
-import {useRoom} from "./useRoom.jsx";
+import {useRoom} from "./useRoom.tsx";
 import './HomePage.css';
 
 const HomePage = () => {

@@ -1,6 +1,6 @@
 import React from 'react';
 import {BrowserRouter, Routes, Route, Navigate} from 'react-router-dom';
-import {AuthProvider, useAuth} from './useAuth.jsx';
+import {AuthProvider, useAuth} from './useAuth.tsx';
 import LoginPage from './LoginPage';
 import SignupPage from './SignupPage';
 import NavBar from "./NavBar";

@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import './RoomDetailPage.css';
-import { useAuth } from './useAuth.jsx';
-import { useAxios } from "./useAxios.jsx";
-import { useRoom } from "./useRoom.jsx";
-import { useStomp } from "./useStomp.jsx"
-import TichuPage from "./TichuPage.jsx";
+import { useAuth } from './useAuth.tsx';
+import { useAxios } from "./useAxios.tsx";
+import { useRoom } from "./useRoom.tsx";
+import { useStomp } from "./useStomp.tsx"
+import TichuPage from "./TichuPage.tsx";
 
 const RoomDetailPage = () => {
   const { roomId } = useParams();

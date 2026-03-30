@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {useAuth} from './useAuth.jsx';
+import {useAuth} from './useAuth.tsx';
 import './NavBar.css';
 
 const NavBar = () => {
