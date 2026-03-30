@@ -1,6 +1,6 @@
 import axios from 'axios';
-import {useEffect} from 'react';
-import {useAuth} from './useAuth.tsx';
+import { useEffect } from 'react';
+import { useAuth } from './useAuth.tsx';
 
 const api = axios.create({
   baseURL: '/api',
@@ -8,7 +8,7 @@ const api = axios.create({
 });
 
 export const useAxios = () => {
-  const {accessToken, login, logout} = useAuth();
+  const { accessToken, login, logout } = useAuth();
 
   useEffect(() => {
     const requestIntercept = api.interceptors.request.use(
@@ -31,7 +31,7 @@ export const useAxios = () => {
 
         prevRequest.sent = true;
         try {
-          const res = await axios.post('/api/auth/refresh', {}, {withCredentials: true});
+          const res = await axios.post('/api/auth/refresh', {}, { withCredentials: true });
           const newAccessToken = res.data.accessToken;
 
           login(newAccessToken);

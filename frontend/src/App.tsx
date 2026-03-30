@@ -1,6 +1,5 @@
-import React from 'react';
-import {BrowserRouter, Routes, Route, Navigate} from 'react-router-dom';
-import {AuthProvider, useAuth} from './useAuth.tsx';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './useAuth.tsx';
 import LoginPage from './LoginPage';
 import SignupPage from './SignupPage';
 import NavBar from "./NavBar";
@@ -9,7 +8,7 @@ import RoomDetailPage from './RoomDetailPage';
 import './App.css';
 
 const AppContent = () => {
-  const {ready: authReady, accessToken} = useAuth();
+  const { ready: authReady, accessToken } = useAuth();
   if (!authReady) {
     return <div>Authenticating...</div>;
   }

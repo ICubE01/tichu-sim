@@ -1,13 +1,27 @@
-import React, {createContext, useState, useContext, useEffect} from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
 
-const AuthContext = createContext(null);
+interface MeResponse {
+  id: number;
+  name: string;
+}
 
-export const AuthProvider = ({children}) => {
+interface Auth {
+  ready: boolean;
+  accessToken: string | null;
+  user: MeResponse | null;
+  login: (token: string) => void;
+  logout: () => void;
+  refresh: () => Promise<void>;
+}
+
+const AuthContext = createContext<Auth | null>(null);
+
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [ready, setReady] = useState(false);
-  const [accessToken, setAccessToken] = useState(null);
-  const [user, setUser] = useState(null);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [user, setUser] = useState<MeResponse | null>(null);
 
-  const fetchUserInfo = async (token) => {
+  const fetchUserInfo = async (token: string) => {
     try {
       const response = await fetch('/api/auth/me', {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -21,7 +35,7 @@ export const AuthProvider = ({children}) => {
     }
   };
 
-  const login = (token) => {
+  const login = (token: string) => {
     setAccessToken(token);
     fetchUserInfo(token).then();
     setReady(true);
@@ -42,8 +56,14 @@ export const AuthProvider = ({children}) => {
 
       if (response.ok) {
         const data = await response.json();
-        setAccessToken(data.token);
-        await fetchUserInfo(data.token);
+        // Match user's manual change in useAxios where res.data.accessToken is used
+        const newToken = data.accessToken || data.token;
+        if (newToken) {
+          setAccessToken(newToken);
+          await fetchUserInfo(newToken);
+        } else {
+          logout();
+        }
       } else {
         logout();
       }
@@ -61,10 +81,16 @@ export const AuthProvider = ({children}) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ready, accessToken, user, login, logout, refresh}}>
+    <AuthContext.Provider value={{ ready, accessToken, user, login, logout, refresh }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};

@@ -1,8 +1,14 @@
-import { Client } from "@stomp/stompjs";
+import { Client, StompSubscription } from "@stomp/stompjs";
 import { useMemo, useRef } from "react";
 
+interface SubscriptionEntry {
+  destination: string;
+  callback: Function;
+  stompSubscription: StompSubscription | null;
+}
+
 export const useStomp = () => {
-  const subscriptions = useRef([]);
+  const subscriptions = useRef<SubscriptionEntry[]>([]);
 
   const client = useMemo(() => new Client({
     brokerURL: `${window.location.origin.replace('http', 'ws')}/api/ws`,
@@ -15,7 +21,7 @@ export const useStomp = () => {
     },
   }), []);
 
-  client.onConnect = (frame) => {
+  client.onConnect = (_) => {
     subscriptions.current.forEach(entry => {
       entry.stompSubscription = client.subscribe(
         entry.destination,
@@ -26,7 +32,7 @@ export const useStomp = () => {
     });
   }
 
-  const connect = (token) => {
+  const connect = (token: string) => {
     client.connectHeaders.Authorization = `Bearer ${token}`;
     if (!client.active) {
       client.activate();
@@ -37,7 +43,7 @@ export const useStomp = () => {
     client.deactivate().then();
   };
 
-  const subscribe = (destination, callback) => {
+  const subscribe = (destination: string, callback: Function) => {
     const entry = {
       destination,
       callback,
@@ -53,7 +59,7 @@ export const useStomp = () => {
     subscriptions.current.push(entry);
   };
 
-  const unsubscribe = (destination, callback) => {
+  const unsubscribe = (destination: string, callback: Function) => {
     const index = subscriptions.current.findIndex(
       entry => entry.destination === destination && entry.callback === callback
     );
@@ -65,7 +71,7 @@ export const useStomp = () => {
     }
   };
 
-  const publish = (destination, message) => {
+  const publish = (destination: string, message: unknown) => {
     client.publish({
       destination: destination,
       body: JSON.stringify(message)
