@@ -1,9 +1,9 @@
-import React, {useState} from 'react';
-import {useAuth} from './useAuth.tsx';
+import { useState } from 'react';
+import { useAuth } from './useAuth.tsx';
 import './NavBar.css';
 
 const NavBar = () => {
-  const {user, logout} = useAuth();
+  const { user, logout } = useAuth();
   const [showSettings, setShowSettings] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
 
@@ -43,12 +43,12 @@ const NavBar = () => {
 
       {showSettings && (
         <div className="settings-popup">
-          <div style={{display: 'flex', justifyContent: 'space-between'}}>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <strong>Settings</strong>
-            <span style={{cursor: 'pointer'}} onClick={() => setShowSettings(false)}>X</span>
+            <span style={{ cursor: 'pointer' }} onClick={() => setShowSettings(false)}>X</span>
           </div>
           <hr/>
-          <p style={{fontSize: '0.9rem', color: '#666'}}>TODO</p>
+          <p style={{ fontSize: '0.9rem', color: '#666' }}>TODO</p>
         </div>
       )}
     </>
