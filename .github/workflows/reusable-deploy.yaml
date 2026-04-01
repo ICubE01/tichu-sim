@@ -19,13 +19,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
-      - name: Copy docker-compose.yaml to Lightsail
+      - name: Copy deployment files to Lightsail
         uses: appleboy/scp-action@v1
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
-          source: "docker-compose.yaml"
+          source: "docker-compose.yaml,frontend/nginx.conf"
           target: "~/tichu-sim/"
 
       - name: SSH and Deploy
@@ -35,7 +35,9 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            mkdir -p ~/tichu-sim
+            mkdir -p ~/tichu-sim/frontend
+            mkdir -p ~/tichu-sim/certbot/conf
+            mkdir -p ~/tichu-sim/certbot/www
             cd ~/tichu-sim
 
             # Check if .env file exists
@@ -48,8 +50,8 @@ jobs:
             echo "${{ secrets.GH_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
             # Pull and Run
-            docker-compose pull
-            docker-compose up -d
+            docker compose pull
+            docker compose up -d
 
             # Clean up old images
             docker image prune -f
