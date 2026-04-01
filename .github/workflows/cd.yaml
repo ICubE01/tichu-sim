@@ -22,4 +22,3 @@ jobs:
       SSH_USER: ${{ secrets.LIGHTSAIL_SSH_USER }}
       SSH_KEY: ${{ secrets.LIGHTSAIL_SSH_KEY }}
       GH_PAT: ${{ secrets.GH_PAT }}
-      DATASOURCE_PASSWORD: ${{ secrets.DATASOURCE_PASSWORD }}
