@@ -23,13 +23,19 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
 
+      - name: Get Repository Owner in Lowercase
+        run: |
+          echo "REPO_OWNER_LC=${REPO_OWNER,,}" >> ${GITHUB_ENV}
+        env:
+          REPO_OWNER: '${{ github.repository_owner }}'
+
       - name: Build and push Backend
         uses: docker/build-push-action@v7
         with:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/tichu-sim-backend:latest
+          tags: ghcr.io/${{ env.REPO_OWNER_LC }}/tichu-sim-backend:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -39,6 +45,6 @@ jobs:
           context: ./frontend
           file: ./frontend/Dockerfile
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/tichu-sim-frontend:latest
+          tags: ghcr.io/${{ env.REPO_OWNER_LC }}/tichu-sim-frontend:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
