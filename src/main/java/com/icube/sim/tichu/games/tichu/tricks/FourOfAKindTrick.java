@@ -26,11 +26,6 @@ public class FourOfAKindTrick extends Trick {
         rank = standardCards.get(0).rank();
     }
 
-    @Override
-    public TrickType getType() {
-        return TrickType.FOUR_OF_A_KIND;
-    }
-
     public static boolean isFourOfAKindTrick(List<Card> cards) {
         if (cards.size() != 4 || !Cards.areDistinct(cards)) {
             return false;
@@ -41,6 +36,11 @@ public class FourOfAKindTrick extends Trick {
                 && standardCards.get(0).rank() == standardCards.get(1).rank()
                 && standardCards.get(1).rank() == standardCards.get(2).rank()
                 && standardCards.get(2).rank() == standardCards.get(3).rank();
+    }
+
+    @Override
+    public TrickType getType() {
+        return TrickType.FOUR_OF_A_KIND;
     }
 
     public boolean canCoverUp(FourOfAKindTrick other) {

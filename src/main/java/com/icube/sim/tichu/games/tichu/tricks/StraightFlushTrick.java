@@ -35,15 +35,6 @@ public class StraightFlushTrick extends Trick {
         maxRank = standardCards.getLast().rank();
     }
 
-    @Override
-    public TrickType getType() {
-        return TrickType.STRAIGHT_FLUSH;
-    }
-
-    public int length() {
-        return maxRank - minRank + 1;
-    }
-
     public static boolean isStraightFlushTrick(List<Card> cards) {
         if (cards.size() < 5 || cards.size() > 13 || !Cards.areDistinct(cards)) {
             return false;
@@ -64,6 +55,15 @@ public class StraightFlushTrick extends Trick {
         }
 
         return true;
+    }
+
+    @Override
+    public TrickType getType() {
+        return TrickType.STRAIGHT_FLUSH;
+    }
+
+    public int length() {
+        return maxRank - minRank + 1;
     }
 
     public boolean canCoverUp(StraightFlushTrick other) {

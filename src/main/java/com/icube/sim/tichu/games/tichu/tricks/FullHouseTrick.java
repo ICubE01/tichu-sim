@@ -52,11 +52,6 @@ public class FullHouseTrick extends Trick {
         }
     }
 
-    @Override
-    public TrickType getType() {
-        return TrickType.FULL_HOUSE;
-    }
-
     public static boolean isFullHouseTrick(List<Card> cards) {
         if (cards.size() != 5 || !Cards.areDistinct(cards)) {
             return false;
@@ -88,6 +83,11 @@ public class FullHouseTrick extends Trick {
                     // e.g. 22333
                     || standardCards.get(2).rank() == standardCards.get(3).rank());
         }
+    }
+
+    @Override
+    public TrickType getType() {
+        return TrickType.FULL_HOUSE;
     }
 
     public boolean canCoverUp(FullHouseTrick other) {

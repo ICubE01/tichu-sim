@@ -28,11 +28,6 @@ public class PairTrick extends Trick {
         rank = standardCards.get(0).rank();
     }
 
-    @Override
-    public TrickType getType() {
-        return TrickType.PAIR;
-    }
-
     public static boolean isPairTrick(List<Card> cards) {
         if (cards.size() != 2 || !Cards.areDistinct(cards)) {
             return false;
@@ -44,6 +39,11 @@ public class PairTrick extends Trick {
         } else {
             return standardCards.size() == 2 && standardCards.get(0).rank() == standardCards.get(1).rank();
         }
+    }
+
+    @Override
+    public TrickType getType() {
+        return TrickType.PAIR;
     }
 
     public boolean canCoverUp(PairTrick other) {

@@ -30,11 +30,6 @@ public class ThreeOfAKindTrick extends Trick {
         rank = standardCards.get(0).rank();
     }
 
-    @Override
-    public TrickType getType() {
-        return TrickType.THREE_OF_A_KIND;
-    }
-
     public static boolean isThreeOfAKindTrick(List<Card> cards) {
         if (cards.size() != 3 || !Cards.areDistinct(cards)) {
             return false;
@@ -49,6 +44,11 @@ public class ThreeOfAKindTrick extends Trick {
                     && standardCards.get(0).rank() == standardCards.get(1).rank()
                     && standardCards.get(1).rank() == standardCards.get(2).rank();
         }
+    }
+
+    @Override
+    public TrickType getType() {
+        return TrickType.THREE_OF_A_KIND;
     }
 
     public boolean canCoverUp(ThreeOfAKindTrick other) {

@@ -106,15 +106,6 @@ public class StraightTrick extends Trick {
         }
     }
 
-    @Override
-    public TrickType getType() {
-        return TrickType.STRAIGHT;
-    }
-
-    public int length() {
-        return maxRank - minRank + 1;
-    }
-
     public static boolean isStraightTrick(List<Card> cards) {
         if (cards.size() < 5 || cards.size() > 14 || !Cards.areDistinct(cards)) {
             return false;
@@ -197,6 +188,15 @@ public class StraightTrick extends Trick {
         }
 
         return true;
+    }
+
+    @Override
+    public TrickType getType() {
+        return TrickType.STRAIGHT;
+    }
+
+    public int length() {
+        return maxRank - minRank + 1;
     }
 
     public boolean canCoverUp(StraightTrick other) {

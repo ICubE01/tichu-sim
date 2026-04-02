@@ -66,15 +66,6 @@ public class ConsecutivePairsTrick extends Trick {
         maxRank = standardCards.getLast().rank();
     }
 
-    @Override
-    public TrickType getType() {
-        return TrickType.CONSECUTIVE_PAIRS;
-    }
-
-    public int length() {
-        return maxRank - minRank + 1;
-    }
-
     public static boolean isConsecutivePairsTrick(List<Card> cards) {
         if (cards.size() <= 2 || cards.size() % 2 != 0 || !Cards.areDistinct(cards)) {
             return false;
@@ -132,6 +123,15 @@ public class ConsecutivePairsTrick extends Trick {
         }
 
         return true;
+    }
+
+    @Override
+    public TrickType getType() {
+        return TrickType.CONSECUTIVE_PAIRS;
+    }
+
+    public int length() {
+        return maxRank - minRank + 1;
     }
 
     public boolean canCoverUp(ConsecutivePairsTrick other) {
