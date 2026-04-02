@@ -12,20 +12,10 @@ public class PairTrick extends Trick {
 
     public PairTrick(int playerIndex, List<Card> cards) {
         super(playerIndex, cards);
+        assert isPairTrick(cards);
 
-        assert cards.size() == 2;
-        assert Cards.areDistinct(cards);
-
-        var standardCards = Cards.extractStandardCards(cards);
+        rank = Cards.extractStandardCardRanks(cards).getFirst();
         isPhoenixUsed = Cards.containsPhoenix(cards);
-        if (isPhoenixUsed) {
-            assert standardCards.size() == 1;
-        } else {
-            assert standardCards.size() == 2;
-            assert standardCards.get(0).rank() == standardCards.get(1).rank();
-        }
-
-        rank = standardCards.get(0).rank();
     }
 
     public static boolean isPairTrick(List<Card> cards) {
@@ -33,11 +23,11 @@ public class PairTrick extends Trick {
             return false;
         }
 
-        var standardCards = Cards.extractStandardCards(cards);
+        var ranks = Cards.extractStandardCardRanks(cards);
         if (Cards.containsPhoenix(cards)) {
-            return standardCards.size() == 1;
+            return ranks.size() == 1;
         } else {
-            return standardCards.size() == 2 && standardCards.get(0).rank() == standardCards.get(1).rank();
+            return ranks.size() == 2 && ranks.get(0).equals(ranks.get(1));
         }
     }
 
@@ -66,10 +56,8 @@ public class PairTrick extends Trick {
         if (wish <= prevTrick.getRank()) {
             return false;
         }
-        var wishCardCount = Cards.extractStandardCards(hand).stream()
-                .filter(card -> card.rank() == wish)
-                .count();
-        return (Cards.containsPhoenix(hand) && wishCardCount >= 1)
-                || wishCardCount >= 2;
+
+        var wishCardCount = Cards.extractStandardCardRanks(hand).stream().filter(r -> r == wish).count();
+        return (Cards.containsPhoenix(hand) && wishCardCount >= 1) || wishCardCount >= 2;
     }
 }

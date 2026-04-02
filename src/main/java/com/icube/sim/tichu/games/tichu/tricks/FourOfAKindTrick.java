@@ -13,17 +13,9 @@ public class FourOfAKindTrick extends Trick {
 
     public FourOfAKindTrick(int playerIndex, List<Card> cards) {
         super(playerIndex, cards);
+        assert isFourOfAKindTrick(cards);
 
-        assert cards.size() == 4;
-        assert Cards.areDistinct(cards);
-
-        var standardCards = Cards.extractStandardCards(cards);
-        assert standardCards.size() == 4;
-        assert standardCards.get(0).rank() == standardCards.get(1).rank();
-        assert standardCards.get(1).rank() == standardCards.get(2).rank();
-        assert standardCards.get(2).rank() == standardCards.get(3).rank();
-
-        rank = standardCards.get(0).rank();
+        rank = Cards.extractStandardCardRanks(cards).getFirst();
     }
 
     public static boolean isFourOfAKindTrick(List<Card> cards) {
@@ -31,11 +23,11 @@ public class FourOfAKindTrick extends Trick {
             return false;
         }
 
-        var standardCards = Cards.extractStandardCards(cards);
-        return standardCards.size() == 4
-                && standardCards.get(0).rank() == standardCards.get(1).rank()
-                && standardCards.get(1).rank() == standardCards.get(2).rank()
-                && standardCards.get(2).rank() == standardCards.get(3).rank();
+        var ranks = Cards.extractStandardCardRanks(cards);
+        return ranks.size() == 4
+                && ranks.get(0).equals(ranks.get(1))
+                && ranks.get(1).equals(ranks.get(2))
+                && ranks.get(2).equals(ranks.get(3));
     }
 
     @Override
@@ -68,9 +60,8 @@ public class FourOfAKindTrick extends Trick {
         if (prevTrick != null && wish <= prevTrick.getRank()) {
             return false;
         }
-        var wishCardCount = Cards.extractStandardCards(hand).stream()
-                .filter(card -> card.rank() == wish)
-                .count();
-        return wishCardCount == 4;
+
+        var wishCardCount = Cards.extractStandardCardRanks(hand).stream().filter(r -> r == wish).count();
+        return wishCardCount >= 4;
     }
 }

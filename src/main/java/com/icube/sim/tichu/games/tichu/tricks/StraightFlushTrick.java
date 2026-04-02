@@ -6,6 +6,7 @@ import com.icube.sim.tichu.games.tichu.cards.StandardCard;
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,23 +17,11 @@ public class StraightFlushTrick extends Trick {
 
     protected StraightFlushTrick(int playerIndex, List<Card> cards) {
         super(playerIndex, cards);
+        assert isStraightFlushTrick(cards);
 
-        assert cards.size() >= 5 && cards.size() <= 13;
-        assert Cards.areDistinct(cards);
-
-        var standardCards = Cards.sortedCards(Cards.extractStandardCards(cards));
-        assert standardCards.size() == cards.size();
-
-        var expectedSuit = standardCards.getFirst().suit();
-        var expectedRank = standardCards.getFirst().rank();
-        for (var card : standardCards) {
-            assert card.suit() == expectedSuit;
-            assert card.rank() == expectedRank;
-            expectedRank++;
-        }
-
-        minRank = standardCards.getFirst().rank();
-        maxRank = standardCards.getLast().rank();
+        var ranks = Cards.extractStandardCardRanks(cards);
+        minRank = Collections.min(ranks);
+        maxRank = Collections.max(ranks);
     }
 
     public static boolean isStraightFlushTrick(List<Card> cards) {
@@ -40,18 +29,18 @@ public class StraightFlushTrick extends Trick {
             return false;
         }
 
-        var standardCards = Cards.sortedCards(Cards.extractStandardCards(cards));
-        if (standardCards.size() != cards.size()) {
+        var standardCards = Cards.extractStandardCards(cards);
+        if (standardCards.size() != cards.size() || !Cards.haveSameSuit(standardCards)) {
             return false;
         }
 
-        var expectedSuit = standardCards.getFirst().suit();
-        var expectedRank = standardCards.getFirst().rank();
-        for (var card : standardCards) {
-            if (card.suit() != expectedSuit || card.rank() != expectedRank) {
+        var ranks = standardCards.stream().map(StandardCard::rank).collect(Collectors.toSet());
+        var minRank = Collections.min(ranks);
+        var maxRank = Collections.max(ranks);
+        for (var r = minRank; r <= maxRank; r++) {
+            if (!ranks.contains(r)) {
                 return false;
             }
-            expectedRank++;
         }
 
         return true;

@@ -2,53 +2,34 @@ package com.icube.sim.tichu.games.tichu.tricks;
 
 import com.icube.sim.tichu.games.tichu.cards.Card;
 import com.icube.sim.tichu.games.tichu.cards.Cards;
-import com.icube.sim.tichu.games.tichu.cards.StandardCard;
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Getter
 public class FullHouseTrick extends Trick {
     private final int rank;
-    private final boolean isPhoenixUsed;
+    private final @Nullable Integer phoenixRank;
 
     public FullHouseTrick(int playerIndex, List<Card> cards) {
         super(playerIndex, cards);
+        assert isFullHouseTrick(cards);
 
-        assert cards.size() == 5;
-        assert Cards.areDistinct(cards);
-
-        isPhoenixUsed = Cards.containsPhoenix(cards);
-        var standardCards = Cards.sortedCards(Cards.extractStandardCards(cards));
-        if (isPhoenixUsed) {
-            assert standardCards.size() == 4;
-            // Reject 2222P
-            assert standardCards.get(0).rank() != standardCards.get(3).rank();
-            if (standardCards.get(0).rank() == standardCards.get(2).rank()) {
-                // e.g. 2223P
-                assert standardCards.get(0).rank() == standardCards.get(1).rank();
-                rank = standardCards.get(0).rank();
+        var ranks = Cards.extractStandardCardRanks(cards).stream().sorted().toList();
+        rank = ranks.get(2);
+        if (Cards.containsPhoenix(cards)) {
+            if (ranks.get(1).equals(ranks.get(3))) {
+                // e.g. P2333
+                phoenixRank = ranks.getFirst();
             } else {
-                // e.g. 2233P or P2333
-                assert standardCards.get(2).rank() == standardCards.get(3).rank();
-                assert standardCards.get(0).rank() == standardCards.get(1).rank() ||
-                        standardCards.get(1).rank() == standardCards.get(2).rank();
-                rank = standardCards.get(3).rank();
+                // e.g. 2223P, 2233P
+                phoenixRank = ranks.getLast();
             }
         } else {
-            assert standardCards.size() == 5;
-            assert standardCards.get(0).rank() == standardCards.get(1).rank();
-            assert standardCards.get(3).rank() == standardCards.get(4).rank();
-            if (standardCards.get(1).rank() == standardCards.get(2).rank()) {
-                // e.g. 22233
-                rank = standardCards.get(0).rank();
-            } else {
-                // e.g. 22333
-                assert standardCards.get(2).rank() == standardCards.get(3).rank();
-                rank = standardCards.get(4).rank();
-            }
+            phoenixRank = null;
         }
     }
 
@@ -57,31 +38,25 @@ public class FullHouseTrick extends Trick {
             return false;
         }
 
-        var standardCards = Cards.sortedCards(Cards.extractStandardCards(cards));
+        var ranks = Cards.extractStandardCardRanks(cards).stream().sorted().toList();
         if (Cards.containsPhoenix(cards)) {
             // Reject 2222P
-            if (standardCards.size() != 4 || standardCards.get(0).rank() == standardCards.get(3).rank()) {
+            if (ranks.size() != 4 || ranks.get(0).equals(ranks.get(3))) {
                 return false;
             }
 
             // e.g. 2223P
-            return standardCards.get(0).rank() == standardCards.get(1).rank()
-                    && standardCards.get(1).rank() == standardCards.get(2).rank()
+            return ranks.get(0).equals(ranks.get(1)) && ranks.get(1).equals(ranks.get(2))
                     // e.g. 2233P
-                    || standardCards.get(0).rank() == standardCards.get(1).rank()
-                    && standardCards.get(2).rank() == standardCards.get(3).rank()
+                    || ranks.get(0).equals(ranks.get(1)) && ranks.get(2).equals(ranks.get(3))
                     // e.g. P2333
-                    || standardCards.get(1).rank() == standardCards.get(2).rank()
-                    && standardCards.get(2).rank() == standardCards.get(3).rank();
-
+                    || ranks.get(1).equals(ranks.get(2)) && ranks.get(2).equals(ranks.get(3));
         } else {
-            return standardCards.size() == 5
-                    && standardCards.get(0).rank() == standardCards.get(1).rank()
-                    && standardCards.get(3).rank() == standardCards.get(4).rank()
-                    // e.g. 22233
-                    && (standardCards.get(1).rank() == standardCards.get(2).rank()
-                    // e.g. 22333
-                    || standardCards.get(2).rank() == standardCards.get(3).rank());
+            // e.g. 22233, 22333
+            return ranks.size() == 5
+                    && ranks.get(0).equals(ranks.get(1))
+                    && ranks.get(3).equals(ranks.get(4))
+                    && (ranks.get(1).equals(ranks.get(2)) || ranks.get(2).equals(ranks.get(3)));
         }
     }
 
@@ -107,31 +82,27 @@ public class FullHouseTrick extends Trick {
     }
 
     private static boolean canPlayWishCard(int wish, List<Card> hand, FullHouseTrick prevTrick) {
-        var cardCounts = Cards.extractStandardCards(hand).stream()
-                .collect(Collectors.groupingBy(StandardCard::rank, Collectors.counting()));
+        var rankCounts = Cards.extractStandardCardRanks(hand).stream()
+                .collect(Collectors.groupingBy(r -> r, Collectors.counting()));
         var hasPhoenix = Cards.containsPhoenix(hand);
-        long wishCount = cardCounts.getOrDefault(wish, 0L);
+        long wishCount = rankCounts.getOrDefault(wish, 0L);
 
-        // Case A: 위시 카드가 트리플에 속하는 경우 (트리플 랭크 = wish)
-        //   → wish > prevTrick.rank 이어야 함
+        var remainingRankCounts = rankCounts.entrySet().stream()
+                .filter(e -> e.getKey() != wish)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        // Wish cards can be used as a triple
         if (wish > prevTrick.getRank()) {
             if (wishCount >= 3) {
-                // 피닉스를 페어에 사용 가능
-                var hasPair = cardCounts.entrySet().stream()
-                        .filter(e -> e.getKey() != wish)
+                var hasPair = remainingRankCounts.entrySet().stream()
                         .anyMatch(e -> e.getValue() >= 2);
-                var hasPairWithPhoenix = hasPhoenix
-                        && cardCounts.entrySet().stream()
-                                .filter(e -> e.getKey() != wish)
-                                .anyMatch(e -> e.getValue() >= 1);
-                if (hasPair || hasPairWithPhoenix) {
+                var hasSingle = remainingRankCounts.entrySet().stream()
+                        .anyMatch(e -> e.getValue() >= 1);
+                if (hasPair || hasPhoenix && hasSingle) {
                     return true;
                 }
-            }
-            if (hasPhoenix && wishCount >= 2) {
-                // 피닉스는 트리플에 사용 → 페어에 사용 불가
-                var hasPair = cardCounts.entrySet().stream()
-                        .filter(e -> e.getKey() != wish)
+            } else if (hasPhoenix && wishCount >= 2) {
+                var hasPair = remainingRankCounts.entrySet().stream()
                         .anyMatch(e -> e.getValue() >= 2);
                 if (hasPair) {
                     return true;
@@ -139,29 +110,18 @@ public class FullHouseTrick extends Trick {
             }
         }
 
-        // Case B: 위시 카드가 페어에 속하는 경우 (트리플은 다른 랭크)
-        //   → 트리플 랭크 > prevTrick.rank 이어야 함
-        for (var entry : cardCounts.entrySet()) {
-            int tripleRank = entry.getKey();
-            long tripleCount = entry.getValue();
-            if (tripleRank == wish || tripleRank <= prevTrick.getRank()) {
-                continue;
-            }
-
-            if (tripleCount >= 3) {
-                // 피닉스를 페어에 사용 가능
-                if (wishCount >= 2 || hasPhoenix && wishCount >= 1) {
-                    return true;
-                }
-            }
-            if (hasPhoenix && tripleCount >= 2) {
-                // 피닉스는 트리플에 사용 → 페어에 피닉스 사용 불가
-                if (wishCount >= 2) {
-                    return true;
-                }
-            }
+        // Other cards must be used as a triple
+        if (wishCount >= 2) {
+            var hasTriple = remainingRankCounts.entrySet().stream()
+                    .anyMatch(e -> e.getKey() > prevTrick.getRank() && e.getValue() >= 3);
+            var hasPair = remainingRankCounts.entrySet().stream()
+                    .anyMatch(e -> e.getKey() > prevTrick.getRank() && e.getValue() >= 2);
+            return hasTriple || hasPhoenix && hasPair;
+        } else if (hasPhoenix && wishCount >= 1) {
+            return remainingRankCounts.entrySet().stream()
+                    .anyMatch(e -> e.getKey() > prevTrick.getRank() && e.getValue() >= 3);
+        } else {
+            return false;
         }
-
-        return false;
     }
 }

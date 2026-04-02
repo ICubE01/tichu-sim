@@ -1,20 +1,17 @@
 package com.icube.sim.tichu.games.tichu.cards;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.IntStream;
 
 public class Cards {
     public static List<Card> getDeck() {
         var cards = new ArrayList<Card>(56);
 
-        Arrays.stream(CardSuit.values()).forEach(shape -> {
-            IntStream.rangeClosed(2, 14).forEach(number -> {
-                cards.add(new StandardCard(shape, number));
-            });
-        });
+        for (CardSuit suit : CardSuit.values()) {
+            for (int rank = 2; rank <= 14; rank++) {
+                cards.add(new StandardCard(suit, rank));
+            }
+        }
 
         cards.add(new SparrowCard());
         cards.add(new PhoenixCard());
@@ -38,16 +35,17 @@ public class Cards {
         return cards.stream().anyMatch(card -> card instanceof SparrowCard);
     }
 
+    public static List<Integer> extractStandardCardRanks(List<Card> cards) {
+        return cards.stream()
+                .filter(card -> card instanceof StandardCard)
+                .map(card -> ((StandardCard) card).rank())
+                .toList();
+    }
+
     public static List<StandardCard> extractStandardCards(List<Card> cards) {
         return cards.stream()
                 .filter(card -> card instanceof StandardCard)
                 .map(card -> (StandardCard) card)
-                .toList();
-    }
-
-    public static List<StandardCard> sortedCards(List<StandardCard> cards) {
-        return cards.stream()
-                .sorted(Comparator.comparingInt(StandardCard::rank))
                 .toList();
     }
 

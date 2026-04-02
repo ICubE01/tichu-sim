@@ -9,34 +9,49 @@ import java.util.List;
 @Getter
 public class SingleTrick extends Trick {
     private final float rank;
+    private final boolean isPhoenixUsed;
 
     public SingleTrick(int playerIndex, List<Card> cards, @Nullable Trick prevTrick) {
         super(playerIndex, cards);
+        assert isSingleTrick(cards);
 
-        assert cards.size() == 1;
-        assert (prevTrick == null || prevTrick instanceof SingleTrick);
-
-        var card = cards.get(0);
-
-        if (card instanceof StandardCard standardCard) {
-            rank = standardCard.rank();
-        } else if (card instanceof SparrowCard) {
-            rank = 1;
-        } else if (card instanceof PhoenixCard) {
-            if (prevTrick == null) {
-                rank = 1.5f;
-            } else {
-                rank = Math.min(((SingleTrick) prevTrick).getRank() + 0.5f, 15);
+        switch (cards.getFirst()) {
+            case StandardCard standardCard -> {
+                rank = standardCard.rank();
+                isPhoenixUsed = false;
             }
-        } else if (card instanceof DragonCard) {
-            rank = 20;
-        } else {
-            throw new AssertionError();
+            case SparrowCard ignored -> {
+                rank = 1;
+                isPhoenixUsed = false;
+            }
+            case PhoenixCard ignored -> {
+                isPhoenixUsed = true;
+                if (prevTrick == null) {
+                    rank = 1.5f;
+                } else if (prevTrick instanceof SingleTrick prevSingleTrick) {
+                    if (prevSingleTrick.getCard() instanceof DragonCard) {
+                        throw new AssertionError();
+                    } else {
+                        rank = prevSingleTrick.getRank() + 0.5f;
+                    }
+                } else {
+                    throw new AssertionError();
+                }
+            }
+            case DragonCard ignored -> {
+                rank = 20;
+                isPhoenixUsed = false;
+            }
+            case null, default -> throw new AssertionError();
         }
     }
 
+    public static boolean isSingleTrick(List<Card> cards) {
+        return cards.size() == 1 && !(cards.getFirst() instanceof DogCard);
+    }
+
     public Card getCard() {
-        return cards.get(0);
+        return cards.getFirst();
     }
 
     @Override
