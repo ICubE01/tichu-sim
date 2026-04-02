@@ -2,68 +2,77 @@ package com.icube.sim.tichu.games.tichu.tricks;
 
 import com.icube.sim.tichu.games.tichu.cards.Card;
 import com.icube.sim.tichu.games.tichu.cards.Cards;
-import com.icube.sim.tichu.games.tichu.cards.StandardCard;
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Getter
 public class ConsecutivePairsTrick extends Trick {
     private final int minRank;
     private final int maxRank;
-    private final boolean isPhoenixUsed;
+    private final @Nullable Integer phoenixRank;
 
     public ConsecutivePairsTrick(int playerIndex, List<Card> cards) {
         super(playerIndex, cards);
+        assert isConsecutivePairsTrick(cards);
 
-        assert cards.size() > 2 && cards.size() % 2 == 0;
-        assert Cards.areDistinct(cards);
+        var ranks = Cards.extractStandardCardRanks(cards);
+        minRank = Collections.min(ranks);
+        maxRank = Collections.max(ranks);
 
-        isPhoenixUsed = Cards.containsPhoenix(cards);
-        var standardCards = Cards.sortedCards(Cards.extractStandardCards(cards));
-        if (isPhoenixUsed) {
+        if (Cards.containsPhoenix(cards)) {
+            var rankCounts = ranks.stream().collect(Collectors.groupingBy(r -> r, Collectors.counting()));
+            phoenixRank = rankCounts.entrySet().stream()
+                    .filter(e -> e.getValue() != 2)
+                    .map(Map.Entry::getKey)
+                    .findAny().orElseThrow();
+        } else {
+            phoenixRank = null;
+        }
+    }
+
+    public static boolean isConsecutivePairsTrick(List<Card> cards) {
+        if (cards.size() <= 2 || cards.size() % 2 != 0 || !Cards.areDistinct(cards)) {
+            return false;
+        }
+
+        var ranks = Cards.extractStandardCardRanks(cards);
+        var minRank = Collections.min(ranks);
+        var maxRank = Collections.max(ranks);
+        var rankCounts = ranks.stream().collect(Collectors.groupingBy(r -> r, Collectors.counting()));
+        if (Cards.containsPhoenix(cards)) {
             // e.g. 22P344
-            assert standardCards.size() == cards.size() - 1;
-            var expectedRank = standardCards.getFirst().rank();
-            var count = 0;
-            var usedPhoenix = false;
-            for (var card : standardCards) {
-                if (count == 0) {
-                    assert card.rank() == expectedRank;
-                    count = 1;
-                } else {
-                    if (card.rank() == expectedRank) {
-                        expectedRank++;
-                        count = 0;
-                    } else {
-                        assert !usedPhoenix;
-                        assert card.rank() == expectedRank + 1;
-                        expectedRank++;
-                        usedPhoenix = true;
+            if (ranks.size() != cards.size() - 1) {
+                return false;
+            }
+
+            var consumedPhoenix = false;
+            for (int r = minRank; r <= maxRank; r++) {
+                if (rankCounts.getOrDefault(r, 0L) < 2) {
+                    if (consumedPhoenix) {
+                        return false;
                     }
+                    consumedPhoenix = true;
                 }
             }
         } else {
             // e.g. 223344
-            assert standardCards.size() == cards.size();
-            var expectedRank = standardCards.getFirst().rank();
-            var count = 0;
-            for (var card : standardCards) {
-                assert card.rank() == expectedRank;
-                if (count == 0) {
-                    count = 1;
-                } else {
-                    expectedRank++;
-                    count = 0;
-                }
+            if (ranks.size() != cards.size()) {
+                return false;
             }
 
+            for (int r = minRank; r <= maxRank; r++) {
+                if (rankCounts.getOrDefault(r, 0L) < 2) {
+                    return false;
+                }
+            }
         }
 
-        minRank = standardCards.getFirst().rank();
-        maxRank = standardCards.getLast().rank();
+        return true;
     }
 
     @Override
@@ -73,65 +82,6 @@ public class ConsecutivePairsTrick extends Trick {
 
     public int length() {
         return maxRank - minRank + 1;
-    }
-
-    public static boolean isConsecutivePairsTrick(List<Card> cards) {
-        if (cards.size() <= 2 || cards.size() % 2 != 0 || !Cards.areDistinct(cards)) {
-            return false;
-        }
-
-        var standardCards = Cards.sortedCards(Cards.extractStandardCards(cards));
-        if (Cards.containsPhoenix(cards)) {
-            // e.g. 22P344
-            if (standardCards.size() != cards.size() - 1) {
-                return false;
-            }
-
-            var expectedRank = standardCards.getFirst().rank();
-            var count = 0;
-            var usedPhoenix = false;
-            for (var card : standardCards) {
-                if (count == 0) {
-                    if (card.rank() != expectedRank) {
-                        return false;
-                    }
-                    count = 1;
-                } else {
-                    if (card.rank() == expectedRank) {
-                        expectedRank++;
-                        count = 0;
-                    } else {
-                        if (usedPhoenix || card.rank() != expectedRank + 1) {
-                            return false;
-                        }
-                        expectedRank++;
-                        usedPhoenix = true;
-                    }
-                }
-            }
-        } else {
-            // e.g. 223344
-            if (standardCards.size() != cards.size()) {
-                return false;
-            }
-
-            var expectedRank = standardCards.getFirst().rank();
-            var count = 0;
-            for (var card : standardCards) {
-                if (card.rank() != expectedRank) {
-                    return false;
-                }
-
-                if (count == 0) {
-                    count = 1;
-                } else {
-                    expectedRank++;
-                    count = 0;
-                }
-            }
-        }
-
-        return true;
     }
 
     public boolean canCoverUp(ConsecutivePairsTrick other) {
@@ -151,9 +101,9 @@ public class ConsecutivePairsTrick extends Trick {
     }
 
     private static boolean canPlayWishCard(int wish, List<Card> hand, ConsecutivePairsTrick prevTrick) {
-        var cardCounts = Cards.extractStandardCards(hand).stream()
-                .collect(Collectors.groupingBy(StandardCard::rank, Collectors.counting()));
-        if (cardCounts.getOrDefault(wish, 0L) == 0L) {
+        var rankCounts = Cards.extractStandardCardRanks(hand).stream()
+                .collect(Collectors.groupingBy(r -> r, Collectors.counting()));
+        if (rankCounts.getOrDefault(wish, 0L) == 0L) {
             return false;
         }
 
@@ -168,7 +118,7 @@ public class ConsecutivePairsTrick extends Trick {
 
             var missing = 0L;
             for (var r = segStart; r <= segEnd; r++) {
-                long count = cardCounts.getOrDefault(r, 0L);
+                long count = rankCounts.getOrDefault(r, 0L);
                 if (count < 2) {
                     missing += 2 - count;
                 }

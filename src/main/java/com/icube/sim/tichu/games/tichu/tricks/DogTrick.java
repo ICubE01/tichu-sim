@@ -8,8 +8,11 @@ import java.util.List;
 public class DogTrick extends Trick {
     public DogTrick(int playerIndex, List<Card> cards) {
         super(playerIndex, cards);
-        assert cards.size() == 1;
-        assert cards.get(0) instanceof DogCard;
+        assert isDogTrick(cards);
+    }
+
+    public static boolean isDogTrick(List<Card> cards) {
+        return cards.size() == 1 && cards.getFirst() instanceof DogCard;
     }
 
     @Override

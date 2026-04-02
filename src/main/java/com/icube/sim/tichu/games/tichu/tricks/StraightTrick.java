@@ -2,108 +2,116 @@ package com.icube.sim.tichu.games.tichu.tricks;
 
 import com.icube.sim.tichu.games.tichu.cards.Card;
 import com.icube.sim.tichu.games.tichu.cards.Cards;
-import com.icube.sim.tichu.games.tichu.cards.StandardCard;
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Getter
 public class StraightTrick extends Trick {
     private final int minRank;
     private final int maxRank;
-    private final boolean isPhoenixUsed;
+    private final @Nullable Integer phoenixRank;
 
     public StraightTrick(int playerIndex, List<Card> cards) {
         super(playerIndex, cards);
+        assert isStraightTrick(cards);
 
-        assert cards.size() >= 5 && cards.size() <= 14;
-        assert Cards.areDistinct(cards);
-
-        isPhoenixUsed = Cards.containsPhoenix(cards);
+        var ranks = new HashSet<>(Cards.extractStandardCardRanks(cards));
         var isSparrowUsed = Cards.containsSparrow(cards);
-        var standardCards = Cards.sortedCards(Cards.extractStandardCards(cards));
-        if (isPhoenixUsed) {
-            if (isSparrowUsed) {
-                // e.g. 12P45 or 1234P
-                assert standardCards.size() == cards.size() - 2;
-                var expectedRank = 2;
-                var usedPhoenix = false;
-                for (var card : standardCards) {
-                    if (card.rank() == expectedRank) {
-                        expectedRank++;
-                    } else {
-                        assert !usedPhoenix;
-                        assert card.rank() == expectedRank + 1;
-                        expectedRank += 2;
-                        usedPhoenix = true;
-                    }
-                }
-
-                minRank = 1;
-                if (usedPhoenix) {
-                    maxRank = standardCards.getLast().rank();
-                } else {
-                    maxRank = standardCards.getLast().rank() + 1;
-                }
+        if (Cards.containsPhoenix(cards)) {
+            var start = isSparrowUsed ? 1 : Collections.min(ranks);
+            var missing = IntStream.rangeClosed(start, Collections.max(ranks))
+                    .filter(r -> !ranks.contains(r))
+                    .findAny();
+            if (missing.isPresent()) {
+                minRank = start;
+                maxRank = Collections.max(ranks);
+                phoenixRank = missing.getAsInt();
             } else {
-                // e.g. 23P56 or 2345P or PJQKA
-                assert standardCards.size() == cards.size() - 1;
-                var expectedRank = standardCards.getFirst().rank();
-                var usedPhoenix = false;
-                for (var card : standardCards) {
-                    if (card.rank() == expectedRank) {
-                        expectedRank++;
-                    } else {
-                        assert !usedPhoenix;
-                        assert card.rank() == expectedRank + 1;
-                        expectedRank += 2;
-                        usedPhoenix = true;
-                    }
-                }
-
-                if (usedPhoenix) {
-                    minRank = standardCards.getFirst().rank();
-                    maxRank = standardCards.getLast().rank();
+                if (Collections.max(ranks) == 14) {
+                    minRank = start - 1;
+                    maxRank = 14;
+                    phoenixRank = minRank;
                 } else {
-                    if (standardCards.getLast().rank() == 14) {
-                        minRank = standardCards.getFirst().rank() - 1;
-                        maxRank = 14;
-                    } else {
-                        minRank = standardCards.getLast().rank();
-                        maxRank = standardCards.getLast().rank() + 1;
-                    }
+                    minRank = start;
+                    maxRank = Collections.max(ranks) + 1;
+                    phoenixRank = maxRank;
                 }
             }
         } else {
-            if (isSparrowUsed) {
-                // e.g. 12345
-                assert standardCards.size() == cards.size() - 1;
-                var expectedRank = 2;
-                for (var card : standardCards) {
-                    assert card.rank() == expectedRank;
-                    expectedRank++;
-                }
+            minRank = isSparrowUsed ? 1 : Collections.min(ranks);
+            maxRank = Collections.max(ranks);
+            phoenixRank = null;
+        }
+    }
 
-                minRank = 1;
+    public static boolean isStraightTrick(List<Card> cards) {
+        if (cards.size() < 5 || cards.size() > 14 || !Cards.areDistinct(cards)) {
+            return false;
+        }
+
+        var rankList = Cards.extractStandardCardRanks(cards);
+        var rankSet = new HashSet<>(rankList);
+        var minRank = Collections.min(rankSet);
+        var maxRank = Collections.max(rankSet);
+
+        if (Cards.containsPhoenix(cards)) {
+            int start;
+            if (Cards.containsSparrow(cards)) {
+                // e.g. 12P45, 1234P
+                if (rankList.size() != cards.size() - 2) {
+                    return false;
+                }
+                start = 2;
             } else {
-                // e.g. 23456
-                assert standardCards.size() == cards.size();
-                var expectedRank = standardCards.getFirst().rank();
-                for (var card : standardCards) {
-                    assert card.rank() == expectedRank;
-                    expectedRank++;
+                // e.g. 23P56, 2345P, PJQKA
+                if (rankList.size() != cards.size() - 1) {
+                    return false;
                 }
-
-                // Reject straight flush
-                assert !Cards.haveSameSuit(standardCards);
-
-                minRank = standardCards.getFirst().rank();
+                start = minRank;
             }
 
-            maxRank = standardCards.getLast().rank();
+            var consumedPhoenix = false;
+            for (var r = start; r <= maxRank; r++) {
+                if (!rankSet.contains(r)) {
+                    if (consumedPhoenix) {
+                        return false;
+                    }
+                    consumedPhoenix = true;
+                }
+            }
+        } else {
+            int start;
+            if (Cards.containsSparrow(cards)) {
+                // e.g. 12345
+                if (rankList.size() != cards.size() - 1) {
+                    return false;
+                }
+                start = 2;
+            } else {
+                // e.g. 23456
+                if (rankList.size() != cards.size()) {
+                    return false;
+                }
+                // Reject straight flush
+                if (Cards.haveSameSuit(Cards.extractStandardCards(cards))) {
+                    return false;
+                }
+                start = minRank;
+            }
+
+            for (var r = start; r <= maxRank; r++) {
+                if (!rankSet.contains(r)) {
+                    return false;
+                }
+            }
         }
+
+        return true;
     }
 
     @Override
@@ -113,90 +121,6 @@ public class StraightTrick extends Trick {
 
     public int length() {
         return maxRank - minRank + 1;
-    }
-
-    public static boolean isStraightTrick(List<Card> cards) {
-        if (cards.size() < 5 || cards.size() > 14 || !Cards.areDistinct(cards)) {
-            return false;
-        }
-
-        var standardCards = Cards.sortedCards(Cards.extractStandardCards(cards));
-        if (Cards.containsPhoenix(cards)) {
-            if (Cards.containsSparrow(cards)) {
-                // e.g. 12P45 or 1234P
-                if (standardCards.size() != cards.size() - 2) {
-                    return false;
-                }
-
-                var expectedRank = 2;
-                var usedPhoenix = false;
-                for (var card : standardCards) {
-                    if (card.rank() == expectedRank) {
-                        expectedRank++;
-                    } else {
-                        if (usedPhoenix || card.rank() != expectedRank + 1) {
-                            return false;
-                        }
-                        expectedRank += 2;
-                        usedPhoenix = true;
-                    }
-                }
-            } else {
-                // e.g. 23P56 or 2345P or PJQKA
-                if (standardCards.size() != cards.size() - 1) {
-                    return false;
-                }
-
-                var expectedRank = standardCards.getFirst().rank();
-                var usedPhoenix = false;
-                for (var card : standardCards) {
-                    if (card.rank() == expectedRank) {
-                        expectedRank++;
-                    } else {
-                        if (usedPhoenix || card.rank() != expectedRank + 1) {
-                            return false;
-                        }
-                        expectedRank += 2;
-                        usedPhoenix = true;
-                    }
-                }
-            }
-        } else {
-            if (Cards.containsSparrow(cards)) {
-                // e.g. 12345
-                if (standardCards.size() != cards.size() - 1) {
-                    return false;
-                }
-
-                var expectedRank = 2;
-                for (var card : standardCards) {
-                    if (expectedRank != card.rank()) {
-                        return false;
-                    }
-                    expectedRank++;
-                }
-            } else {
-                // e.g. 23456
-                if (standardCards.size() != cards.size()) {
-                    return false;
-                }
-
-                var expectedRank = standardCards.getFirst().rank();
-                for (var card : standardCards) {
-                    if (card.rank() != expectedRank) {
-                        return false;
-                    }
-                    expectedRank++;
-                }
-
-                // Reject straight flush
-                if (Cards.haveSameSuit(standardCards)) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
     }
 
     public boolean canCoverUp(StraightTrick other) {
@@ -216,9 +140,7 @@ public class StraightTrick extends Trick {
     }
 
     private static boolean canPlayWishCard(int wish, List<Card> hand, StraightTrick prevTrick) {
-        var ranks = Cards.extractStandardCards(hand).stream()
-                .map(StandardCard::rank)
-                .collect(Collectors.toSet());
+        var ranks = new HashSet<>(Cards.extractStandardCardRanks(hand));
         if (!ranks.contains(wish)) {
             return false;
         }
