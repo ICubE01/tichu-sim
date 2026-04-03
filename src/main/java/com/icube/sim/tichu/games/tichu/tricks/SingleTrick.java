@@ -30,19 +30,19 @@ public class SingleTrick extends Trick {
                     rank = 1.5f;
                 } else if (prevTrick instanceof SingleTrick prevSingleTrick) {
                     if (prevSingleTrick.getCard() instanceof DragonCard) {
-                        throw new AssertionError();
+                        rank = 0;
                     } else {
                         rank = prevSingleTrick.getRank() + 0.5f;
                     }
                 } else {
-                    throw new AssertionError();
+                    rank = 0;
                 }
             }
             case DragonCard ignored -> {
                 rank = 20;
                 isPhoenixUsed = false;
             }
-            case null, default -> throw new AssertionError();
+            case null, default -> throw new IllegalArgumentException();
         }
     }
 
