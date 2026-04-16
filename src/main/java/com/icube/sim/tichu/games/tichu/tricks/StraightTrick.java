@@ -24,7 +24,7 @@ public class StraightTrick extends Trick {
         var isSparrowUsed = Cards.containsSparrow(cards);
         if (Cards.containsPhoenix(cards)) {
             var start = isSparrowUsed ? 1 : Collections.min(ranks);
-            var missing = IntStream.rangeClosed(start, Collections.max(ranks))
+            var missing = IntStream.rangeClosed(isSparrowUsed ? 2 : start, Collections.max(ranks))
                     .filter(r -> !ranks.contains(r))
                     .findAny();
             if (missing.isPresent()) {
