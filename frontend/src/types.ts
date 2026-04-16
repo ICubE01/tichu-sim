@@ -1,3 +1,7 @@
+export interface Equatable<T> {
+  equals(other: T | null): boolean;
+}
+
 export interface RoomOpaqueDto {
   id: string;
   name: string;
@@ -21,4 +25,9 @@ export interface RoomDto {
   members: MemberDto[];
   hasGameStarted: boolean;
   gameRule: GameRule;
+}
+
+export interface ChatMessage {
+  userId: number;
+  message: string;
 }
