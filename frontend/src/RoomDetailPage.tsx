@@ -1,23 +1,38 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { KeyboardEventHandler, useCallback, useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import './RoomDetailPage.css';
 import { useAuth } from './useAuth.tsx';
 import { useAxios } from "./useAxios.tsx";
 import { useRoom } from "./useRoom.tsx";
 import { useStomp } from "./useStomp.tsx"
 import TichuPage from "./TichuPage.tsx";
+import { ChatMessage, GameRule, MemberDto, RoomDto } from "@/types.ts";
+import { TichuMessage, TichuMessageType } from "@/games/tichu/dtos/TichuMessage.ts";
+import { TichuRule, TichuWinningScore } from "@/games/tichu/domain/TichuRule.ts";
+import { Team } from "@/games/tichu/domain/Team.ts";
+
+interface MemberMessage {
+  type: 'ENTER' | 'LEAVE';
+  id: number;
+  name: string;
+}
 
 const RoomDetailPage = () => {
   const { roomId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { fetchMyRoom, enterRoom, leaveRoom, fetchRoom } = useRoom();
-  const [room, setRoom] = useState(null);
+  const [room, setRoom] = useState<RoomDto | null>(null);
   const [loading, setLoading] = useState(true);
-  const stomp = useStomp();
+  const stomp = new useStomp();
   const api = useAxios();
-  const [chatMessages, setChatMessages] = useState([]);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState('');
+
+  if (!roomId) {
+    navigate('/');
+    return;
+  }
 
   const handleLeaveRoom = async () => {
     try {
@@ -63,7 +78,7 @@ const RoomDetailPage = () => {
     init().then();
   }, [roomId]);
 
-  const handleMemberChange = useCallback((memberMessage) => {
+  const handleMemberChange = useCallback((memberMessage: MemberMessage) => {
     setRoom((prevRoom) => {
       if (!prevRoom) {
         return prevRoom;
@@ -82,7 +97,7 @@ const RoomDetailPage = () => {
     });
   }, []);
 
-  const handleReceiveChatMessage = useCallback((chatMessage) => {
+  const handleReceiveChatMessage = useCallback((chatMessage: ChatMessage) => {
     setChatMessages((prev) => [...prev, chatMessage]);
   }, []);
 
@@ -98,29 +113,29 @@ const RoomDetailPage = () => {
     setChatInput('');
   };
 
-  const handleKeyPressOnChatInput = (e) => {
+  const handleKeyPressOnChatInput: KeyboardEventHandler = (e) => {
     if (e.key === 'Enter') {
       handleSendChatMessage();
     }
   };
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || !room) return;
 
-    const handleTichuMessage = (message) => {
-      if (message.type === 'START') {
+    const handleTichuMessage = (message: TichuMessage) => {
+      if (message.type === TichuMessageType.START) {
         setRoom(prev => ({
-          ...prev,
+          ...prev!,
           hasGameStarted: true,
         }));
-      } else if (message.type === 'SET_RULE') {
+      } else if (message.type === TichuMessageType.SET_RULE) {
         setRoom(prev => ({
-          ...prev,
-          gameRule: message.data
+          ...prev!,
+          gameRule: message.data as TichuRule
         }));
       }
     };
-    const handleError = (error) => {
+    const handleError = (error: Error) => {
       alert(`Error: ${error.message || 'Unknown error'}`);
     };
 
@@ -140,29 +155,29 @@ const RoomDetailPage = () => {
       stomp.unsubscribe(`/user/${user.id}/queue/errors`, handleError);
       stomp.disconnect();
     };
-  }, [roomId, user, handleMemberChange, handleReceiveChatMessage]);
+  }, [roomId, room, user, handleMemberChange, handleReceiveChatMessage]);
 
   const handleGameStartRequest = () => {
     stomp.publish(`/app/rooms/${roomId}/game/tichu/start`, {});
   }
 
-  const handleSetRule = (newRule) => {
+  const handleSetRule = (newRule: GameRule) => {
     stomp.publish(`/app/rooms/${roomId}/game/tichu/set-rule`, newRule);
   };
 
-  const handleWinningScoreChange = (score) => {
+  const handleWinningScoreChange = (score: TichuWinningScore) => {
     const newRule = {
-      ...room.gameRule,
+      ...room!.gameRule,
       winningScore: score
     };
     handleSetRule(newRule);
   };
 
-  const handleTeamChange = (member, team) => {
+  const handleTeamChange = (member: MemberDto, team: Team) => {
     const newRule = {
-      ...room.gameRule,
+      ...room!.gameRule,
       teamAssignment: {
-        ...room.gameRule.teamAssignment,
+        ...(room!.gameRule as TichuRule).teamAssignment,
         [member.id]: team
       }
     };
@@ -180,7 +195,7 @@ const RoomDetailPage = () => {
       chatMessages={chatMessages}
       onGameEnd={() => {
         setRoom(prev => ({
-          ...prev,
+          ...prev!,
           hasGameStarted: false,
         }))
       }}
@@ -190,7 +205,7 @@ const RoomDetailPage = () => {
   const canStartGame = room.gameRule.minPlayers <= room.members.length
     && room.members.length <= room.gameRule.maxPlayers;
 
-  const formatWinningScore = (winningScore) => {
+  const formatWinningScore = (winningScore: TichuWinningScore) => {
     switch (winningScore) {
       case 'ZERO':
         return '단판';
@@ -234,10 +249,10 @@ const RoomDetailPage = () => {
               <div className="rule-item">
                 <span>승리 점수</span>
                 <div className="rule-button-group">
-                  {['ZERO', 'TWO_HUNDRED', 'FIVE_HUNDRED', 'ONE_THOUSAND'].map((score) => (
+                  {[TichuWinningScore.ZERO, TichuWinningScore.TWO_HUNDRED, TichuWinningScore.FIVE_HUNDRED, TichuWinningScore.ONE_THOUSAND].map((score) => (
                     <button
                       key={score}
-                      className={`rule-button ${room.gameRule.winningScore === score ? 'active' : ''}`}
+                      className={`rule-button ${(room.gameRule as TichuRule).winningScore === score ? 'active' : ''}`}
                       onClick={() => handleWinningScoreChange(score)}
                     >
                       {formatWinningScore(score) || score}
@@ -252,9 +267,9 @@ const RoomDetailPage = () => {
                     <div className="rule-item">
                       <span>{member.name}</span>
                       <div className="rule-button-group">
-                        {['RED', 'NONE', 'BLUE'].map((team) => (
+                        {[Team.RED, Team.NONE, Team.BLUE].map((team) => (
                           <button
-                            className={`rule-button team-${team.toLowerCase()} ${room.gameRule.teamAssignment?.[member.id] === team || (!room.gameRule.teamAssignment?.[member.id] && team === 'NONE') ? 'active' : ''}`}
+                            className={`rule-button team-${team.toLowerCase()} ${(room.gameRule as TichuRule).teamAssignment.get(member.id) === team || (!(room.gameRule as TichuRule).teamAssignment.get(member.id) && team === 'NONE') ? 'active' : ''}`}
                             onClick={() => handleTeamChange(member, team)}
                           >
                             {team === 'NONE' ? '자동' : team}
