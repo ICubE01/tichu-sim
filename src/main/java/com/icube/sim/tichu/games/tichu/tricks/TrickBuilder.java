@@ -2,7 +2,6 @@ package com.icube.sim.tichu.games.tichu.tricks;
 
 import com.icube.sim.tichu.games.tichu.cards.Card;
 import com.icube.sim.tichu.games.tichu.cards.Cards;
-import com.icube.sim.tichu.games.tichu.cards.DogCard;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
@@ -48,11 +47,10 @@ public class TrickBuilder {
         }
 
         if (cards.size() == 1) {
-            var card = cards.getFirst();
-            if (card instanceof DogCard) {
-                trickType = TrickType.DOG;
-            } else if (prevTrick == null || prevTrick.getType() == TrickType.SINGLE) {
+            if (SingleTrick.isSingleTrick(cards)) {
                 trickType = TrickType.SINGLE;
+            } else if (DogTrick.isDogTrick(cards)) {
+                trickType = TrickType.DOG;
             }
             return trickType;
         } else if (cards.size() == 2) {
