@@ -7,10 +7,10 @@ interface SubscriptionEntry {
   stompSubscription: StompSubscription | null;
 }
 
-export const useStomp = () => {
-  const subscriptions = useRef<SubscriptionEntry[]>([]);
+export class useStomp {
+  private subscriptions = useRef<SubscriptionEntry[]>([]);
 
-  const client = useMemo(() => new Client({
+  private client = useMemo(() => new Client({
     brokerURL: `${window.location.origin.replace('http', 'ws')}/api/ws`,
     reconnectDelay: 1000,
     heartbeatIncoming: 0,
@@ -21,62 +21,62 @@ export const useStomp = () => {
     },
   }), []);
 
-  client.onConnect = (_) => {
-    subscriptions.current.forEach(entry => {
-      entry.stompSubscription = client.subscribe(
-        entry.destination,
-        (message) => {
-          entry.callback(JSON.parse(message.body))
-        }
-      );
-    });
-  }
-
-  const connect = (token: string) => {
-    client.connectHeaders.Authorization = `Bearer ${token}`;
-    if (!client.active) {
-      client.activate();
+  constructor() {
+    this.client.onConnect = (_) => {
+      this.subscriptions.current.forEach(entry => {
+        entry.stompSubscription = this.client.subscribe(
+          entry.destination,
+          (message) => {
+            entry.callback(JSON.parse(message.body))
+          }
+        );
+      });
     }
   }
 
-  const disconnect = () => {
-    client.deactivate().then();
+  connect(token: string) {
+    this.client.connectHeaders.Authorization = `Bearer ${token}`;
+    if (!this.client.active) {
+      this.client.activate();
+    }
+  }
+
+  disconnect() {
+    this.client.deactivate().then();
   };
 
-  const subscribe = (destination: string, callback: Function) => {
+  subscribe(destination: string, callback: Function) {
     const entry = {
       destination,
       callback,
-      stompSubscription: !client.active ?
+      stompSubscription: !this.client.active ?
         null :
-        client.subscribe(
+        this.client.subscribe(
           destination,
           (message) => {
             callback(JSON.parse(message.body))
           }
         )
     };
-    subscriptions.current.push(entry);
+    this.subscriptions.current.push(entry);
   };
 
-  const unsubscribe = (destination: string, callback: Function) => {
-    const index = subscriptions.current.findIndex(
+  unsubscribe(destination: string, callback: Function) {
+    const index = this.subscriptions.current.findIndex(
       entry => entry.destination === destination && entry.callback === callback
     );
 
     if (index !== -1) {
-      const entry = subscriptions.current[index];
+      const entry = this.subscriptions.current[index];
       entry.stompSubscription?.unsubscribe();
-      subscriptions.current.splice(index, 1);
+      this.subscriptions.current.splice(index, 1);
     }
   };
 
-  const publish = (destination: string, message: unknown) => {
-    client.publish({
+  publish(destination: string, message: unknown) {
+    this.client.publish({
       destination: destination,
       body: JSON.stringify(message)
     });
   };
-
-  return { connect, disconnect, subscribe, unsubscribe, publish };
-};
+}
