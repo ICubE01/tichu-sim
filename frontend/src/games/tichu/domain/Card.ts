@@ -17,57 +17,68 @@ export enum CardSuit {
 
 export type CardRank = 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14;
 
-export interface Card extends Equatable<Card> {
-  type: CardType;
-  suit?: CardSuit;
-  rank?: CardRank;
+export abstract class Card implements Equatable<Card> {
+  readonly type: CardType;
+
+  protected constructor(type: CardType) {
+    this.type = type;
+  }
+
+  abstract equals(other: Card | null): boolean;
 }
 
-export class StandardCard implements Card {
-  readonly type: CardType = CardType.STANDARD;
+export class StandardCard extends Card {
   readonly suit: CardSuit;
   readonly rank: CardRank;
 
   constructor(suit: CardSuit, rank: CardRank) {
+    super(CardType.STANDARD);
     this.suit = suit;
     this.rank = rank;
   }
 
   equals(other: Card | null): boolean {
-    return other !== null
-      && other.type === CardType.STANDARD && other.suit === this.suit && other.rank === this.rank;
+    return other instanceof StandardCard && other.suit === this.suit && other.rank === this.rank;
   }
 }
 
-export class SparrowCard implements Card {
-  readonly type: CardType = CardType.SPARROW;
+export class SparrowCard extends Card {
+  constructor() {
+    super(CardType.SPARROW);
+  }
 
   equals(other: Card | null): boolean {
-    return other !== null && other.type === CardType.SPARROW;
+    return other instanceof SparrowCard;
   }
 }
 
-export class PhoenixCard implements Card {
-  readonly type: CardType = CardType.PHOENIX;
+export class PhoenixCard extends Card {
+  constructor() {
+    super(CardType.PHOENIX);
+  }
 
   equals(other: Card | null): boolean {
-    return other !== null && other.type === CardType.PHOENIX;
+    return other instanceof PhoenixCard;
   }
 }
 
-export class DragonCard implements Card {
-  readonly type: CardType = CardType.DRAGON;
+export class DragonCard extends Card {
+  constructor() {
+    super(CardType.DRAGON);
+  }
 
   equals(other: Card | null): boolean {
-    return other !== null && other.type === CardType.DRAGON;
+    return other instanceof DragonCard;
   }
 }
 
-export class DogCard implements Card {
-  readonly type: CardType = CardType.DOG;
+export class DogCard extends Card {
+  constructor() {
+    super(CardType.DOG);
+  }
 
   equals(other: Card | null): boolean {
-    return other !== null && other.type === CardType.DOG;
+    return other instanceof DogCard;
   }
 }
 

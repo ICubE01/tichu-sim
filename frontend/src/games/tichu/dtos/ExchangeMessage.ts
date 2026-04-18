@@ -1,10 +1,10 @@
-import { Card } from "@/games/tichu/domain/Card.ts";
+import { CardDto } from "@/games/tichu/dtos/CardDto.ts";
 
 export interface ExchangeMessage {
-  gaveToLeft: Card;
-  gaveToMid: Card;
-  gaveToRight: Card;
-  receivedFromLeft: Card;
-  receivedFromMid: Card;
-  receivedFromRight: Card;
+  gaveToLeft: CardDto;
+  gaveToMid: CardDto;
+  gaveToRight: CardDto;
+  receivedFromLeft: CardDto;
+  receivedFromMid: CardDto;
+  receivedFromRight: CardDto;
 }

@@ -1,7 +1,7 @@
 import { KeyboardEventHandler, MouseEventHandler, useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from "./useAuth.tsx";
 import './TichuPage.css';
-import { Card, CardRank, CardType } from "@/games/tichu/domain/Card.ts";
+import { Card, CardRank, CardType, StandardCard } from "@/games/tichu/domain/Card.ts";
 import { PlayerIndex } from "@/games/tichu/types.ts";
 import { PhaseStatus, RoundStatus, TichuGame } from "@/games/tichu/domain/TichuGame.ts";
 import { TichuMessage, TichuMessageType } from "@/games/tichu/dtos/TichuMessage.ts";
@@ -332,7 +332,7 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {roomId: string, 
           const newWish = playTrickMessage.wish !== null
             ? playTrickMessage.wish
             : (prev.wish !== null
-              ? (playTrickMessage.trick.cards.map(card => card.rank).includes(prev.wish)
+              ? (Cards.extractStandardCards(playTrickMessage.trick.cards).map(card => card.rank).includes(prev.wish)
                 ? null
                 : prev.wish)
               : null);
@@ -382,7 +382,7 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {roomId: string, 
             ? prev.hand.filter(c => !playBombMessage.bomb.cards.some(bc => bc.equals(c)))
             : prev.hand;
           const newWish = prev.wish !== null
-            ? (playBombMessage.bomb.cards.map(card => card.rank).includes(prev.wish)
+            ? (Cards.extractStandardCards(playBombMessage.bomb.cards).map(card => card.rank).includes(prev.wish)
               ? null
               : prev.wish)
             : null;
@@ -533,7 +533,7 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {roomId: string, 
       const lastTrick = getLastTrick();
       const canSatisfy = Cards.containsWishCard(gameState.hand, gameState.wish)
         && (lastTrick === null || lastTrick.canFulfillWishAfter(gameState.wish, gameState.hand));
-      const satisfiesNow = selectedCards.some(card => card.rank === gameState.wish);
+      const satisfiesNow = Cards.extractStandardCards(selectedCards).some(card => card.rank === gameState.wish);
 
       if (canSatisfy && !satisfiesNow) {
         alert(`You must satisfy the wish (${formatRank(gameState.wish)}) if you can!`);
@@ -662,7 +662,7 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {roomId: string, 
   const renderCard = (card: Card, isSelectable = true) => {
     return (
       <CardView
-        key={`${card.type}-${card.suit}-${card.rank}`}
+        key={`${card.type}-${card instanceof StandardCard ? (card.suit + '-' + card.rank) : ''}`}
         card={card}
         isSelected={selectedCards.some(c => c.equals(card))}
         isSelectable={isSelectable}
