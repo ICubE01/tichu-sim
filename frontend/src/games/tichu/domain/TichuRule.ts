@@ -1,4 +1,4 @@
-import { GameRule } from "@/types.ts";
+import { GameRule } from "@/games/types.ts";
 import { Team } from "@/games/tichu/domain/Team.ts";
 
 export interface TichuRule extends GameRule {
