@@ -10,7 +10,7 @@ export interface TichuDto {
   rule: TichuRule;
   players: PlayerDto[];
   scoresHistory: number[][];
-  handCounts: Map<number, number>;
+  handCounts: Record<number, number>;
   myHand: Card[];
   roundStatus: RoundStatus;
   tichuDeclarations: (TichuDeclaration | null)[];

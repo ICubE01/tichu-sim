@@ -230,7 +230,7 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {roomId: string, 
           players: tichuDto.players.map((p, i) => ({
             ...p,
             index: i as PlayerIndex,
-            cardCount: tichuDto.handCounts.get(p.id) as number,
+            cardCount: tichuDto.handCounts[p.id] as number,
             tichuDeclaration: tichuDto.tichuDeclarations[i],
             exitOrder: tichuDto.exitOrder[i],
             passed: tichuDto.roundStatus !== RoundStatus.PLAYING ? false : (

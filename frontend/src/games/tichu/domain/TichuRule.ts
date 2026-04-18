@@ -3,7 +3,7 @@ import { Team } from "@/games/tichu/domain/Team.ts";
 
 export interface TichuRule extends GameRule {
   winningScore: TichuWinningScore;
-  teamAssignment: Map<number, Team>;
+  teamAssignment: Record<number, Team>;
   timeLimit: number;
 }
 

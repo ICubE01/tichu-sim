@@ -265,12 +265,13 @@ const RoomDetailPage = () => {
                 <span>팀 선택</span>
                 <div className="rule-item-box">
                   {room.members.map((member) => (
-                    <div className="rule-item">
+                    <div key={`team-assignment-${member.id}`} className="rule-item">
                       <span>{member.name}</span>
                       <div className="rule-button-group">
                         {[Team.RED, Team.NONE, Team.BLUE].map((team) => (
                           <button
-                            className={`rule-button team-${team.toLowerCase()} ${(room.gameRule as TichuRule).teamAssignment.get(member.id) === team || (!(room.gameRule as TichuRule).teamAssignment.get(member.id) && team === 'NONE') ? 'active' : ''}`}
+                            key={`team-assignment-${member.id}-${team.toLowerCase()}`}
+                            className={`rule-button team-${team.toLowerCase()} ${(room.gameRule as TichuRule).teamAssignment[member.id] === team || (!(room.gameRule as TichuRule).teamAssignment[member.id] && team === 'NONE') ? 'active' : ''}`}
                             onClick={() => handleTeamChange(member, team)}
                           >
                             {team === 'NONE' ? '자동' : team}
