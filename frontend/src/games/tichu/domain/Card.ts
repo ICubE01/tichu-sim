@@ -70,3 +70,17 @@ export class DogCard implements Card {
     return other !== null && other.type === CardType.DOG;
   }
 }
+
+export function cardRankToString(rank: CardRank): string {
+  if (rank === 11) {
+    return "J";
+  } else if (rank === 12) {
+    return "Q";
+  } else if (rank === 13) {
+    return "K";
+  } else if (rank === 14) {
+    return "A";
+  } else {
+    return rank.toString();
+  }
+}

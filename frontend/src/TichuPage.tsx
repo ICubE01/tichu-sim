@@ -1,11 +1,7 @@
 import { KeyboardEventHandler, MouseEventHandler, useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from "./useAuth.tsx";
 import './TichuPage.css';
-import dogImg from './assets/tichu/dog.png';
-import dragonImg from './assets/tichu/dragon.png';
-import phoenixImg from './assets/tichu/phoenix.png';
-import sparrowImg from './assets/tichu/sparrow.png';
-import { Card, CardRank, CardSuit, CardType } from "@/games/tichu/domain/Card.ts";
+import { Card, CardRank, CardType } from "@/games/tichu/domain/Card.ts";
 import { PlayerIndex } from "@/games/tichu/types.ts";
 import { PhaseStatus, RoundStatus, TichuGame } from "@/games/tichu/domain/TichuGame.ts";
 import { TichuMessage, TichuMessageType } from "@/games/tichu/dtos/TichuMessage.ts";
@@ -32,6 +28,7 @@ import { useStomp } from "@/useStomp.tsx";
 import { Cards } from "@/games/tichu/domain/Cards.ts";
 import { TichuWinningScore } from "@/games/tichu/domain/TichuRule.ts";
 import { ChatMessage } from "@/types.ts";
+import { CardView } from "@/games/tichu/CardView.tsx";
 
 const formatRank = (rank: number | undefined) => {
   if (rank === 11) return 'J';
@@ -39,63 +36,6 @@ const formatRank = (rank: number | undefined) => {
   if (rank === 13) return 'K';
   if (rank === 14) return 'A';
   return rank;
-};
-
-const CardView = ({ card, isSelected = false, onClick = undefined, isSelectable = false }: {card: Card, isSelected?: boolean, onClick?: MouseEventHandler<HTMLDivElement> | undefined, isSelectable?: boolean}) => {
-  const getSuitIcon = (suit: CardSuit | undefined) => {
-    switch (suit) {
-      case 'SPADE': return '♠';
-      case 'HEART': return '♥';
-      case 'DIAMOND': return '♦';
-      case 'CLUB': return '♣';
-      default: return '';
-    }
-  };
-
-  const isSpecial = card.type !== CardType.STANDARD;
-  const suitIcon = getSuitIcon(card.suit);
-  const rankLabel = isSpecial ? null : formatRank(card.rank);
-
-  let centerContent;
-  if (isSpecial) {
-    let imgSrc = null;
-    switch (card.type) {
-      case CardType.SPARROW: imgSrc = sparrowImg; break;
-      case CardType.PHOENIX: imgSrc = phoenixImg; break;
-      case CardType.DRAGON: imgSrc = dragonImg; break;
-      case CardType.DOG: imgSrc = dogImg; break;
-      default: break;
-    }
-    if (imgSrc) {
-      centerContent = <img src={imgSrc} alt={card.type} className="card-image" />;
-    } else {
-      centerContent = <span className="special-label">{card.type}</span>;
-    }
-  } else {
-    centerContent = <span className="card-center-icon">{suitIcon}</span>;
-  }
-
-  return (
-    <div
-      key={`${card.type}-${card.suit}-${card.rank}`}
-      className={`card ${isSelected ? 'selected' : ''} suit-${card.suit} ${isSpecial ? 'special-card' : ''} ${isSelectable ? 'selectable' : ''}`}
-      onClick={onClick}
-    >
-      <div className="card-top">
-        {rankLabel && <span className="card-rank">{rankLabel}</span>}
-        {suitIcon && <span className="card-suit">{suitIcon}</span>}
-        {isSpecial && <span className="special-tiny-label">{card.type}</span>}
-      </div>
-      <div className="card-center">
-        {centerContent}
-      </div>
-      <div className="card-bottom">
-        {rankLabel && <span className="card-rank">{rankLabel}</span>}
-        {suitIcon && <span className="card-suit">{suitIcon}</span>}
-        {isSpecial && <span className="special-tiny-label">{card.type}</span>}
-      </div>
-    </div>
-  );
 };
 
 const ExchangeResultModal = ({ result, players, myIndex, onClose }: {result: ExchangeMessage, players: Player[], myIndex: PlayerIndex, onClose: MouseEventHandler<HTMLButtonElement> | undefined}) => {
