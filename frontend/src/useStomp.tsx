@@ -7,8 +7,15 @@ interface SubscriptionEntry {
   stompSubscription: StompSubscription | null;
 }
 
+interface PublicationEntry {
+  destination: string;
+  message: unknown;
+}
+
 export class useStomp {
   private subscriptions = useRef<SubscriptionEntry[]>([]);
+
+  private reservedPublications = useRef<PublicationEntry[]>([]);
 
   private client = useMemo(() => new Client({
     brokerURL: `${window.location.origin.replace('http', 'ws')}/api/ws`,
@@ -31,6 +38,14 @@ export class useStomp {
           }
         );
       });
+      while (this.reservedPublications.current.length > 0) {
+        const entry = this.reservedPublications.current[0];
+        this.client.publish({
+          destination: entry.destination,
+          body: JSON.stringify(entry.message)
+        });
+        this.reservedPublications.current.shift();
+      }
     }
   }
 
@@ -74,9 +89,13 @@ export class useStomp {
   };
 
   publish(destination: string, message: unknown) {
-    this.client.publish({
-      destination: destination,
-      body: JSON.stringify(message)
-    });
+    if (this.client.active) {
+      this.client.publish({
+        destination: destination,
+        body: JSON.stringify(message)
+      });
+    } else {
+      this.reservedPublications.current.push({ destination, message });
+    }
   };
 }
