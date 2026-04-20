@@ -12,14 +12,23 @@ export class Player {
   exitOrder: number;
   passed: boolean;
 
-  constructor(id: number, name: string, team: Team, index: PlayerIndex) {
+  constructor(
+    id: number,
+    name: string,
+    team: Team,
+    index: PlayerIndex,
+    cardCount: number = 0,
+    tichuDeclaration: TichuDeclaration | null = null,
+    exitOrder: number = 0,
+    passed: boolean = false,
+  ) {
     this.id = id;
     this.name = name;
     this.team = team;
     this.index = index;
-    this.cardCount = 0;
-    this.tichuDeclaration = null;
-    this.exitOrder = 0;
-    this.passed = false;
+    this.cardCount = cardCount;
+    this.tichuDeclaration = tichuDeclaration;
+    this.exitOrder = exitOrder;
+    this.passed = passed;
   }
 }

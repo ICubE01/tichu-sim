@@ -29,6 +29,9 @@ import { Cards } from "@/games/tichu/domain/Cards.ts";
 import { TichuWinningScore } from "@/games/tichu/domain/TichuRule.ts";
 import { ChatMessage } from "@/types.ts";
 import { CardView } from "@/games/tichu/CardView.tsx";
+import { CardMapper } from "@/games/tichu/mappers/CardMapper.ts";
+import { TrickMapper } from "@/games/tichu/mappers/TrickMapper.ts";
+import { CardDto } from "@/games/tichu/dtos/CardDto.ts";
 
 const formatRank = (rank: number | undefined) => {
   if (rank === 11) return 'J';
@@ -63,7 +66,7 @@ const ExchangeResultModal = ({ result, players, myIndex, onClose }: {result: Exc
                 <div key={`gave-${i}`} className="exchange-item">
                   <div className="target-player-name">{players[ex.index]?.name || ex.label}</div>
                   <div className="card-wrapper">
-                    {ex.gave ? <CardView card={ex.gave} /> : <div className="card card-placeholder">?</div>}
+                    {ex.gave ? <CardView card={CardMapper.toCard(ex.gave)} /> : <div className="card card-placeholder">?</div>}
                   </div>
                 </div>
               ))}
@@ -76,7 +79,7 @@ const ExchangeResultModal = ({ result, players, myIndex, onClose }: {result: Exc
                 <div key={`received-${i}`} className="exchange-item">
                   <div className="target-player-name">{players[ex.index]?.name || ex.label}</div>
                   <div className="card-wrapper">
-                    {ex.received ? <CardView card={ex.received} /> : <div className="card card-placeholder">?</div>}
+                    {ex.received ? <CardView card={CardMapper.toCard(ex.received)} /> : <div className="card card-placeholder">?</div>}
                   </div>
                 </div>
               ))}
@@ -168,6 +171,18 @@ const WishModal = ({ onSelect }: {onSelect: (arg0: CardRank | null) => void}) =>
   );
 };
 
+class ExchangeSelection {
+  left: Card | null;
+  mid: Card | null;
+  right: Card | null;
+
+  constructor() {
+    this.left = null;
+    this.mid = null;
+    this.right = null;
+  }
+}
+
 const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {roomId: string, stomp: useStomp, chatMessages: ChatMessage[], onGameEnd: Function}) => {
   const { user } = useAuth();
   if (!user) {
@@ -176,8 +191,8 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {roomId: string, 
 
   const [gameState, setGameState] = useState<TichuGame>(new TichuGame());
   const [selectedCards, setSelectedCards] = useState<Card[]>([]);
-  const [exchangeSelection, setExchangeSelection] = useState<{ left: null | Card, mid: null | Card, right: null | Card }>({ left: null, mid: null, right: null });
-  const [scoreModalType, setScoreModalType] = useState<null | 'ROUND_END' | 'END'>(null); // null, 'ROUND_END', 'END'
+  const [exchangeSelection, setExchangeSelection] = useState<ExchangeSelection>(new ExchangeSelection());
+  const [scoreModalType, setScoreModalType] = useState<null | 'ROUND_END' | 'END'>(null);
   const [isWishModalOpen, setIsWishModalOpen] = useState(false);
   const [isExchangeModalOpen, setIsExchangeModalOpen] = useState(false);
   const [exchangeResult, setExchangeResult] = useState<ExchangeMessage | null>(null);
@@ -209,51 +224,65 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {roomId: string, 
         const playerDtos = message.data as PlayerDto[];
         setGameState(prev => ({
           ...prev,
-          players: playerDtos.map((p, i) => new Player(p.id, p.name, p.team, i as PlayerIndex)),
+          players: playerDtos.slice(0, 4).map((p, i) =>
+            new Player(p.id, p.name, p.team, i as PlayerIndex)
+          ),
         }));
         break;
       case TichuMessageType.GET:
         const tichuDto = message.data as TichuDto;
-        const getPassed = (index: PlayerIndex, phaseStatus: PhaseStatus | null, turn: PlayerIndex, lastTrick: Trick) => {
-          if (phaseStatus === PhaseStatus.WAITING_DRAGON_SELECTION) {
-            return index !== turn;
+        const calcPassed = (index: PlayerIndex, tichuDto: TichuDto) => {
+          if (
+            tichuDto.roundStatus !== RoundStatus.PLAYING || tichuDto.turn === null // No tricks played
+            || tichuDto.tricks === null || tichuDto.tricks.length === 0 // No tricks played
+            || tichuDto.exitOrder[index] !== 0 // Already exited
+            || index === tichuDto.turn // Turn is mine
+          ) {
+            return false;
           }
-          if (index === turn) return false;
-          if (lastTrick.playerIndex < turn) {
-            return lastTrick.playerIndex < index && index < turn;
+          if (tichuDto.phaseStatus === PhaseStatus.WAITING_DRAGON_SELECTION) { // Phase ended with dragon
+            return true;
+          }
+          const lastTrickDto = tichuDto.tricks[tichuDto.tricks.length - 1];
+          if (lastTrickDto.playerIndex < tichuDto.turn) {
+            return lastTrickDto.playerIndex < index && index < tichuDto.turn;
           } else {
-            return index < turn || lastTrick.playerIndex < index;
+            return index < tichuDto.turn || lastTrickDto.playerIndex < index;
           }
         }
         setGameState({
           rule: tichuDto.rule,
-          players: tichuDto.players.map((p, i) => ({
-            ...p,
-            index: i as PlayerIndex,
-            cardCount: tichuDto.handCounts[p.id] as number,
-            tichuDeclaration: tichuDto.tichuDeclarations[i],
-            exitOrder: tichuDto.exitOrder[i],
-            passed: tichuDto.roundStatus !== RoundStatus.PLAYING ? false : (
-              tichuDto.exitOrder[i] !== 0 ? false : (
-                tichuDto.tricks.length === 0 ? false : getPassed(i as PlayerIndex, tichuDto.phaseStatus, tichuDto.turn as PlayerIndex, tichuDto.tricks[tichuDto.tricks.length - 1])
-              )
-            ),
-          })),
+          players: tichuDto.players.slice(0, 4).map((p, i) =>
+            new Player(
+              p.id,
+              p.name,
+              p.team,
+              i as PlayerIndex,
+              tichuDto.handCounts[p.id],
+              tichuDto.tichuDeclarations[i],
+              tichuDto.exitOrder[i],
+              calcPassed(i as PlayerIndex, tichuDto),
+            )
+          ),
           scoresHistory: tichuDto.scoresHistory,
-          hand: tichuDto.myHand.filter(card => !card.equals(exchangeSelection.left) && !card.equals(exchangeSelection.mid) && !card.equals(exchangeSelection.right)),
+          hand: tichuDto.myHand.map(CardMapper.toCard).filter(card =>
+            !card.equals(exchangeSelection.left)
+            && !card.equals(exchangeSelection.mid)
+            && !card.equals(exchangeSelection.right)
+          ),
           roundStatus: tichuDto.roundStatus,
           wish: tichuDto.wish,
           phaseStatus: tichuDto.phaseStatus,
           turn: tichuDto.turn,
-          tricks: tichuDto.tricks === null ? [] : tichuDto.tricks,
+          tricks: tichuDto.tricks === null ? [] : tichuDto.tricks.map(TrickMapper.toTrick),
         });
         break;
       case TichuMessageType.INIT_FIRST_DRAWS:
-        const firstDraw = message.data as Card[];
+        const firstDraw = message.data as CardDto[];
         setSelectedCards([]);
         setGameState(prev => ({
           ...prev,
-          hand: firstDraw,
+          hand: firstDraw.map(CardMapper.toCard),
           players: prev.players.map(p => ({
             ...p,
             cardCount: 8,
@@ -276,10 +305,10 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {roomId: string, 
         }));
         break;
       case TichuMessageType.ADD_SECOND_DRAWS:
-        const hand = message.data as Card[];
+        const hand = message.data as CardDto[];
         setGameState(prev => ({
           ...prev,
-          hand: hand,
+          hand: hand.map(CardMapper.toCard),
           players: prev.players.map(p => ({ ...p, cardCount: 14 })),
           roundStatus: RoundStatus.EXCHANGING,
         }));
@@ -299,16 +328,26 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {roomId: string, 
         break;
       case TichuMessageType.EXCHANGE:
         const exchangeMessage = message.data as ExchangeMessage;
-        setExchangeSelection({ left: null, mid: null, right: null });
+        setExchangeSelection(new ExchangeSelection());
         setExchangeResult(exchangeMessage);
         setIsExchangeModalOpen(true);
         setGameState(prev => {
-          const cardsToExclude = [exchangeMessage.gaveToLeft, exchangeMessage.gaveToMid, exchangeMessage.gaveToRight].filter(Boolean);
-          const newHand = prev.hand.filter(c => !cardsToExclude.some(ec => ec.equals(c)));
-          newHand.push(exchangeMessage.receivedFromLeft, exchangeMessage.receivedFromMid, exchangeMessage.receivedFromRight);
+          const cardsGave = [
+            exchangeMessage.gaveToLeft,
+            exchangeMessage.gaveToMid,
+            exchangeMessage.gaveToRight
+          ].map(CardMapper.toCard);
+          const cardsReceived = [
+            exchangeMessage.receivedFromLeft,
+            exchangeMessage.receivedFromMid,
+            exchangeMessage.receivedFromRight
+          ].map(CardMapper.toCard);
+          const newHand = prev.hand
+            .filter(c => !cardsGave.some(cg => cg.equals(c)))
+            .concat(cardsReceived);
           return ({
             ...prev,
-            hand: newHand.filter(Boolean),
+            hand: newHand,
             roundStatus: RoundStatus.PLAYING,
           });
         });
@@ -325,21 +364,22 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {roomId: string, 
         break;
       case TichuMessageType.PLAY_TRICK:
         const playTrickMessage = message.data as PlayTrickMessage;
+        const trick = TrickMapper.toTrick(playTrickMessage.trick);
         setGameState(prev => {
           const newHand = user.id === playTrickMessage.playerId
-            ? prev.hand.filter(c => !playTrickMessage.trick.cards.some(tc => tc.equals(c)))
+            ? prev.hand.filter(c => !trick.cards.some(tc => tc.equals(c)))
             : prev.hand;
           const newWish = playTrickMessage.wish !== null
             ? playTrickMessage.wish
             : (prev.wish !== null
-              ? (Cards.extractStandardCards(playTrickMessage.trick.cards).map(card => card.rank).includes(prev.wish)
+              ? (Cards.extractStandardCards(trick.cards).map(card => card.rank).includes(prev.wish)
                 ? null
                 : prev.wish)
               : null);
           if (prev.turn === null) {
             return prev;
           }
-          let newTurn: PlayerIndex = (prev.turn + 1) % 4 as PlayerIndex;
+          let newTurn = (prev.turn + 1) % 4 as PlayerIndex;
           while (prev.players[newTurn].exitOrder !== 0) {
             newTurn = (newTurn + 1) % 4;
           }
@@ -364,7 +404,7 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {roomId: string, 
             hand: newHand,
             wish: newWish,
             turn: newTurn,
-            tricks: [...prev.tricks, playTrickMessage.trick],
+            tricks: [...prev.tricks, trick],
           };
         });
         if (playTrickMessage.trick.type === TrickType.DOG) {
@@ -377,12 +417,13 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {roomId: string, 
         break;
       case TichuMessageType.PLAY_BOMB:
         const playBombMessage = message.data as PlayBombMessage;
+        const bomb = TrickMapper.toTrick(playBombMessage.bomb);
         setGameState(prev => {
           const newHand = user.id === playBombMessage.playerId
-            ? prev.hand.filter(c => !playBombMessage.bomb.cards.some(bc => bc.equals(c)))
+            ? prev.hand.filter(c => !bomb.cards.some(bc => bc.equals(c)))
             : prev.hand;
           const newWish = prev.wish !== null
-            ? (Cards.extractStandardCards(playBombMessage.bomb.cards).map(card => card.rank).includes(prev.wish)
+            ? (Cards.extractStandardCards(bomb.cards).map(card => card.rank).includes(prev.wish)
               ? null
               : prev.wish)
             : null;
@@ -411,7 +452,7 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {roomId: string, 
             hand: newHand,
             wish: newWish,
             turn: newTurn,
-            tricks: [...prev.tricks, playBombMessage.bomb],
+            tricks: [...prev.tricks, bomb],
           };
         });
         break;
