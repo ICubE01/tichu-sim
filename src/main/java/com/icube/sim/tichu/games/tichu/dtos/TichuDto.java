@@ -25,5 +25,5 @@ public class TichuDto {
     private final int[] exitOrder;
     private final @Nullable PhaseStatus phaseStatus;
     private final @Nullable Integer turn;
-    private final List<TrickDto> tricks;
+    private final @Nullable List<TrickDto> tricks;
 }
