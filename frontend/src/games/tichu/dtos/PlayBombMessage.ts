@@ -1,6 +1,6 @@
-import { Trick } from "@/games/tichu/domain/Trick.ts";
+import { TrickDto } from "@/games/tichu/dtos/TrickDto.ts";
 
 export interface PlayBombMessage {
   playerId: number;
-  bomb: Trick;
+  bomb: TrickDto;
 }

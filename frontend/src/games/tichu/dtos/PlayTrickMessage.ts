@@ -1,8 +1,8 @@
-import { Trick } from "@/games/tichu/domain/Trick.ts";
+import { TrickDto } from "@/games/tichu/dtos/TrickDto.ts";
 import { CardRank } from "@/games/tichu/domain/Card.ts";
 
 export interface PlayTrickMessage {
   playerId: number;
-  trick: Trick;
+  trick: TrickDto;
   wish: CardRank;
 }
