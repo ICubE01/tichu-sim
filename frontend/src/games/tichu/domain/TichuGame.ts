@@ -39,4 +39,10 @@ export class TichuGame {
     this.turn = null;
     this.tricks = [];
   }
+
+  static sumScores(scoresHistory: number[][]): [number, number] {
+    const red = scoresHistory.reduce((sum, score) => sum + score[0], 0);
+    const blue = scoresHistory.reduce((sum, score) => sum + score[1], 0);
+    return [red, blue];
+  }
 }
