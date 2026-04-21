@@ -1,19 +1,20 @@
-import React, {useEffect, useState} from 'react';
-import {useNavigate} from 'react-router-dom';
-import {useRoom} from "./useRoom.jsx";
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useRoom } from "./useRoom.tsx";
 import './HomePage.css';
+import { RoomOpaqueDto } from "@/types.ts";
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const {fetchMyRoom, fetchRooms, createRoom, enterRoom} = useRoom();
-  const [rooms, setRooms] = useState([]);
+  const { fetchMyRoom, fetchRooms, createRoom, enterRoom } = useRoom();
+  const [rooms, setRooms] = useState<RoomOpaqueDto[]>([]);
   const [loading, setLoading] = useState(false);
 
   const checkMyRoom = async () => {
     try {
       const myRoom = await fetchMyRoom();
       if (myRoom !== null) {
-        navigate(`/${myRoom.id}`, {replace: true});
+        navigate(`/${myRoom.id}`, { replace: true });
       }
     } catch (error) {
       console.error('Failed to fetch my room:', error);
@@ -42,8 +43,8 @@ const HomePage = () => {
     }
   }
 
-  const handleEnterRoom = async (room) => {
-    if (room.memberCount >= 4 || room.isGamePlaying) {
+  const handleEnterRoom = async (room: RoomOpaqueDto) => {
+    if (room.memberCount >= 4 || room.hasGameStarted) {
       alert('Unable to enter the room.');
       return;
     }
@@ -89,7 +90,7 @@ const HomePage = () => {
           <tbody>
           {rooms.length > 0 ? (
             rooms.map((room) => {
-              const isAvailable = room.memberCount < 4 && !room.isGamePlaying;
+              const isAvailable = room.memberCount < 4 && !room.hasGameStarted;
               return (
                 <tr
                   key={room.id}
@@ -98,14 +99,14 @@ const HomePage = () => {
                 >
                   <td>{room.id}</td>
                   <td>{room.name || `방 ${room.id}`}</td>
-                  <td>{room.isGamePlaying ? '게임 진행 중' : '대기 중'}</td>
+                  <td>{room.hasGameStarted ? '게임 진행 중' : '대기 중'}</td>
                   <td>{room.memberCount} / 4</td>
                 </tr>
               );
             })
           ) : (
             <tr>
-              <td colSpan="4" className="no-rooms">
+              <td colSpan={4} className="no-rooms">
                 방이 없습니다.
               </td>
             </tr>
