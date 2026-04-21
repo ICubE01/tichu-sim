@@ -1,9 +1,8 @@
-import React, {useState} from 'react';
-import {useNavigate, Link} from 'react-router-dom';
+import { SubmitEvent, useState } from 'react';
+import { Link } from 'react-router-dom';
 import './SignupPage.css';
 
 const SignupPage = () => {
-  const navigate = useNavigate();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -11,7 +10,7 @@ const SignupPage = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [success, setSuccess] = useState(false);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrorMessage('');
 
@@ -23,8 +22,8 @@ const SignupPage = () => {
     try {
       const response = await fetch('/api/users', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({name, email, password}),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password }),
       });
 
       if (response.ok) {
@@ -94,7 +93,7 @@ const SignupPage = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder=""
-              minLength="8"
+              minLength={8}
               required
             />
           </div>

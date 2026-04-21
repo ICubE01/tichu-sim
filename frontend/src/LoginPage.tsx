@@ -1,33 +1,33 @@
-import React, {useState} from 'react';
-import {useAuth} from './useAuth.tsx';
-import {Link} from 'react-router-dom';
+import { SubmitEvent, useState } from 'react';
+import { useAuth } from './useAuth.tsx';
+import { Link } from 'react-router-dom';
 import './LoginPage.css';
 
 const LoginPage = () => {
-  const {login} = useAuth();
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [errorMessage, seterrorMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
-    seterrorMessage('');
-    
+    setErrorMessage('');
+
     try {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({email, password}),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
       });
 
       if (response.ok) {
         const data = await response.json();
         login(data.token);
       } else {
-        seterrorMessage('로그인에 실패했습니다.');
+        setErrorMessage('로그인에 실패했습니다.');
       }
     } catch (err) {
-      seterrorMessage('서버와 통신 중 오류가 발생했습니다.');
+      setErrorMessage('서버와 통신 중 오류가 발생했습니다.');
     }
   };
 
