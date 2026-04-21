@@ -1,4 +1,4 @@
-import { KeyboardEventHandler, MouseEventHandler, useCallback, useEffect, useRef, useState } from 'react';
+import { KeyboardEventHandler, useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from "@/useAuth.tsx";
 import { useStomp } from "@/useStomp.tsx";
 import { ChatMessage } from "@/types.ts";
@@ -42,134 +42,11 @@ import { PlayerDto, TichuDto } from "@/games/tichu/dtos/TichuDto.ts";
 import { TichuMessage, TichuMessageType } from "@/games/tichu/dtos/TichuMessage.ts";
 import { CardMapper } from "@/games/tichu/mappers/CardMapper.ts";
 import { TrickMapper } from "@/games/tichu/mappers/TrickMapper.ts";
-import { CardView } from "@/games/tichu/CardView.tsx";
+import CardView from "@/games/tichu/CardView.tsx";
+import ExchangeResultModal from "@/games/tichu/ExchangeResultModal.tsx";
+import WishModal from "@/games/tichu/WishModal.tsx";
+import ScoreModal from "@/games/tichu/ScoreModal.tsx";
 import './TichuPage.css';
-
-const ExchangeResultModal = ({ result, players, myIndex, onClose }: {
-  result: ExchangeMessage,
-  players: Player[],
-  myIndex: PlayerIndex,
-  onClose: MouseEventHandler<HTMLButtonElement> | undefined
-}) => {
-  const exchanges = [
-    { label: 'Left', index: (myIndex + 3) % 4, gave: result.gaveToLeft, received: result.receivedFromLeft },
-    { label: 'Partner', index: (myIndex + 2) % 4, gave: result.gaveToMid, received: result.receivedFromMid },
-    { label: 'Right', index: (myIndex + 1) % 4, gave: result.gaveToRight, received: result.receivedFromRight },
-  ];
-
-  return (
-    <div className="exchange-modal-overlay">
-      <div className="exchange-modal-content">
-        <h2>Exchange Results</h2>
-        <div className="exchange-results-container">
-          <div className="exchange-section">
-            <h3>You Gave</h3>
-            <div className="exchange-grid">
-              {exchanges.map((ex, i) => (
-                <div key={`gave-${i}`} className="exchange-item">
-                  <div className="target-player-name">{players[ex.index]?.name || ex.label}</div>
-                  <div className="card-wrapper">
-                    {ex.gave ?
-                      <CardView card={CardMapper.toCard(ex.gave)}/> :
-                      <div className="card card-placeholder">?</div>}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="exchange-section">
-            <h3>You Received</h3>
-            <div className="exchange-grid">
-              {exchanges.map((ex, i) => (
-                <div key={`received-${i}`} className="exchange-item">
-                  <div className="target-player-name">{players[ex.index]?.name || ex.label}</div>
-                  <div className="card-wrapper">
-                    {ex.received ?
-                      <CardView card={CardMapper.toCard(ex.received)}/> :
-                      <div className="card card-placeholder">?</div>}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-        <button className="btn-modal-close" onClick={onClose}>OK</button>
-      </div>
-    </div>
-  );
-};
-
-const ScoreModal = ({ scoresHistory, players, type, onClose }: {
-  scoresHistory: number[][],
-  players: Player[],
-  type: 'ROUND_END' | 'END',
-  onClose: MouseEventHandler<HTMLButtonElement>
-}) => {
-  const scores = TichuGame.sumScores(scoresHistory);
-  const redScore = scores[0];
-  const blueScore = scores[1];
-
-  const redPlayers = [players[0], players[2]].map(p => p?.name).join(' & ');
-  const bluePlayers = [players[1], players[3]].map(p => p?.name).join(' & ');
-
-  return (
-    <div className="score-modal-overlay">
-      <div className="score-modal-content">
-        <h2>Score Board</h2>
-        <div className="score-table-container">
-          <table className="score-table">
-            <thead>
-            <tr>
-              <th>Round</th>
-              <th>{redPlayers} (RED)</th>
-              <th>{bluePlayers} (BLUE)</th>
-            </tr>
-            </thead>
-            <tbody>
-            {scoresHistory.map((score, index) => (
-              <tr key={index}>
-                <td>{index + 1}</td>
-                <td>{score[0]}</td>
-                <td>{score[1]}</td>
-              </tr>
-            ))}
-            <tr className="total-row">
-              <td>Total</td>
-              <td>{redScore}</td>
-              <td>{blueScore}</td>
-            </tr>
-            </tbody>
-          </table>
-        </div>
-        <button className="btn-modal-close" onClick={onClose}>
-          {type === 'ROUND_END' ? 'Close' : 'Back to Room'}
-        </button>
-      </div>
-    </div>
-  );
-};
-
-const WishModal = ({ onSelect }: { onSelect: (wish: CardRank | null) => void }) => {
-  const ranks: CardRank[] = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14];
-  return (
-    <div className="wish-modal-overlay">
-      <div className="wish-modal-content">
-        <h2>Make a Wish</h2>
-        <p>Choose a rank to wish for</p>
-        <div className="wish-grid">
-          {ranks.map(r => (
-            <button key={r} className="btn-wish" onClick={() => onSelect(r)}>
-              {cardRankToString(r)}
-            </button>
-          ))}
-        </div>
-        <button className="btn-no-wish" onClick={() => onSelect(null)}>
-          No Wish
-        </button>
-      </div>
-    </div>
-  );
-};
 
 enum PlayerPosition {
   LEFT = 'left',

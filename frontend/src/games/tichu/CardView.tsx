@@ -1,5 +1,5 @@
-import { Card, cardRankToString, CardSuit, CardType } from "@/games/tichu/domain/Card.ts";
 import React, { MouseEventHandler } from "react";
+import { Card, cardRankToString, CardSuit, CardType, StandardCard } from "@/games/tichu/domain/Card.ts";
 import sparrowImg from "@/assets/tichu/sparrow.png";
 import phoenixImg from "@/assets/tichu/phoenix.png";
 import dragonImg from "@/assets/tichu/dragon.png";
@@ -20,15 +20,15 @@ const cardSuitToIcon = (suit: CardSuit | undefined) => {
   }
 };
 
-export const CardView = ({ card, isSelectable = false, isSelected = false, onClick = undefined }: {
+const CardView = ({ card, isSelectable = false, isSelected = false, onClick = undefined }: {
   card: Card,
   isSelectable?: boolean,
   isSelected?: boolean,
   onClick?: MouseEventHandler<HTMLDivElement> | undefined,
 }) => {
   const isSpecial = card.type !== CardType.STANDARD;
-  const suitIcon = cardSuitToIcon(card.suit);
-  const rankLabel = card.rank === undefined ? null : cardRankToString(card.rank);
+  const suitIcon = cardSuitToIcon(card instanceof StandardCard ? card.suit : undefined);
+  const rankLabel = card instanceof StandardCard ? cardRankToString(card.rank) : null;
 
   let centerContent: React.JSX.Element;
   if (isSpecial) {
@@ -60,8 +60,8 @@ export const CardView = ({ card, isSelectable = false, isSelected = false, onCli
 
   return (
     <div
-      key={`${card.type}-${card.suit}-${card.rank}`}
-      className={`card suit-${card.suit} ${isSelectable ? 'selectable' : ''} ${isSelected ? 'selected' : ''} ${isSpecial ? 'special-card' : ''}`}
+      key={`${card.type}-${card instanceof StandardCard ? (card.suit + '-' + card.rank) : ''}`}
+      className={`card ${card instanceof StandardCard ? `suit-${card.suit}` : ''} ${isSelectable ? 'selectable' : ''} ${isSelected ? 'selected' : ''} ${isSpecial ? 'special-card' : ''}`}
       onClick={onClick}
     >
       <div className="card-top">
@@ -80,3 +80,5 @@ export const CardView = ({ card, isSelectable = false, isSelected = false, onCli
     </div>
   );
 }
+
+export default CardView;
