@@ -307,6 +307,7 @@ const RoomDetailPage = () => {
               name="message"
               placeholder="메시지를 입력하세요..."
               value={chatInput}
+              autoComplete="off"
               onChange={(e) => setChatInput(e.target.value)}
               onKeyDown={handleKeyPressOnChatInput}
             />

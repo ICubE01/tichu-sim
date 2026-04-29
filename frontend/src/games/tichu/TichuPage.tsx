@@ -827,6 +827,7 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
               name="message"
               placeholder="메시지를 입력하세요..."
               value={chatInput}
+              autoComplete="off"
               onChange={(e) => setChatInput(e.target.value)}
               onKeyDown={handleKeyPressOnChatInput}
             />
