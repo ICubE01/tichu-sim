@@ -17,6 +17,7 @@ import {
 } from "@/games/tichu/domain/Card.ts";
 import { Cards } from "@/games/tichu/domain/Cards.ts";
 import { Player } from "@/games/tichu/domain/Player.ts";
+import { Team } from "@/games/tichu/domain/Team.ts";
 import { TichuDeclaration } from "@/games/tichu/domain/TichuDeclaration.ts";
 import { PhaseStatus, RoundStatus, TichuGame } from "@/games/tichu/domain/TichuGame.ts";
 import { TichuWinningScore } from "@/games/tichu/domain/TichuRule.ts";
@@ -46,7 +47,7 @@ import CardView from "@/games/tichu/CardView.tsx";
 import ExchangeResultModal from "@/games/tichu/ExchangeResultModal.tsx";
 import WishModal from "@/games/tichu/WishModal.tsx";
 import ScoreModal from "@/games/tichu/ScoreModal.tsx";
-import './TichuPage.css';
+import styles from './TichuPage.module.css';
 
 enum PlayerPosition {
   LEFT = 'left',
@@ -327,7 +328,7 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
               ? null
               : prev.wish)
             : null;
-          let newTurn: PlayerIndex = (prev.players.findIndex(p => p.id === playBombMessage.playerId) + 1) % 4 as PlayerIndex;
+          let newTurn = (prev.players.findIndex(p => p.id === playBombMessage.playerId) + 1) % 4 as PlayerIndex;
           while (prev.players[newTurn].exitOrder !== 0) {
             newTurn = (newTurn + 1) % 4;
           }
@@ -699,6 +700,17 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
     return sortCards(trick.cards, phoenixRank).map(c => renderCard(c));
   }
 
+  const getTeamCss = (team: Team | undefined) => {
+    switch (team) {
+      case Team.RED:
+        return styles.teamRed;
+      case Team.BLUE:
+        return styles.teamBlue;
+      default:
+        return '';
+    }
+  }
+
   const renderPlayer = (position: PlayerPosition) => {
     const p = getPlayerAtPosition(position);
     if (p === undefined) {
@@ -710,19 +722,31 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
     const isPassed = p.passed
       || game.roundStatus === RoundStatus.WAITING_LARGE_TICHU && p.tichuDeclaration === TichuDeclaration.NONE;
 
-    const positionCss = position === PlayerPosition.MID ? "player-top" : `player-${position}`;
+    let positionCss;
+    switch (position) {
+      case PlayerPosition.LEFT:
+        positionCss = styles.playerLeft;
+        break;
+      case PlayerPosition.MID:
+        positionCss = styles.playerTop;
+        break;
+      case PlayerPosition.RIGHT:
+        positionCss = styles.playerRight;
+        break;
+    }
+
     return (
-      <div className={`player-section ${positionCss}`}>
-        <div className="player-info">
-          <div className={`player-name team-${p.team}`}>{p.name}</div>
-          <div className="card-count">{p.cardCount} Cards</div>
-          {hasTichuDeclaration && <div className="tichu-declaration">{p.tichuDeclaration}</div>}
-          {isMyTurn && <div className="status-turn">Turn</div>}
-          {isPassed && <div className="status-pass">PASS</div>}
+      <div className={`${styles.playerSection} ${positionCss}`}>
+        <div className={styles.playerInfo}>
+          <div className={`${styles.playerName} ${getTeamCss(p.team)}`}>{p.name}</div>
+          <div className={styles.cardCount}>{p.cardCount} Cards</div>
+          {hasTichuDeclaration && <div className={styles.tichuDeclaration}>{p.tichuDeclaration}</div>}
+          {isMyTurn && <div className={styles.statusTurn}>Turn</div>}
+          {isPassed && <div className={styles.statusPass}>PASS</div>}
         </div>
-        <div className="hand">
+        <div className={styles.hand}>
           {[...new Array(p.cardCount)].map((_, i) => (
-            <div key={i} className="card back"/>
+            <div key={i} className={`${styles.card} ${styles.back}`}/>
           ))}
         </div>
       </div>
@@ -766,18 +790,18 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
   };
 
   return (
-    <div className="tichu-game-container">
-      <div className="game-board content">
-        <div className="display-top-left">
-          <div className="score-display-top-left">
-            <span className="team-red-label">RED</span>
+    <div className={styles.tichuGameContainer}>
+      <div className={`${styles.gameBoard} content`}>
+        <div className={styles.displayTopLeft}>
+          <div className={styles.scoreDisplayTopLeft}>
+            <span className={styles.teamRedLabel}>RED</span>
             {scores[0]} : {scores[1]}
-            <span className="team-blue-label">BLUE</span>
+            <span className={styles.teamBlueLabel}>BLUE</span>
           </div>
-          <input type="checkbox" className="show-rule-button" checked={isRulePopupOpen}
+          <input type="checkbox" className={styles.showRuleButton} checked={isRulePopupOpen}
                  onChange={() => setIsRulePopupOpen(!isRulePopupOpen)}/>
           {isRulePopupOpen &&
-            <div className="rule-popup">
+            <div className={styles.rulePopup}>
               <ul>
                 <li><strong>승리 점수</strong>: {game.rule === null ? '' : parseWinningScore(game.rule.winningScore)}</li>
               </ul>
@@ -785,19 +809,19 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
         </div>
 
         {/* Chat Area */}
-        <div className="tichu-chat-section">
-          <div className="tichu-chat-messages">
+        <div className={styles.tichuChatSection}>
+          <div className={styles.tichuChatMessages}>
             {chatMessages.length === 0 ? (
-              <div className="tichu-chat-placeholder">메시지가 없습니다.</div>
+              <div className={styles.tichuChatPlaceholder}>메시지가 없습니다.</div>
             ) : (
               chatMessages.map((msg, index) => (
-                <div key={index} className="tichu-chat-message">
+                <div key={index} className={styles.tichuChatMessage}>
                   <strong>{game.players.find(m => m.id === msg.userId)?.name || 'Unknown'}:</strong> {msg.message}
                 </div>
               ))
             )}
           </div>
-          <div className="tichu-chat-input-area">
+          <div className={styles.tichuChatInputArea}>
             <input
               type="text"
               name="message"
@@ -820,87 +844,92 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
         {renderPlayer(PlayerPosition.RIGHT)}
 
         {/* Trick Area */}
-        <div className="trick-area">
+        <div className={styles.trickArea}>
           {game.wish !== null && (
-            <div className="current-wish-indicator">
+            <div className={styles.currentWishIndicator}>
               Wish: {cardRankToString(game.wish)}
             </div>
           )}
           {lastTrick !== null &&
             <>
-              <div className="played-by">Played by: {game.players[lastTrick.playerIndex]?.name}</div>
-              <div className="played-cards">
+              <div className={styles.playedBy}>Played by: {game.players[lastTrick.playerIndex]?.name}</div>
+              <div className={styles.playedCards}>
                 {renderTrick(lastTrick)}
               </div>
-              <div className="played-trick-label">{getTrickLabel(lastTrick)}</div>
+              <div className={styles.playedTrickLabel}>{getTrickLabel(lastTrick)}</div>
             </>}
           {isExchanging && (
-            <div className="exchange-summary">
-              <div className="exchange-slot">
-                <div className="slot-label">To Left</div>
+            <div className={styles.exchangeSummary}>
+              <div className={styles.exchangeSlot}>
+                <div className={styles.slotLabel}>To Left</div>
                 {exchangeSelection.left ?
                   renderCard(exchangeSelection.left) :
-                  <div className="card card-placeholder">?</div>}
+                  <div className={`${styles.card} ${styles.cardPlaceholder}`}>?</div>}
               </div>
-              <div className="exchange-slot">
-                <div className="slot-label">To Partner</div>
+              <div className={styles.exchangeSlot}>
+                <div className={styles.slotLabel}>To Partner</div>
                 {exchangeSelection.mid ?
                   renderCard(exchangeSelection.mid) :
-                  <div className="card card-placeholder">?</div>}
+                  <div className={`${styles.card} ${styles.cardPlaceholder}`}>?</div>}
               </div>
-              <div className="exchange-slot">
-                <div className="slot-label">To Right</div>
+              <div className={styles.exchangeSlot}>
+                <div className={styles.slotLabel}>To Right</div>
                 {exchangeSelection.right ?
                   renderCard(exchangeSelection.right) :
-                  <div className="card card-placeholder">?</div>}
+                  <div className={`${styles.card} ${styles.cardPlaceholder}`}>?</div>}
               </div>
             </div>
           )}
         </div>
 
         {/* Bottom Player (Me) */}
-        <div className="player-section player-bottom">
-          <div className="player-info">
-            <div className={`player-name team-${playerMe?.team}`}>{user.name}</div>
-            <div className="card-count">{game.hand.length} Cards</div>
-            {playerMe !== undefined && playerMe.tichuDeclaration !== null && playerMe.tichuDeclaration !== TichuDeclaration.NONE &&
-              <div className="tichu-declaration">{playerMe.tichuDeclaration}</div>}
-            {game.turn === myIndex && <div className="status-turn">Turn</div>}
-            {playerMe !== undefined && (playerMe.passed || game.roundStatus === RoundStatus.WAITING_LARGE_TICHU && playerMe.tichuDeclaration === TichuDeclaration.NONE) &&
-              <div className="status-pass">PASS</div>}
+        <div className={`${styles.playerSection} ${styles.playerBottom}`}>
+          <div className={styles.playerInfo}>
+            <div className={`${styles.playerName} ${getTeamCss(playerMe?.team)}`}>{user.name}</div>
+            <div className={styles.cardCount}>{game.hand.length} Cards</div>
+            {playerMe !== undefined &&
+              playerMe.tichuDeclaration !== null && playerMe.tichuDeclaration !== TichuDeclaration.NONE &&
+              <div className={styles.tichuDeclaration}>{playerMe.tichuDeclaration}</div>}
+            {game.turn === myIndex && <div className={styles.statusTurn}>Turn</div>}
+            {playerMe !== undefined &&
+              (playerMe.passed ||
+                game.roundStatus === RoundStatus.WAITING_LARGE_TICHU &&
+                playerMe.tichuDeclaration === TichuDeclaration.NONE
+              ) &&
+              <div className={styles.statusPass}>PASS</div>}
           </div>
-          <div className="controls">
+          <div className={styles.controls}>
             {canDeclareLargeTichu &&
               <>
-                <button className="large-tichu-button" onClick={() => decideLargeTichuDeclaration(true)}>
+                <button className={styles.largeTichuButton} onClick={() => decideLargeTichuDeclaration(true)}>
                   Large Tichu
                 </button>
-                <button className="pass-button" onClick={() => decideLargeTichuDeclaration(false)}>
+                <button className={styles.passButton} onClick={() => decideLargeTichuDeclaration(false)}>
                   Pass
                 </button>
               </>}
             {canDeclareSmallTichu &&
-              <button className="small-tichu-button" onClick={declareSmallTichu}>
+              <button className={styles.smallTichuButton} onClick={declareSmallTichu}>
                 Small Tichu
               </button>}
             {isExchanging && (
               <>
                 <button
-                  className="exchange-button"
+                  className={styles.exchangeButton}
                   onClick={() => exchange(PlayerPosition.LEFT)}
                   disabled={selectedCards.length !== 1 || !!exchangeSelection.left}
                 >
                   To Left ({getPlayerAtPosition(PlayerPosition.LEFT)?.name})
                 </button>
                 <button
-                  className="exchange-button"
+                  className={styles.exchangeButton}
                   onClick={() => exchange(PlayerPosition.MID)}
                   disabled={selectedCards.length !== 1 || !!exchangeSelection.mid}
                 >
                   To Partner ({getPlayerAtPosition(PlayerPosition.MID)?.name})
                 </button>
                 <button
-                  className="exchange-button"
+                  className={styles.exchangeButton}
                   onClick={() => exchange(PlayerPosition.RIGHT)}
                   disabled={selectedCards.length !== 1 || !!exchangeSelection.right}
                 >
@@ -911,16 +940,16 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
             {game.phaseStatus === PhaseStatus.PLAYING &&
               <>
                 {myTrick !== null && !isBomb(myTrick.type) &&
-                  <button className="play-trick-button" onClick={playTrick} disabled={!canPlayTrick}>
+                  <button className={styles.playTrickButton} onClick={playTrick} disabled={!canPlayTrick}>
                     {getTrickLabel(myTrick)}
                   </button>
                 }
                 {myTrick !== null && isBomb(myTrick.type) &&
-                  <button className="play-bomb-button" onClick={playBomb} disabled={!canPlayBomb}>
+                  <button className={styles.playBombButton} onClick={playBomb} disabled={!canPlayBomb}>
                     {getTrickLabel(myTrick)}
                   </button>
                 }
-                <button className="pass-button" onClick={pass} disabled={!canPass}>
+                <button className={styles.passButton} onClick={pass} disabled={!canPass}>
                   Pass
                 </button>
               </>
@@ -936,7 +965,7 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
               </>
             )}
           </div>
-          <div className="hand">
+          <div className={styles.hand}>
             {sortCards(game.hand, undefined).map(card => renderCard(card, true))}
           </div>
         </div>

@@ -1,7 +1,7 @@
 import { SubmitEvent, useState } from 'react';
 import { useAuth } from './useAuth.tsx';
 import { Link } from 'react-router-dom';
-import './LoginPage.css';
+import styles from './LoginPage.module.css';
 
 const LoginPage = () => {
   const { login } = useAuth();
@@ -32,12 +32,12 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="login-container">
-      <div className="login-card">
+    <div className={styles.loginContainer}>
+      <div className={styles.loginCard}>
         <h2>로그인</h2>
-        {errorMessage && <div className="error-message">{errorMessage}</div>}
-        <form className="login-form" onSubmit={handleSubmit}>
-          <div className="form-group">
+        {errorMessage && <div className={styles.errorMessage}>{errorMessage}</div>}
+        <form className={styles.loginForm} onSubmit={handleSubmit}>
+          <div className={styles.formGroup}>
             <label htmlFor="email">이메일</label>
             <input
               id="email"
@@ -48,7 +48,7 @@ const LoginPage = () => {
               required
             />
           </div>
-          <div className="form-group">
+          <div className={styles.formGroup}>
             <label htmlFor="password">비밀번호</label>
             <input
               id="password"
@@ -59,9 +59,9 @@ const LoginPage = () => {
               required
             />
           </div>
-          <button className="login-button" type="submit">로그인</button>
+          <button className={styles.loginButton} type="submit">로그인</button>
         </form>
-        <div className="login-footer">
+        <div className={styles.loginFooter}>
           계정이 없으신가요? <Link to="/signup">가입</Link>
         </div>
       </div>

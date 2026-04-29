@@ -1,6 +1,6 @@
 import { KeyboardEventHandler, useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import './RoomDetailPage.css';
+import styles from './RoomDetailPage.module.css';
 import { useAuth } from './useAuth.tsx';
 import { useAxios } from "./useAxios.tsx";
 import { useRoom } from "./useRoom.tsx";
@@ -222,38 +222,38 @@ const RoomDetailPage = () => {
   }
 
   return (
-    <div className="room-detail-container content">
-      <div className="room-detail-header">
+    <div className={`${styles.roomDetailContainer} content`}>
+      <div className={styles.roomDetailHeader}>
         <h2>[{room.id}] {room.name}</h2>
-        <div className="room-detail-header-buttons">
-          <button onClick={handleGameStartRequest} className="game-start-button" disabled={!canStartGame}>게임 시작</button>
-          <button onClick={handleLeaveRoom} className="leave-button">나가기</button>
+        <div className={styles.roomDetailHeaderButtons}>
+          <button onClick={handleGameStartRequest} className={styles.gameStartButton} disabled={!canStartGame}>게임 시작</button>
+          <button onClick={handleLeaveRoom} className={styles.leaveButton}>나가기</button>
         </div>
       </div>
 
-      <div className="room-content">
-        <div className="room-info-section">
-          <div className="info-card">
+      <div className={styles.roomContent}>
+        <div className={styles.roomInfoSection}>
+          <div className={styles.infoCard}>
             <h3>참가자 ({room.members?.length || 0} / 4)</h3>
-            <ul className="member-list">
+            <ul className={styles.memberList}>
               {room.members?.map((member) => (
-                <li key={member.id} className="member-item">
+                <li key={member.id} className={styles.memberItem}>
                   {member.name}
                 </li>
               ))}
             </ul>
           </div>
 
-          <div className="info-card">
+          <div className={styles.infoCard}>
             <h3>게임 설정</h3>
-            <div className="rule-box">
-              <div className="rule-item">
+            <div className={styles.ruleBox}>
+              <div className={styles.ruleItem}>
                 <span>승리 점수</span>
-                <div className="rule-button-group">
+                <div className={styles.ruleButtonGroup}>
                   {[TichuWinningScore.ZERO, TichuWinningScore.TWO_HUNDRED, TichuWinningScore.FIVE_HUNDRED, TichuWinningScore.ONE_THOUSAND].map((score) => (
                     <button
                       key={score}
-                      className={`rule-button ${(room.gameRule as TichuRule).winningScore === score ? 'active' : ''}`}
+                      className={`${styles.ruleButton} ${(room.gameRule as TichuRule).winningScore === score ? styles.active : ''}`}
                       onClick={() => handleWinningScoreChange(score)}
                     >
                       {formatWinningScore(score) || score}
@@ -261,17 +261,17 @@ const RoomDetailPage = () => {
                   ))}
                 </div>
               </div>
-              <div className="rule-item">
+              <div className={styles.ruleItem}>
                 <span>팀 선택</span>
-                <div className="rule-item-box">
+                <div className={styles.ruleItemBox}>
                   {room.members.map((member) => (
-                    <div key={`team-assignment-${member.id}`} className="rule-item">
+                    <div key={`team-assignment-${member.id}`} className={styles.ruleItem}>
                       <span>{member.name}</span>
-                      <div className="rule-button-group">
+                      <div className={styles.ruleButtonGroup}>
                         {[Team.RED, Team.NONE, Team.BLUE].map((team) => (
                           <button
                             key={`team-assignment-${member.id}-${team.toLowerCase()}`}
-                            className={`rule-button team-${team.toLowerCase()} ${(room.gameRule as TichuRule).teamAssignment[member.id] === team || (!(room.gameRule as TichuRule).teamAssignment[member.id] && team === 'NONE') ? 'active' : ''}`}
+                            className={`${styles.ruleButton} ${team === Team.NONE ? '' : team === Team.RED ? styles.teamRed : styles.teamBlue} ${(room.gameRule as TichuRule).teamAssignment[member.id] === team || (!(room.gameRule as TichuRule).teamAssignment[member.id] && team === 'NONE') ? styles.active : ''}`}
                             onClick={() => handleTeamChange(member, team)}
                           >
                             {team === 'NONE' ? '자동' : team}
@@ -286,22 +286,22 @@ const RoomDetailPage = () => {
           </div>
         </div>
 
-        <div className="chat-section">
-          <div className="chat-header">
+        <div className={styles.chatSection}>
+          <div className={styles.chatHeader}>
             <strong>채팅</strong>
           </div>
-          <div className="chat-messages">
+          <div className={styles.chatMessages}>
             {chatMessages.length === 0 ? (
-              <div className="chat-placeholder">메시지가 없습니다.</div>
+              <div className={styles.chatPlaceholder}>메시지가 없습니다.</div>
             ) : (
               chatMessages.map((msg, index) => (
-                <div key={index} className="chat-message">
+                <div key={index} className={styles.chatMessage}>
                   <strong>{room.members?.find(m => m.id === msg.userId)?.name || 'Unknown'}:</strong> {msg.message}
                 </div>
               ))
             )}
           </div>
-          <div className="chat-input-area">
+          <div className={styles.chatInputArea}>
             <input
               type="text"
               name="message"

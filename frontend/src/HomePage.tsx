@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useRoom } from "./useRoom.tsx";
-import './HomePage.css';
+import styles from './HomePage.module.css';
 import { RoomOpaqueDto } from "@/types.ts";
 
 const HomePage = () => {
@@ -64,10 +64,10 @@ const HomePage = () => {
   }, []);
 
   return (
-    <div className="home-container content">
-      <div className="home-header">
+    <div className={`${styles.homeContainer} content`}>
+      <div className={styles.homeHeader}>
         <h2>방 목록</h2>
-        <div className="header-buttons">
+        <div className={styles.headerButtons}>
           <button onClick={handleCreateRoom}>
             방 만들기
           </button>
@@ -78,7 +78,7 @@ const HomePage = () => {
       {loading && rooms.length === 0 ? (
         <p>Loading...</p>
       ) : (
-        <table className="rooms-table">
+        <table className={styles.roomsTable}>
           <thead>
           <tr>
             <th>ID</th>
@@ -95,7 +95,7 @@ const HomePage = () => {
                 <tr
                   key={room.id}
                   onClick={() => handleEnterRoom(room)}
-                  className={`room-row ${isAvailable ? 'available' : 'unavailable'}`}
+                  className={`${styles.roomRow} ${isAvailable ? styles.available : styles.unavailable}`}
                 >
                   <td>{room.id}</td>
                   <td>{room.name || `방 ${room.id}`}</td>
@@ -106,7 +106,7 @@ const HomePage = () => {
             })
           ) : (
             <tr>
-              <td colSpan={4} className="no-rooms">
+              <td colSpan={4} className={styles.noRooms}>
                 방이 없습니다.
               </td>
             </tr>
