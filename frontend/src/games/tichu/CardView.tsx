@@ -77,10 +77,18 @@ const CardView = ({ card, isSelectable = false, isSelected = false, onClick = un
     }
   }
 
+  const css = [
+    styles.card,
+    suitCss,
+    isSelectable ? styles.selectable : '',
+    isSelected ? styles.selected : '',
+    isSpecial ? styles.specialCard : '',
+  ].join(' ')
+
   return (
     <div
       key={`${card.type}-${card instanceof StandardCard ? (card.suit + '-' + card.rank) : ''}`}
-      className={`${styles.card} ${suitCss} ${isSelectable ? styles.selectable : ''} ${isSelected ? styles.selected : ''} ${isSpecial ? styles.specialCard : ''}`}
+      className={css}
       onClick={onClick}
     >
       <div className={styles.cardTop}>

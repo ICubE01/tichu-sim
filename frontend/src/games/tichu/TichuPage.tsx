@@ -328,7 +328,7 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
               ? null
               : prev.wish)
             : null;
-          let newTurn: PlayerIndex = (prev.players.findIndex(p => p.id === playBombMessage.playerId) + 1) % 4 as PlayerIndex;
+          let newTurn = (prev.players.findIndex(p => p.id === playBombMessage.playerId) + 1) % 4 as PlayerIndex;
           while (prev.players[newTurn].exitOrder !== 0) {
             newTurn = (newTurn + 1) % 4;
           }
@@ -700,6 +700,17 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
     return sortCards(trick.cards, phoenixRank).map(c => renderCard(c));
   }
 
+  const getTeamCss = (team: Team | undefined) => {
+    switch (team) {
+      case Team.RED:
+        return styles.teamRed;
+      case Team.BLUE:
+        return styles.teamBlue;
+      default:
+        return '';
+    }
+  }
+
   const renderPlayer = (position: PlayerPosition) => {
     const p = getPlayerAtPosition(position);
     if (p === undefined) {
@@ -711,11 +722,23 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
     const isPassed = p.passed
       || game.roundStatus === RoundStatus.WAITING_LARGE_TICHU && p.tichuDeclaration === TichuDeclaration.NONE;
 
-    const positionCss = position === PlayerPosition.MID ? styles.playerTop : position === PlayerPosition.LEFT ? styles.playerLeft : styles.playerRight;
+    let positionCss;
+    switch (position) {
+      case PlayerPosition.LEFT:
+        positionCss = styles.playerLeft;
+        break;
+      case PlayerPosition.MID:
+        positionCss = styles.playerTop;
+        break;
+      case PlayerPosition.RIGHT:
+        positionCss = styles.playerRight;
+        break;
+    }
+
     return (
       <div className={`${styles.playerSection} ${positionCss}`}>
         <div className={styles.playerInfo}>
-          <div className={`${styles.playerName} ${p.team === Team.RED ? styles.teamRed : p.team === Team.BLUE ? styles.teamBlue : ''}`}>{p.name}</div>
+          <div className={`${styles.playerName} ${getTeamCss(p.team)}`}>{p.name}</div>
           <div className={styles.cardCount}>{p.cardCount} Cards</div>
           {hasTichuDeclaration && <div className={styles.tichuDeclaration}>{p.tichuDeclaration}</div>}
           {isMyTurn && <div className={styles.statusTurn}>Turn</div>}
@@ -862,12 +885,17 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
         {/* Bottom Player (Me) */}
         <div className={`${styles.playerSection} ${styles.playerBottom}`}>
           <div className={styles.playerInfo}>
-            <div className={`${styles.playerName} ${playerMe?.team === Team.RED ? styles.teamRed : playerMe?.team === Team.BLUE ? styles.teamBlue : ''}`}>{user.name}</div>
+            <div className={`${styles.playerName} ${getTeamCss(playerMe?.team)}`}>{user.name}</div>
             <div className={styles.cardCount}>{game.hand.length} Cards</div>
-            {playerMe !== undefined && playerMe.tichuDeclaration !== null && playerMe.tichuDeclaration !== TichuDeclaration.NONE &&
+            {playerMe !== undefined &&
+              playerMe.tichuDeclaration !== null && playerMe.tichuDeclaration !== TichuDeclaration.NONE &&
               <div className={styles.tichuDeclaration}>{playerMe.tichuDeclaration}</div>}
             {game.turn === myIndex && <div className={styles.statusTurn}>Turn</div>}
-            {playerMe !== undefined && (playerMe.passed || game.roundStatus === RoundStatus.WAITING_LARGE_TICHU && playerMe.tichuDeclaration === TichuDeclaration.NONE) &&
+            {playerMe !== undefined &&
+              (playerMe.passed ||
+                game.roundStatus === RoundStatus.WAITING_LARGE_TICHU &&
+                playerMe.tichuDeclaration === TichuDeclaration.NONE
+              ) &&
               <div className={styles.statusPass}>PASS</div>}
           </div>
           <div className={styles.controls}>
