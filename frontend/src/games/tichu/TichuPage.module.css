@@ -161,11 +161,11 @@
   font-weight: bold;
 }
 
-.player-name.team-RED {
+.player-name.team-red {
   color: #e74c3c;
 }
 
-.player-name.team-BLUE {
+.player-name.team-blue {
   color: #3498db;
 }
 
@@ -357,19 +357,19 @@
   color: #8e44ad;
 }
 
-.suit-SPADE {
+.suit-spade {
   color: #3498db;
 }
 
-.suit-HEART {
+.suit-heart {
   color: #e74c3c;
 }
 
-.suit-DIAMOND {
+.suit-diamond {
   color: #f1c40f;
 }
 
-.suit-CLUB {
+.suit-club {
   color: #27ae60;
 }
 
