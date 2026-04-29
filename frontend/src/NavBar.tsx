@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from './useAuth.tsx';
-import './NavBar.css';
+import styles from './NavBar.module.css';
 
 const NavBar = () => {
   const { user, logout } = useAuth();
@@ -9,11 +9,11 @@ const NavBar = () => {
 
   return (
     <>
-      <nav className="navbar-container">
-        <div className="navbar-content content">
-          <div className="nav-left">
+      <nav className={styles.navbarContainer}>
+        <div className={`${styles.navbarContent} content`}>
+          <div className={styles.navLeft}>
             <span
-              className="settings-btn"
+              className={styles.settingsBtn}
               onClick={() => setShowSettings(!showSettings)}
               title="Settings"
             >
@@ -21,16 +21,16 @@ const NavBar = () => {
             </span>
           </div>
 
-          <div className="nav-right">
+          <div className={styles.navRight}>
             <span
-              className="user-name"
+              className={styles.userName}
               onClick={() => setShowLogout(!showLogout)}
             >
               {user?.name || 'User'}
             </span>
             {showLogout && (
               <button
-                className="logout-btn"
+                className={styles.logoutBtn}
                 onClick={logout}
                 title="Logout"
               >
@@ -42,7 +42,7 @@ const NavBar = () => {
       </nav>
 
       {showSettings && (
-        <div className="settings-popup">
+        <div className={styles.settingsPopup}>
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <strong>Settings</strong>
             <span style={{ cursor: 'pointer' }} onClick={() => setShowSettings(false)}>X</span>

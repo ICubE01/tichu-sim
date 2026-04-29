@@ -15,7 +15,7 @@ const AppContent = () => {
 
   if (!accessToken) {
     return (
-      <div className="container">
+      <div className='container'>
         <Routes>
           <Route path="/" element={<LoginPage/>}/>
           <Route path="/signup" element={<SignupPage/>}/>
@@ -26,7 +26,7 @@ const AppContent = () => {
   }
 
   return (
-    <div className="container">
+    <div className='container'>
       <NavBar/>
       <Routes>
         <Route path="/" element={<HomePage/>}/>

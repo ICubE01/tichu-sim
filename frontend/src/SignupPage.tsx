@@ -1,6 +1,6 @@
 import { SubmitEvent, useState } from 'react';
 import { Link } from 'react-router-dom';
-import './SignupPage.css';
+import styles from './SignupPage.module.css';
 
 const SignupPage = () => {
   const [name, setName] = useState('');
@@ -43,13 +43,13 @@ const SignupPage = () => {
 
   if (success) {
     return (
-      <div className="signup-container">
-        <div className="signup-card">
+      <div className={styles.signupContainer}>
+        <div className={styles.signupCard}>
           <h2>가입 완료</h2>
-          <div className="success-message">
+          <div className={styles.successMessage}>
             가입이 성공적으로 완료되었습니다!
           </div>
-          <div className="signup-footer">
+          <div className={styles.signupFooter}>
             <Link to="/">로그인 페이지로 이동</Link>
           </div>
         </div>
@@ -58,12 +58,12 @@ const SignupPage = () => {
   }
 
   return (
-    <div className="signup-container">
-      <div className="signup-card">
+    <div className={styles.signupContainer}>
+      <div className={styles.signupCard}>
         <h2>가입</h2>
-        {errorMessage && <div className="error-message">{errorMessage}</div>}
-        <form className="signup-form" onSubmit={handleSubmit}>
-          <div className="form-group">
+        {errorMessage && <div className={styles.errorMessage}>{errorMessage}</div>}
+        <form className={styles.signupForm} onSubmit={handleSubmit}>
+          <div className={styles.formGroup}>
             <label htmlFor="name">별명</label>
             <input
               id="name"
@@ -74,7 +74,7 @@ const SignupPage = () => {
               required
             />
           </div>
-          <div className="form-group">
+          <div className={styles.formGroup}>
             <label htmlFor="email">이메일</label>
             <input
               id="email"
@@ -85,7 +85,7 @@ const SignupPage = () => {
               required
             />
           </div>
-          <div className="form-group">
+          <div className={styles.formGroup}>
             <label htmlFor="password">비밀번호 (8자 이상)</label>
             <input
               id="password"
@@ -97,7 +97,7 @@ const SignupPage = () => {
               required
             />
           </div>
-          <div className="form-group">
+          <div className={styles.formGroup}>
             <label htmlFor="confirmPassword">비밀번호 확인</label>
             <input
               id="confirmPassword"
@@ -108,9 +108,9 @@ const SignupPage = () => {
               required
             />
           </div>
-          <button className="signup-button" type="submit">회원가입</button>
+          <button className={styles.signupButton} type="submit">회원가입</button>
         </form>
-        <div className="signup-footer">
+        <div className={styles.signupFooter}>
           이미 계정이 있으신가요? <Link to="/">로그인</Link>
         </div>
       </div>

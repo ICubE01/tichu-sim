@@ -4,6 +4,7 @@ import sparrowImg from "@/assets/tichu/sparrow.png";
 import phoenixImg from "@/assets/tichu/phoenix.png";
 import dragonImg from "@/assets/tichu/dragon.png";
 import dogImg from "@/assets/tichu/dog.png";
+import styles from "./TichuPage.module.css";
 
 const cardSuitToIcon = (suit: CardSuit | undefined) => {
   switch (suit) {
@@ -50,32 +51,50 @@ const CardView = ({ card, isSelectable = false, isSelected = false, onClick = un
         break;
     }
     if (imgSrc) {
-      centerContent = <img src={imgSrc} alt={card.type} className="card-image"/>;
+      centerContent = <img src={imgSrc} alt={card.type} className={styles.cardImage}/>;
     } else {
-      centerContent = <span className="special-label">{card.type}</span>;
+      centerContent = <span className={styles.specialLabel}>{card.type}</span>;
     }
   } else {
-    centerContent = <span className="card-center-icon">{suitIcon}</span>;
+    centerContent = <span className={styles.cardCenterIcon}>{suitIcon}</span>;
+  }
+
+  let suitCss = ''
+  if (card instanceof StandardCard) {
+    switch (card.suit) {
+      case CardSuit.SPADE:
+        suitCss = styles.suitSpade;
+        break;
+      case CardSuit.CLUB:
+        suitCss = styles.suitClub;
+        break;
+      case CardSuit.HEART:
+        suitCss = styles.suitHeart;
+        break;
+      case CardSuit.DIAMOND:
+        suitCss = styles.suitDiamond;
+        break;
+    }
   }
 
   return (
     <div
       key={`${card.type}-${card instanceof StandardCard ? (card.suit + '-' + card.rank) : ''}`}
-      className={`card ${card instanceof StandardCard ? `suit-${card.suit}` : ''} ${isSelectable ? 'selectable' : ''} ${isSelected ? 'selected' : ''} ${isSpecial ? 'special-card' : ''}`}
+      className={`${styles.card} ${suitCss} ${isSelectable ? styles.selectable : ''} ${isSelected ? styles.selected : ''} ${isSpecial ? styles.specialCard : ''}`}
       onClick={onClick}
     >
-      <div className="card-top">
-        {rankLabel && <span className="card-rank">{rankLabel}</span>}
-        {suitIcon && <span className="card-suit">{suitIcon}</span>}
-        {isSpecial && <span className="special-tiny-label">{card.type}</span>}
+      <div className={styles.cardTop}>
+        {rankLabel && <span className={styles.cardRank}>{rankLabel}</span>}
+        {suitIcon && <span className={styles.cardSuit}>{suitIcon}</span>}
+        {isSpecial && <span className={styles.specialTinyLabel}>{card.type}</span>}
       </div>
-      <div className="card-center">
+      <div className={styles.cardCenter}>
         {centerContent}
       </div>
-      <div className="card-bottom">
-        {rankLabel && <span className="card-rank">{rankLabel}</span>}
-        {suitIcon && <span className="card-suit">{suitIcon}</span>}
-        {isSpecial && <span className="special-tiny-label">{card.type}</span>}
+      <div className={styles.cardBottom}>
+        {rankLabel && <span className={styles.cardRank}>{rankLabel}</span>}
+        {suitIcon && <span className={styles.cardSuit}>{suitIcon}</span>}
+        {isSpecial && <span className={styles.specialTinyLabel}>{card.type}</span>}
       </div>
     </div>
   );
