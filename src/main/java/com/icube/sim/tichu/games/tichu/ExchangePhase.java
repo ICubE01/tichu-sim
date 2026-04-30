@@ -75,4 +75,8 @@ public class ExchangePhase {
 
         round.finishExchangePhase();
     }
+
+    public Card[] getExchange(Long playerId) {
+        return exchangingCards[game.getPlayerIndexById(playerId)];
+    }
 }

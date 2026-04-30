@@ -21,6 +21,7 @@ public class TichuDto {
     private final List<CardDto> myHand;
     private final RoundStatus roundStatus;
     private final TichuDeclaration[] tichuDeclarations;
+    private final @Nullable ExchangeSend myExchange;
     private final @Nullable Integer wish;
     private final int[] exitOrder;
     private final @Nullable PhaseStatus phaseStatus;
