@@ -14,6 +14,7 @@ export interface TichuDto {
   handCounts: Record<number, number>;
   myHand: CardDto[];
   roundStatus: RoundStatus;
+  myExchange: { left: CardDto | null, mid: CardDto | null, right: CardDto | null };
   tichuDeclarations: (TichuDeclaration | null)[];
   wish: CardRank | null;
   exitOrder: (0 | 1 | 2)[];

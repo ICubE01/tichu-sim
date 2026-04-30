@@ -4,6 +4,7 @@ import com.icube.sim.tichu.games.tichu.PhaseStatus;
 import com.icube.sim.tichu.games.tichu.Player;
 import com.icube.sim.tichu.games.tichu.RoundStatus;
 import com.icube.sim.tichu.games.tichu.Tichu;
+import com.icube.sim.tichu.games.tichu.dtos.ExchangeSend;
 import com.icube.sim.tichu.games.tichu.dtos.TichuDto;
 import com.icube.sim.tichu.games.tichu.dtos.TrickDto;
 
@@ -26,6 +27,17 @@ public class TichuMapper {
 
         var round = game.getCurrentRound();
 
+        ExchangeSend myExchange = null;
+        if (round.getStatus() == RoundStatus.EXCHANGING) {
+            var exchangePhase = round.getExchangePhase();
+            var exchange = exchangePhase.getExchange(playerId);
+            myExchange = new ExchangeSend(
+                    cardMapper.toDtoNullable(exchange[2]),
+                    cardMapper.toDtoNullable(exchange[1]),
+                    cardMapper.toDtoNullable(exchange[0])
+            );
+        }
+
         PhaseStatus phaseStatus = null;
         Integer turn = null;
         List<TrickDto> trickDtos = null;
@@ -44,6 +56,7 @@ public class TichuMapper {
                 .myHand(myHand.stream().map(cardMapper::toDto).toList())
                 .roundStatus(round.getStatus())
                 .tichuDeclarations(round.getTichuDeclarations())
+                .myExchange(myExchange)
                 .wish(round.getWish())
                 .exitOrder(round.getExitOrder())
                 .phaseStatus(phaseStatus)

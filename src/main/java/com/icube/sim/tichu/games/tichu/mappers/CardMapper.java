@@ -37,6 +37,10 @@ public class CardMapper {
         };
     }
 
+    public @Nullable CardDto toDtoNullable(Card card) {
+        return card == null ? null : toDto(card);
+    }
+
     public @Nullable Card toCardNullable(CardDto cardDto) {
         return cardDto == null ? null : toCard(cardDto);
     }
