@@ -44,6 +44,10 @@ export class CardMapper {
     }
   }
 
+  static toCardNullable(cardDto: CardDto | null) : Card | null {
+    return cardDto ? CardMapper.toCard(cardDto) : null;
+  }
+
   static toDtoNullable(card: Card | null) : CardDto | null {
     return card ? CardMapper.toDto(card) : null;
   }

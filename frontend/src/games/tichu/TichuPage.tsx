@@ -151,6 +151,17 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
             return index < tichuDto.turn || lastTrickDto.playerIndex < index;
           }
         }
+        let newExchangeSelection: ExchangeSelection;
+        if (tichuDto.myExchange !== null) {
+          newExchangeSelection = {
+            left: CardMapper.toCardNullable(tichuDto.myExchange.left),
+            mid: CardMapper.toCardNullable(tichuDto.myExchange.mid),
+            right: CardMapper.toCardNullable(tichuDto.myExchange.right),
+          };
+        } else {
+          newExchangeSelection = new ExchangeSelection();
+        }
+        setExchangeSelection(newExchangeSelection)
         setGame({
           rule: tichuDto.rule,
           players: tichuDto.players.slice(0, 4).map((p, i) =>
@@ -167,9 +178,9 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
           ),
           scoresHistory: tichuDto.scoresHistory,
           hand: tichuDto.myHand.map(CardMapper.toCard).filter(card =>
-            !card.equals(exchangeSelection.left)
-            && !card.equals(exchangeSelection.mid)
-            && !card.equals(exchangeSelection.right)
+            !card.equals(newExchangeSelection.left)
+            && !card.equals(newExchangeSelection.mid)
+            && !card.equals(newExchangeSelection.right)
           ),
           roundStatus: tichuDto.roundStatus,
           wish: tichuDto.wish,
