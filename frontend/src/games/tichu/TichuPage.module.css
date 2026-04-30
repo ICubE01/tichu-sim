@@ -562,15 +562,15 @@
   color: rgba(255, 255, 255, 0.2);
 }
 
-/* Score Modal Styles */
-.score-modal-overlay {
+/* Modal Overlays */
+.modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(8px);
+  background: rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -588,6 +588,7 @@
   }
 }
 
+/* Score Modal Styles */
 .score-modal-content {
   background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
   padding: 40px;
@@ -677,34 +678,15 @@
   box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
 }
 
-.btn-modal-close:hover {
-  transform: translateY(-2px);
+.btn-modal-close:hover, .btn-modal-close:active {
+  background: #3498db;
+  transform: translateY(2px);
   box-shadow: 0 6px 20px rgba(79, 172, 254, 0.6);
-  background: #00f2fe;
-}
-
-.btn-modal-close:active {
-  transform: translateY(1px);
 }
 
 /* Wish Modal Styles */
-.wish-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(12px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1100;
-  animation: fadeIn 0.3s ease-out;
-}
-
 .wish-modal-content {
-  background: linear-gradient(135deg, #1a4a1a 0%, #0d2a0d 100%);
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
   padding: 40px;
   border-radius: 24px;
   width: 90%;
@@ -718,7 +700,7 @@
 .wish-modal-content h2 {
   font-size: 2em;
   margin-bottom: 10px;
-  color: #ffd700;
+  color: white;
   text-transform: uppercase;
   letter-spacing: 2px;
 }
@@ -730,7 +712,7 @@
 
 .wish-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 12px;
   margin-bottom: 30px;
 }
@@ -747,10 +729,8 @@
   transition: all 0.2s;
 }
 
-.btn-wish:hover {
+.btn-wish:hover, .btn-wish:active {
   background: #4facfe;
-  border-color: #4facfe;
-  transform: scale(1.05);
   box-shadow: 0 0 15px rgba(79, 172, 254, 0.4);
 }
 
@@ -767,11 +747,11 @@
   transition: all 0.2s;
   text-transform: uppercase;
   letter-spacing: 1px;
+  grid-column: span 2;
 }
 
-.btn-no-wish:hover {
+.btn-no-wish:hover, .btn-no-wish:active {
   background: #ff5252;
-  transform: translateY(-2px);
   box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
 }
 
@@ -870,21 +850,6 @@
 }
 
 /* Exchange Result Modal Styles */
-.exchange-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(10px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1200;
-  animation: fadeIn 0.3s ease-out;
-}
-
 .exchange-modal-content {
   background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
   padding: 3rem;

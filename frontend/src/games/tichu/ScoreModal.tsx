@@ -1,6 +1,7 @@
 import { MouseEventHandler } from "react";
 import { Player } from "@/games/tichu/domain/Player.ts";
 import { TichuGame } from "@/games/tichu/domain/TichuGame.ts";
+import styles from "./TichuPage.module.css";
 
 const ScoreModal = ({ scoresHistory, players, type, onClose }: {
   scoresHistory: number[][],
@@ -16,11 +17,11 @@ const ScoreModal = ({ scoresHistory, players, type, onClose }: {
   const bluePlayers = [players[1], players[3]].map(p => p?.name).join(' & ');
 
   return (
-    <div className="score-modal-overlay">
-      <div className="score-modal-content">
+    <div className={styles.modalOverlay}>
+      <div className={styles.scoreModalContent}>
         <h2>Score Board</h2>
-        <div className="score-table-container">
-          <table className="score-table">
+        <div className={styles.scoreTableContainer}>
+          <table className={styles.scoreTable}>
             <thead>
             <tr>
               <th>Round</th>
@@ -36,7 +37,7 @@ const ScoreModal = ({ scoresHistory, players, type, onClose }: {
                 <td>{score[1]}</td>
               </tr>
             ))}
-            <tr className="total-row">
+            <tr className={styles.totalRow}>
               <td>Total</td>
               <td>{redScore}</td>
               <td>{blueScore}</td>
@@ -44,7 +45,7 @@ const ScoreModal = ({ scoresHistory, players, type, onClose }: {
             </tbody>
           </table>
         </div>
-        <button className="btn-modal-close" onClick={onClose}>
+        <button className={styles.btnModalClose} onClick={onClose}>
           {type === 'ROUND_END' ? 'Close' : 'Back to Room'}
         </button>
       </div>
