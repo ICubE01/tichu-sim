@@ -546,8 +546,8 @@ export class DogTrick extends Trick {
     return cards.length === 1 && cards[0] instanceof DogCard;
   }
 
-  public canCoverUp(_other: Trick | null): boolean {
-    return false;
+  public canCoverUp(other: Trick | null): boolean {
+    return other === null;
   }
 
   public canFulfillWishAfter(_wish: CardRank, _hand: Cards): boolean {
