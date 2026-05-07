@@ -729,6 +729,7 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
     }
 
     const hasTichuDeclaration = p.tichuDeclaration !== null && p.tichuDeclaration !== TichuDeclaration.NONE;
+    const exitOrder = p.exitOrder === 1 ? "1st" : p.exitOrder === 2 ? "2nd" : p.exitOrder === 3 ? "3rd" : null;
     const isMyTurn = game.turn === p.index;
     const isPassed = p.passed
       || game.roundStatus === RoundStatus.WAITING_LARGE_TICHU && p.tichuDeclaration === TichuDeclaration.NONE;
@@ -752,6 +753,7 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
           <div className={`${styles.playerName} ${getTeamCss(p.team)}`}>{p.name}</div>
           <div className={styles.cardCount}>{p.cardCount} Cards</div>
           {hasTichuDeclaration && <div className={styles.tichuDeclaration}>{p.tichuDeclaration}</div>}
+          {exitOrder !== null && <div className={styles.exitOrder}>{exitOrder}</div>}
           {isMyTurn && <div className={styles.statusTurn}>Turn</div>}
           {isPassed && <div className={styles.statusPass}>PASS</div>}
         </div>
@@ -902,6 +904,9 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
             {playerMe !== undefined &&
               playerMe.tichuDeclaration !== null && playerMe.tichuDeclaration !== TichuDeclaration.NONE &&
               <div className={styles.tichuDeclaration}>{playerMe.tichuDeclaration}</div>}
+            {playerMe !== undefined && playerMe.exitOrder === 1 && <div className={styles.exitOrder}>1st</div>}
+            {playerMe !== undefined && playerMe.exitOrder === 2 && <div className={styles.exitOrder}>2nd</div>}
+            {playerMe !== undefined && playerMe.exitOrder === 3 && <div className={styles.exitOrder}>3rd</div>}
             {game.turn === myIndex && <div className={styles.statusTurn}>Turn</div>}
             {playerMe !== undefined &&
               (playerMe.passed ||

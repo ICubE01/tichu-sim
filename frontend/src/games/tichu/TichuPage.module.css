@@ -179,6 +179,12 @@
   font-size: 0.8rem;
 }
 
+.exit-order {
+  color: white;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
 .status-turn {
   color: #4facfe;
   font-size: 0.8rem;
@@ -201,7 +207,7 @@
     font-size: 0.8rem;
   }
 
-  .card-count, .tichu-declaration, .status-turn, .status-pass {
+  .card-count, .tichu-declaration, .exit-order, .status-turn, .status-pass {
     font-size: 0.7rem;
   }
 }
