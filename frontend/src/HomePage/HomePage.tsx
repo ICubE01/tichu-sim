@@ -1,15 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useRoom } from "@/useRoom.tsx";
+import { CreateRoomRequest, useRoom } from "@/useRoom.tsx";
 import { RoomOpaqueDto } from "@/types.ts";
 import styles from './HomePage.module.css';
-import { GameName } from "@/games/types.ts";
+import CreateRoomModal from './CreateRoomModal';
 
 const HomePage = () => {
   const navigate = useNavigate();
   const { fetchMyRoom, fetchRooms, createRoom, enterRoom } = useRoom();
   const [rooms, setRooms] = useState<RoomOpaqueDto[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isCreateRoomModalOpen, setIsCreateModalOpen] = useState(false);
 
   const checkMyRoom = async () => {
     try {
@@ -31,16 +32,14 @@ const HomePage = () => {
     }
   }
 
-  const handleCreateRoom = async () => {
-    const name = prompt('Enter room name:');
-    if (!name) {
-      return;
-    }
+  const handleCreateRoom = async (createRoomRequest: CreateRoomRequest) => {
     try {
-      const res = await createRoom({ name, gameName: GameName.TICHU });
+      const res = await createRoom(createRoomRequest);
       navigate(`/${res.id}`);
     } catch (error) {
       console.error('Failed to create room:', error);
+    } finally {
+      setIsCreateModalOpen(false);
     }
   }
 
@@ -69,7 +68,7 @@ const HomePage = () => {
       <div className={styles.homeHeader}>
         <h2>방 목록</h2>
         <div className={styles.headerButtons}>
-          <button onClick={handleCreateRoom}>
+          <button onClick={() => setIsCreateModalOpen(true)}>
             방 만들기
           </button>
           <button onClick={handleFetchRooms}>새로고침</button>
@@ -115,6 +114,12 @@ const HomePage = () => {
           </tbody>
         </table>
       )}
+
+      <CreateRoomModal
+        isOpen={isCreateRoomModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onCreate={handleCreateRoom}
+      />
     </div>
   );
 };

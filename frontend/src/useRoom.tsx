@@ -3,7 +3,7 @@ import { HttpStatusCode } from "axios";
 import { RoomDto, RoomOpaqueDto } from "@/types.ts";
 import { GameName } from "@/games/types.ts";
 
-interface CreateRoomRequest {
+export interface CreateRoomRequest {
   name: string;
   gameName: GameName;
 }
