@@ -40,7 +40,7 @@ public class RoomService {
             id = generateRandomAlphabetString(ROOM_ID_LENGTH);
         } while (roomRepository.existsById(id));
 
-        var room = new Room(id, request.getName());
+        var room = new Room(id, request.getName(), request.getGameName());
         var member = new Member(user.getId(), user.getName());
         room.addMember(member);
         roomRepository.save(room);

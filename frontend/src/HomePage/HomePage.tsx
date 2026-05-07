@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useRoom } from "@/useRoom.tsx";
 import { RoomOpaqueDto } from "@/types.ts";
 import styles from './HomePage.module.css';
+import { GameName } from "@/games/types.ts";
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -36,7 +37,7 @@ const HomePage = () => {
       return;
     }
     try {
-      const res = await createRoom(name);
+      const res = await createRoom({ name, gameName: GameName.TICHU });
       navigate(`/${res.id}`);
     } catch (error) {
       console.error('Failed to create room:', error);
