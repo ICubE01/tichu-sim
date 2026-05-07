@@ -47,8 +47,20 @@
   font-size: 0.9rem;
   font-weight: 600;
   color: #555;
-  margin-bottom: 0.5rem;
   margin-left: 0.2rem;
+}
+
+.labelRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.charCount {
+  font-size: 0.8rem;
+  color: #888;
+  font-weight: 500;
 }
 
 .roomInput, .gameSelect {

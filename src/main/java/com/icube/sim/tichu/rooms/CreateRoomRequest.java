@@ -9,7 +9,7 @@ import lombok.Data;
 @Data
 public class CreateRoomRequest {
     @NotBlank(message = "Name is required.")
-    @Size(max = 64, message = "Name must be less than 64 characters.")
+    @Size(max = 20, message = "Name must be less than 20 characters.")
     private String name;
 
     @NotNull(message = "Game name is required.")

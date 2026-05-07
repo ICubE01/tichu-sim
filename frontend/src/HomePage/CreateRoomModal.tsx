@@ -59,7 +59,10 @@ const CreateRoomModal = ({ isOpen, onClose, onCreate }: CreateRoomModalProps) =>
         <h2>방 만들기</h2>
 
         <div className={styles.inputGroup}>
-          <label htmlFor="roomName">방 이름</label>
+          <div className={styles.labelRow}>
+            <label htmlFor="roomName">방 이름</label>
+            <span className={styles.charCount}>{roomName.length}/20</span>
+          </div>
           <input
             id="roomName"
             type="text"
@@ -68,11 +71,12 @@ const CreateRoomModal = ({ isOpen, onClose, onCreate }: CreateRoomModalProps) =>
             value={roomName}
             onChange={(e) => setRoomName(e.target.value)}
             onKeyDown={handleKeyDown}
+            maxLength={20}
           />
         </div>
 
         <div className={styles.inputGroup}>
-          <label htmlFor="gameName">게임 종류</label>
+          <label className={styles.labelRow} htmlFor="gameName">게임 종류</label>
           <select
             id="gameName"
             className={styles.gameSelect}
