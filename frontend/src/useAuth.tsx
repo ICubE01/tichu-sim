@@ -57,7 +57,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (response.ok) {
         const data = await response.json();
         // Match user's manual change in useAxios where res.data.accessToken is used
-        const newToken = data.accessToken || data.token;
+        const newToken = data.token;
         if (newToken) {
           setAccessToken(newToken);
           await fetchUserInfo(newToken);
