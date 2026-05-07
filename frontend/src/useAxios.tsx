@@ -25,14 +25,14 @@ export const useAxios = () => {
       (response) => response,
       async (error) => {
         const prevRequest = error?.config;
-        if (prevRequest?.sent && error?.response?.status !== 401) {
+        if (prevRequest?.sent || error?.response?.status !== 401) {
           return Promise.reject(error);
         }
 
         prevRequest.sent = true;
         try {
           const res = await axios.post('/api/auth/refresh', {}, { withCredentials: true });
-          const newAccessToken = res.data.accessToken;
+          const newAccessToken = res.data.token;
 
           login(newAccessToken);
 
