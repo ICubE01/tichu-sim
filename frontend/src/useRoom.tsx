@@ -1,6 +1,12 @@
 import { useAxios } from "./useAxios.tsx";
 import { HttpStatusCode } from "axios";
 import { RoomDto, RoomOpaqueDto } from "@/types.ts";
+import { GameName } from "@/games/types.ts";
+
+export interface CreateRoomRequest {
+  name: string;
+  gameName: GameName;
+}
 
 interface CreateRoomResponse {
   id: number;
@@ -13,8 +19,8 @@ export const useRoom = () => {
     api.get('/rooms')
       .then(response => response.data as RoomOpaqueDto[]);
 
-  const createRoom = (name: string) =>
-    api.post('/rooms', { name })
+  const createRoom = (createRoomRequest: CreateRoomRequest) =>
+    api.post('/rooms', createRoomRequest)
       .then(response => response.data as CreateRoomResponse);
 
   const fetchMyRoom = () =>

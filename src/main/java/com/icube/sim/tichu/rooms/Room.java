@@ -21,11 +21,11 @@ public class Room {
     private final GameRuleWrapper gameRuleWrapper;
     private Game game;
 
-    public Room(String id, String name) {
+    public Room(String id, String name, GameName gameName) {
         this.id = id;
         this.name = name;
         this.members = new HashMap<>();
-        this.gameName = GameName.TICHU;
+        this.gameName = gameName;
         this.gameRuleWrapper = GameRuleWrapper.of(gameName);
         this.game = null;
     }
