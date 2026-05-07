@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useRoom } from "./useRoom.tsx";
-import styles from './HomePage.module.css';
+import { useRoom } from "@/useRoom.tsx";
 import { RoomOpaqueDto } from "@/types.ts";
+import styles from './HomePage.module.css';
 
 const HomePage = () => {
   const navigate = useNavigate();

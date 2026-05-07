@@ -3,7 +3,7 @@ import { AuthProvider, useAuth } from './useAuth.tsx';
 import LoginPage from './LoginPage';
 import SignupPage from './SignupPage';
 import NavBar from "./NavBar";
-import HomePage from './HomePage';
+import HomePage from '@/HomePage/HomePage.tsx';
 import RoomDetailPage from './RoomDetailPage';
 import './App.css';
 
