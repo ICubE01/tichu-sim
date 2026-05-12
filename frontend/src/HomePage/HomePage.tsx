@@ -44,7 +44,7 @@ const HomePage = () => {
   }
 
   const handleEnterRoom = async (room: RoomOpaqueDto) => {
-    if (room.memberCount >= 4 || room.hasGameStarted) {
+    if (room.memberCount >= room.maxPlayers || room.hasGameStarted) {
       alert('Unable to enter the room.');
       return;
     }
@@ -90,7 +90,7 @@ const HomePage = () => {
           <tbody>
           {rooms.length > 0 ? (
             rooms.map((room) => {
-              const isAvailable = room.memberCount < 4 && !room.hasGameStarted;
+              const isAvailable = room.memberCount < room.maxPlayers && !room.hasGameStarted;
               return (
                 <tr
                   key={room.id}
@@ -100,7 +100,7 @@ const HomePage = () => {
                   <td>{room.id}</td>
                   <td>{room.name || `방 ${room.id}`}</td>
                   <td>{room.hasGameStarted ? '게임 진행 중' : '대기 중'}</td>
-                  <td>{room.memberCount} / 4</td>
+                  <td>{room.memberCount} / {room.maxPlayers}</td>
                 </tr>
               );
             })
