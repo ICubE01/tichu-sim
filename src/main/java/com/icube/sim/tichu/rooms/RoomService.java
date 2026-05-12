@@ -4,9 +4,11 @@ import com.icube.sim.tichu.auth.AuthService;
 import lombok.Locked;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -96,6 +98,25 @@ public class RoomService {
 
         if (room.getMembers().isEmpty()) {
             roomRepository.deleteById(id);
+        }
+    }
+
+    @Locked.Write
+    @Scheduled(fixedDelay = 1000 * 60 * 10)
+    public void deleteStaleRooms() {
+        var now = Instant.now();
+        var staleRooms = roomRepository.findAll().stream()
+                .filter(r -> {
+                    if (r.hasGameStarted()) {
+                        return r.sinceLastUpdate(now).toSeconds() > roomConfig.getInGameExpiration();
+                    } else {
+                        return r.sinceLastUpdate(now).toSeconds() > roomConfig.getOutGameExpiration();
+                    }
+                })
+                .toList();
+        for (var room : staleRooms) {
+            room.getMembers().keySet().forEach(memberRepository::deleteById);
+            roomRepository.deleteById(room.getId());
         }
     }
 
