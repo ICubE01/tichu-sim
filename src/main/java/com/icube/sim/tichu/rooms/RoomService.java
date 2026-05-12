@@ -3,7 +3,6 @@ package com.icube.sim.tichu.rooms;
 import com.icube.sim.tichu.auth.AuthService;
 import lombok.Locked;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -15,8 +14,7 @@ import java.util.stream.IntStream;
 @RequiredArgsConstructor
 @Service
 public class RoomService {
-    @Value("${spring.rooms.id-length}")
-    private int ROOM_ID_LENGTH;
+    private final RoomConfig roomConfig;
     private final AuthService authService;
     private final RoomRepository roomRepository;
     private final MemberRepository memberRepository;
@@ -37,7 +35,7 @@ public class RoomService {
 
         String id;
         do {
-            id = generateRandomAlphabetString(ROOM_ID_LENGTH);
+            id = generateRandomAlphabetString(roomConfig.getIdLength());
         } while (roomRepository.existsById(id));
 
         var room = new Room(id, request.getName(), request.getGameName());
