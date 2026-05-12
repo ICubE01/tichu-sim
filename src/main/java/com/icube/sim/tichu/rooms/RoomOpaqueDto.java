@@ -10,4 +10,5 @@ public class RoomOpaqueDto {
     private int memberCount;
     private GameName gameName;
     private boolean hasGameStarted;
+    private int maxPlayers;
 }

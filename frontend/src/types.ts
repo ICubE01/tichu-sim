@@ -10,6 +10,7 @@ export interface RoomOpaqueDto {
   memberCount: number;
   gameName: GameName;
   hasGameStarted: boolean;
+  maxPlayers: number;
 }
 
 export interface MemberDto {
