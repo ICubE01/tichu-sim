@@ -1,7 +1,20 @@
-import { useState, KeyboardEvent, MouseEvent } from 'react';
+import { useState, useEffect, KeyboardEvent, MouseEvent } from 'react';
 import styles from './CreateRoomModal.module.css';
 import { GameName } from '@/games/types.ts';
 import { CreateRoomRequest } from "@/useRoom.tsx";
+
+const ROOM_NAME_PLACEHOLDERS = [
+  '초보 환영합니다',
+  '한 판 하실 분',
+  '진지하게 즐겨요',
+  '친목 게임방',
+  '실력자 모여라',
+  '같이 배워요',
+  '즐겜 하실 분만',
+  '대박 나는 방',
+  '편하게 즐겨요',
+  '승부욕 있는 분',
+];
 
 interface CreateRoomModalProps {
   isOpen: boolean;
@@ -14,6 +27,14 @@ const CreateRoomModal = ({ isOpen, onClose, onCreate }: CreateRoomModalProps) =>
   const [gameName, setGameName] = useState<GameName>(GameName.TICHU);
 
   const [isOverlayMouseDown, setIsOverlayMouseDown] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setRoomName(ROOM_NAME_PLACEHOLDERS[Math.floor(Math.random() * ROOM_NAME_PLACEHOLDERS.length)]);
+    } else {
+      setRoomName('');
+    }
+  }, [isOpen]);
 
   if (!isOpen) {
     return null;
