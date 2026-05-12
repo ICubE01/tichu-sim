@@ -11,6 +11,7 @@ import java.util.Map;
 public interface RoomMapper {
     @Mapping(target = "memberCount", expression = "java(room.getMembers().size())")
     @Mapping(target = "hasGameStarted", expression = "java(room.hasGameStarted())")
+    @Mapping(target = "maxPlayers", expression = "java(room.getGameRule().getMaxPlayers())")
     RoomOpaqueDto toOpaqueDto(Room room);
 
     @Mapping(target = "hasGameStarted", expression = "java(room.hasGameStarted())")

@@ -4,6 +4,7 @@ import { CreateRoomRequest, useRoom } from "@/useRoom.tsx";
 import { RoomOpaqueDto } from "@/types.ts";
 import styles from './HomePage.module.css';
 import CreateRoomModal from './CreateRoomModal';
+import { GameName } from "@/games/types.ts";
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -44,7 +45,7 @@ const HomePage = () => {
   }
 
   const handleEnterRoom = async (room: RoomOpaqueDto) => {
-    if (room.memberCount >= 4 || room.hasGameStarted) {
+    if (room.memberCount >= room.maxPlayers || room.hasGameStarted) {
       alert('Unable to enter the room.');
       return;
     }
@@ -62,6 +63,15 @@ const HomePage = () => {
     handleFetchRooms().then();
     setLoading(false);
   }, []);
+
+  const formatGameName = (gameName: GameName) => {
+    switch (gameName) {
+      case 'TICHU':
+        return '티츄';
+      default:
+        return gameName;
+    }
+  }
 
   return (
     <div className={`${styles.homeContainer} content`}>
@@ -83,6 +93,7 @@ const HomePage = () => {
           <tr>
             <th>ID</th>
             <th>이름</th>
+            <th>게임</th>
             <th>상태</th>
             <th>인원</th>
           </tr>
@@ -90,7 +101,7 @@ const HomePage = () => {
           <tbody>
           {rooms.length > 0 ? (
             rooms.map((room) => {
-              const isAvailable = room.memberCount < 4 && !room.hasGameStarted;
+              const isAvailable = room.memberCount < room.maxPlayers && !room.hasGameStarted;
               return (
                 <tr
                   key={room.id}
@@ -99,8 +110,9 @@ const HomePage = () => {
                 >
                   <td>{room.id}</td>
                   <td>{room.name || `방 ${room.id}`}</td>
+                  <td>{formatGameName(room.gameName)}</td>
                   <td>{room.hasGameStarted ? '게임 진행 중' : '대기 중'}</td>
-                  <td>{room.memberCount} / 4</td>
+                  <td>{room.memberCount} / {room.maxPlayers}</td>
                 </tr>
               );
             })
