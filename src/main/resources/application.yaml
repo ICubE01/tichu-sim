@@ -15,4 +15,6 @@ spring:
   cors:
     allowed-origin: ${CORS_ALLOWED_ORIGIN}
   rooms:
-    id-length: 5
+    idLength: 5
+    outGameExpiration: 3600  # 1 hour
+    inGameExpiration: 21600  # 6 hours

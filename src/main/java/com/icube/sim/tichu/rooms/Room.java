@@ -6,6 +6,8 @@ import com.icube.sim.tichu.games.common.exceptions.GameNotFoundException;
 import lombok.Getter;
 import lombok.Locked;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,6 +22,7 @@ public class Room {
     private final GameName gameName;
     private final GameRuleWrapper gameRuleWrapper;
     private Game game;
+    private Instant updatedAt;
 
     public Room(String id, String name, GameName gameName) {
         this.id = id;
@@ -28,6 +31,7 @@ public class Room {
         this.gameName = gameName;
         this.gameRuleWrapper = GameRuleWrapper.of(gameName);
         this.game = null;
+        this.updatedAt = Instant.now();
     }
 
     @Locked.Read
@@ -48,6 +52,8 @@ public class Room {
         members.put(member.getId(), member);
         member.setRoom(this);
         member.setSeq(++memberCounter);
+
+        updatedAt = Instant.now();
     }
 
     @Locked.Write
@@ -60,6 +66,8 @@ public class Room {
         if (member != null) {
             member.setRoom(null);
         }
+
+        updatedAt = Instant.now();
     }
 
     @Locked.Read
@@ -75,6 +83,7 @@ public class Room {
     @Locked.Write
     public void setGameRule(GameRule gameRule) {
         gameRuleWrapper.setGameRule(gameRule);
+        updatedAt = Instant.now();
     }
 
     @Locked.Read
@@ -90,6 +99,7 @@ public class Room {
 
         gameRuleWrapper.setMutable(false);
         game = GameBuilder.build(gameName, gameRuleWrapper.getGameRule(), members);
+        updatedAt = Instant.now();
     }
 
     @Locked.Read
@@ -105,5 +115,11 @@ public class Room {
     public void endGame() {
         game = null;
         gameRuleWrapper.setMutable(true);
+        updatedAt = Instant.now();
+    }
+
+    @Locked.Read
+    public Duration sinceLastUpdate(Instant now) {
+        return Duration.between(updatedAt, now);
     }
 }

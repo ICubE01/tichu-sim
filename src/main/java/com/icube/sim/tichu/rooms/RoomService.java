@@ -1,10 +1,11 @@
 package com.icube.sim.tichu.rooms;
 
 import com.icube.sim.tichu.auth.AuthService;
+import com.icube.sim.tichu.common.TimeService;
 import lombok.Locked;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
@@ -15,13 +16,13 @@ import java.util.stream.IntStream;
 @RequiredArgsConstructor
 @Service
 public class RoomService {
-    @Value("${spring.rooms.id-length}")
-    private int ROOM_ID_LENGTH;
+    private final RoomConfig roomConfig;
     private final AuthService authService;
     private final RoomRepository roomRepository;
     private final MemberRepository memberRepository;
     private final RoomMapper roomMapper;
     private final SimpMessagingTemplate messagingTemplate;
+    private final TimeService timeService;
 
     @Locked.Read
     public List<RoomOpaqueDto> getRooms() {
@@ -37,7 +38,7 @@ public class RoomService {
 
         String id;
         do {
-            id = generateRandomAlphabetString(ROOM_ID_LENGTH);
+            id = generateRandomAlphabetString(roomConfig.getIdLength());
         } while (roomRepository.existsById(id));
 
         var room = new Room(id, request.getName(), request.getGameName());
@@ -98,6 +99,25 @@ public class RoomService {
 
         if (room.getMembers().isEmpty()) {
             roomRepository.deleteById(id);
+        }
+    }
+
+    @Locked.Write
+    @Scheduled(fixedDelay = 1000 * 60 * 10)
+    public void deleteStaleRooms() {
+        var now = timeService.now();
+        var staleRooms = roomRepository.findAll().stream()
+                .filter(r -> {
+                    if (r.hasGameStarted()) {
+                        return r.sinceLastUpdate(now).toSeconds() > roomConfig.getInGameExpiration();
+                    } else {
+                        return r.sinceLastUpdate(now).toSeconds() > roomConfig.getOutGameExpiration();
+                    }
+                })
+                .toList();
+        for (var room : staleRooms) {
+            room.getMembers().keySet().forEach(memberRepository::deleteById);
+            roomRepository.deleteById(room.getId());
         }
     }
 
