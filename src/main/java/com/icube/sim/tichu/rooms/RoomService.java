@@ -1,6 +1,7 @@
 package com.icube.sim.tichu.rooms;
 
 import com.icube.sim.tichu.auth.AuthService;
+import com.icube.sim.tichu.common.TimeService;
 import lombok.Locked;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -8,7 +9,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -22,6 +22,7 @@ public class RoomService {
     private final MemberRepository memberRepository;
     private final RoomMapper roomMapper;
     private final SimpMessagingTemplate messagingTemplate;
+    private final TimeService timeService;
 
     @Locked.Read
     public List<RoomOpaqueDto> getRooms() {
@@ -104,7 +105,7 @@ public class RoomService {
     @Locked.Write
     @Scheduled(fixedDelay = 1000 * 60 * 10)
     public void deleteStaleRooms() {
-        var now = Instant.now();
+        var now = timeService.now();
         var staleRooms = roomRepository.findAll().stream()
                 .filter(r -> {
                     if (r.hasGameStarted()) {
