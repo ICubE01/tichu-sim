@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.time.*;
 import java.time.temporal.ChronoUnit;
@@ -20,7 +19,7 @@ class DeleteStaleRoomsTest {
 
     @Mock AuthService authService;
     @Mock RoomMapper roomMapper;
-    @Mock SimpMessagingTemplate messagingTemplate;
+    @Mock MemberMessagePublisher memberMessagePublisher;
 
     RoomRepository roomRepository;
     MemberRepository memberRepository;
@@ -37,7 +36,7 @@ class DeleteStaleRoomsTest {
     }
 
     private RoomService serviceWithClock(Clock clock) {
-        return new RoomService(roomConfig, authService, roomRepository, memberRepository, roomMapper, messagingTemplate, new TimeService(clock));
+        return new RoomService(roomConfig, authService, new TimeService(clock), roomRepository, memberRepository, roomMapper, memberMessagePublisher);
     }
 
     @Test
@@ -73,6 +72,10 @@ class DeleteStaleRoomsTest {
         var member2 = new Member(2L, "Member 2");
         var member3 = new Member(3L, "Member 3");
         var member4 = new Member(4L, "Member 4");
+        member1.setHost(true);
+        member2.setReady(true);
+        member3.setReady(true);
+        member4.setReady(true);
         room.addMember(member1);
         room.addMember(member2);
         room.addMember(member3);
@@ -82,7 +85,7 @@ class DeleteStaleRoomsTest {
         memberRepository.save(member2);
         memberRepository.save(member3);
         memberRepository.save(member4);
-        room.startGame();
+        room.startGame(member1.getId());
 
         var futureClock = Clock.fixed(Instant.now().plus(2, ChronoUnit.HOURS), ZoneOffset.UTC);
         serviceWithClock(futureClock).deleteStaleRooms();
@@ -97,6 +100,10 @@ class DeleteStaleRoomsTest {
         var member2 = new Member(2L, "Member 2");
         var member3 = new Member(3L, "Member 3");
         var member4 = new Member(4L, "Member 4");
+        member1.setHost(true);
+        member2.setReady(true);
+        member3.setReady(true);
+        member4.setReady(true);
         room.addMember(member1);
         room.addMember(member2);
         room.addMember(member3);
@@ -106,7 +113,7 @@ class DeleteStaleRoomsTest {
         memberRepository.save(member2);
         memberRepository.save(member3);
         memberRepository.save(member4);
-        room.startGame();
+        room.startGame(member1.getId());
 
         var futureClock = Clock.fixed(Instant.now().plus(7, ChronoUnit.HOURS), ZoneOffset.UTC);
         serviceWithClock(futureClock).deleteStaleRooms();
