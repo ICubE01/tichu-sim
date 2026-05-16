@@ -4,7 +4,6 @@ import com.icube.sim.tichu.auth.AuthService;
 import com.icube.sim.tichu.common.TimeService;
 import lombok.Locked;
 import lombok.RequiredArgsConstructor;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -18,11 +17,11 @@ import java.util.stream.IntStream;
 public class RoomService {
     private final RoomConfig roomConfig;
     private final AuthService authService;
+    private final TimeService timeService;
     private final RoomRepository roomRepository;
     private final MemberRepository memberRepository;
     private final RoomMapper roomMapper;
-    private final SimpMessagingTemplate messagingTemplate;
-    private final TimeService timeService;
+    private final MemberMessagePublisher memberMessagePublisher;
 
     @Locked.Read
     public List<RoomOpaqueDto> getRooms() {
@@ -81,7 +80,7 @@ public class RoomService {
         room.addMember(member);
         memberRepository.save(member);
 
-        publishMemberMessage(room);
+        memberMessagePublisher.publish(room);
     }
 
     @Locked.Write
@@ -96,7 +95,7 @@ public class RoomService {
         room.removeMember(user.getId());
         memberRepository.deleteById(user.getId());
 
-        publishMemberMessage(room);
+        memberMessagePublisher.publish(room);
 
         if (room.getMembers().isEmpty()) {
             roomRepository.deleteById(id);
@@ -120,11 +119,6 @@ public class RoomService {
             room.getMembers().keySet().forEach(memberRepository::deleteById);
             roomRepository.deleteById(room.getId());
         }
-    }
-
-    private void publishMemberMessage(Room room) {
-        var memberMessage = new MemberMessage(roomMapper.membersMapToDtoList(room.getMembers()));
-        messagingTemplate.convertAndSend("/topic/rooms/" + room.getId() + "/members", memberMessage);
     }
 
     private static String generateRandomAlphabetString(int length) {
