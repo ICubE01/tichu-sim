@@ -81,7 +81,7 @@ public class RoomService {
         room.addMember(member);
         memberRepository.save(member);
 
-        notifyEnter(id, user.getId(), user.getName());
+        publishMemberMessage(room);
     }
 
     @Locked.Write
@@ -96,7 +96,7 @@ public class RoomService {
         room.removeMember(user.getId());
         memberRepository.deleteById(user.getId());
 
-        notifyLeave(id, user.getId(), user.getName());
+        publishMemberMessage(room);
 
         if (room.getMembers().isEmpty()) {
             roomRepository.deleteById(id);
@@ -122,14 +122,9 @@ public class RoomService {
         }
     }
 
-    private void notifyEnter(String roomId, Long userId, String userName) {
-        var chatMessage = MemberMessage.enter(userId, userName);
-        messagingTemplate.convertAndSend("/topic/rooms/" + roomId + "/members", chatMessage);
-    }
-
-    private void notifyLeave(String roomId, Long userId, String userName) {
-        var chatMessage = MemberMessage.leave(userId, userName);
-        messagingTemplate.convertAndSend("/topic/rooms/" + roomId + "/members", chatMessage);
+    private void publishMemberMessage(Room room) {
+        var memberMessage = new MemberMessage(roomMapper.membersMapToDtoList(room.getMembers()));
+        messagingTemplate.convertAndSend("/topic/rooms/" + room.getId() + "/members", memberMessage);
     }
 
     private static String generateRandomAlphabetString(int length) {

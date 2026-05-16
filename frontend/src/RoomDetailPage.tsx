@@ -6,17 +6,11 @@ import { useAxios } from "./useAxios.tsx";
 import { useRoom } from "./useRoom.tsx";
 import { useStomp } from "./useStomp.tsx"
 import TichuPage from "./games/tichu/TichuPage.tsx";
-import { ChatMessage, MemberDto, RoomDto } from "@/types.ts";
+import { ChatMessage, MemberDto, MemberMessage, RoomDto } from "@/types.ts";
 import { TichuMessage, TichuMessageType } from "@/games/tichu/dtos/TichuMessage.ts";
 import { TichuRule, TichuWinningScore } from "@/games/tichu/domain/TichuRule.ts";
 import { Team } from "@/games/tichu/domain/Team.ts";
 import { GameRule } from "@/games/types.ts";
-
-interface MemberMessage {
-  type: 'ENTER' | 'LEAVE';
-  id: number;
-  name: string;
-}
 
 const RoomDetailPage = () => {
   const { roomId } = useParams();

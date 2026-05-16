@@ -33,3 +33,7 @@ export interface ChatMessage {
   userId: number;
   message: string;
 }
+
+export interface MemberMessage {
+  members: MemberDto[];
+}
