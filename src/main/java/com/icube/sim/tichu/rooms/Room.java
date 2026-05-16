@@ -8,6 +8,7 @@ import lombok.Locked;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -65,6 +66,10 @@ public class Room {
         var member = members.remove(memberId);
         if (member != null) {
             member.setRoom(null);
+            if (member.isHost()) {
+                var leastSeqMember = members.values().stream().min(Comparator.comparing(Member::getSeq));
+                leastSeqMember.ifPresent(m -> m.setHost(true));
+            }
         }
 
         updatedAt = Instant.now();

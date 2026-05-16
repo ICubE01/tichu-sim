@@ -43,6 +43,7 @@ public class RoomService {
 
         var room = new Room(id, request.getName(), request.getGameName());
         var member = new Member(user.getId(), user.getName());
+        member.setHost(true);
         room.addMember(member);
         roomRepository.save(room);
         memberRepository.save(member);
