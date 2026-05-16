@@ -84,6 +84,13 @@ public class RoomService {
     }
 
     @Locked.Write
+    public void setReady(String roomId, Long userId, boolean ready) {
+        var room = roomRepository.findById(roomId).orElseThrow(RoomNotFoundException::new);
+        room.setMemberReady(userId, ready);
+        memberMessagePublisher.publish(room);
+    }
+
+    @Locked.Write
     public void leaveRoom(String id) {
         var user = authService.getCurrentUser();
         var member = memberRepository.findById(user.getId()).orElse(null);

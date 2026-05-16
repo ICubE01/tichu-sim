@@ -97,6 +97,16 @@ public class Room {
         updatedAt = Instant.now();
     }
 
+    @Locked.Write
+    public void setMemberReady(Long memberId, boolean ready) {
+        var member = members.get(memberId);
+        if (member == null) {
+            throw new IllegalArgumentException("Member not found");
+        }
+        member.setReady(ready);
+        updatedAt = Instant.now();
+    }
+
     @Locked.Read
     public boolean hasGameStarted() {
         return game != null;
