@@ -4,6 +4,7 @@ import com.icube.sim.tichu.games.common.domain.*;
 import com.icube.sim.tichu.games.common.exceptions.GameHasAlreadyStartedException;
 import com.icube.sim.tichu.games.common.exceptions.GameNotFoundException;
 import com.icube.sim.tichu.games.common.exceptions.NotHostException;
+import com.icube.sim.tichu.games.common.exceptions.MemberNotReadyException;
 import lombok.Getter;
 import lombok.Locked;
 
@@ -120,6 +121,9 @@ public class Room {
         var caller = members.get(callerId);
         if (caller == null || !caller.isHost()) {
             throw new NotHostException();
+        }
+        if (members.values().stream().anyMatch(member -> !member.isHost() && !member.isReady())) {
+            throw new MemberNotReadyException();
         }
 
         gameRuleWrapper.setMutable(false);

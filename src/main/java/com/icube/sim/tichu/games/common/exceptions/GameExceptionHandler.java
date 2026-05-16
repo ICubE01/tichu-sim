@@ -25,6 +25,12 @@ public class GameExceptionHandler {
         return new ErrorMessage("Only the host can perform this action.");
     }
 
+    @MessageExceptionHandler(MemberNotReadyException.class)
+    @SendToUser("/queue/errors")
+    public ErrorMessage handleMemberNotReady() {
+        return new ErrorMessage("Member not ready.");
+    }
+
     @MessageExceptionHandler(ImmutableGameRuleException.class)
     @SendToUser("/queue/errors")
     public ErrorMessage handleImmutableGameRule() {
