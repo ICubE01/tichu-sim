@@ -16,6 +16,8 @@ export interface RoomOpaqueDto {
 export interface MemberDto {
   id: number;
   name: string;
+  isHost: boolean;
+  isReady: boolean;
 }
 
 export interface RoomDto {
