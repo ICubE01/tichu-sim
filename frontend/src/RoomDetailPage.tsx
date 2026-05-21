@@ -146,6 +146,11 @@ const RoomDetailPage = () => {
     stomp.publish(`/app/rooms/${roomId}/game/tichu/start`, {});
   }
 
+  const handleSetReady = () => {
+    const isReadyNow = room?.members.find(m => m.id === user?.id)?.isReady ?? false;
+    stomp.publish(`/app/rooms/${roomId}/set-ready`, { ready: !isReadyNow });
+  };
+
   const handleSetRule = (newRule: GameRule) => {
     stomp.publish(`/app/rooms/${roomId}/game/tichu/set-rule`, newRule);
   };
@@ -187,8 +192,12 @@ const RoomDetailPage = () => {
     />
   }
 
-  const canStartGame = room.gameRule.minPlayers <= room.members.length
+  const currentMember = room.members.find(m => m.id === user?.id);
+  const isHost = currentMember?.isHost ?? false;
+  const allNonHostsReady = room.members.filter(m => !m.isHost).every(m => m.isReady);
+  const isPlayerCountValid = room.gameRule.minPlayers <= room.members.length
     && room.members.length <= room.gameRule.maxPlayers;
+  const canStartGame = isHost && allNonHostsReady && isPlayerCountValid;
 
   const formatWinningScore = (winningScore: TichuWinningScore) => {
     switch (winningScore) {
@@ -210,7 +219,10 @@ const RoomDetailPage = () => {
       <div className={styles.roomDetailHeader}>
         <h2>[{room.id}] {room.name}</h2>
         <div className={styles.roomDetailHeaderButtons}>
-          <button onClick={handleGameStartRequest} className={styles.gameStartButton} disabled={!canStartGame}>게임 시작</button>
+          {isHost
+            ? <button onClick={handleGameStartRequest} className={styles.gameStartButton} disabled={!canStartGame}>게임 시작</button>
+            : <button onClick={handleSetReady} className={styles.gameStartButton}>{currentMember?.isReady ? '준비 취소' : '준비'}</button>
+          }
           <button onClick={handleLeaveRoom} className={styles.leaveButton}>나가기</button>
         </div>
       </div>
@@ -223,6 +235,8 @@ const RoomDetailPage = () => {
               {room.members?.map((member) => (
                 <li key={member.id} className={styles.memberItem}>
                   {member.name}
+                  {member.isHost && <span> ⭐</span>}
+                  {!member.isHost && member.isReady && <span> ✅</span>}
                 </li>
               ))}
             </ul>
@@ -237,7 +251,7 @@ const RoomDetailPage = () => {
                   {[TichuWinningScore.ZERO, TichuWinningScore.TWO_HUNDRED, TichuWinningScore.FIVE_HUNDRED, TichuWinningScore.ONE_THOUSAND].map((score) => (
                     <button
                       key={score}
-                      className={`${styles.ruleButton} ${(room.gameRule as TichuRule).winningScore === score ? styles.active : ''}`}
+                      className={`${styles.ruleButton} ${!isHost ? styles.ruleButtonReadonly : ''} ${(room.gameRule as TichuRule).winningScore === score ? styles.active : ''}`}
                       onClick={() => handleWinningScoreChange(score)}
                     >
                       {formatWinningScore(score) || score}
@@ -248,22 +262,25 @@ const RoomDetailPage = () => {
               <div className={styles.ruleItem}>
                 <span>팀 선택</span>
                 <div className={styles.ruleItemBox}>
-                  {room.members.map((member) => (
-                    <div key={`team-assignment-${member.id}`} className={styles.ruleItem}>
-                      <span>{member.name}</span>
-                      <div className={styles.ruleButtonGroup}>
-                        {[Team.RED, Team.NONE, Team.BLUE].map((team) => (
-                          <button
-                            key={`team-assignment-${member.id}-${team.toLowerCase()}`}
-                            className={`${styles.ruleButton} ${team === Team.NONE ? '' : team === Team.RED ? styles.teamRed : styles.teamBlue} ${(room.gameRule as TichuRule).teamAssignment[member.id] === team || (!(room.gameRule as TichuRule).teamAssignment[member.id] && team === 'NONE') ? styles.active : ''}`}
-                            onClick={() => handleTeamChange(member, team)}
-                          >
-                            {team === 'NONE' ? '자동' : team}
-                          </button>
-                        ))}
+                  {room.members.map((member) => {
+                    const assignedTeam = (room.gameRule as TichuRule).teamAssignment[member.id] ?? Team.NONE;
+                    return (
+                      <div key={`team-assignment-${member.id}`} className={styles.ruleItem}>
+                        <span>{member.name}</span>
+                        <div className={styles.ruleButtonGroup}>
+                          {[Team.RED, Team.NONE, Team.BLUE].map((team) => (
+                            <button
+                              key={`team-assignment-${member.id}-${team.toLowerCase()}`}
+                              className={`${styles.ruleButton} ${!isHost ? styles.ruleButtonReadonly : ''} ${team === Team.NONE ? '' : team === Team.RED ? styles.teamRed : styles.teamBlue} ${assignedTeam === team ? styles.active : ''}`}
+                              onClick={() => handleTeamChange(member, team)}
+                            >
+                              {team === 'NONE' ? '자동' : team}
+                            </button>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             </div>
