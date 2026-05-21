@@ -88,6 +88,7 @@ public class Room {
     @Locked.Write
     public void setGameRule(GameRule gameRule) {
         gameRuleWrapper.setGameRule(gameRule);
+        members.values().forEach(member -> member.setReady(false));
         updatedAt = Instant.now();
     }
 

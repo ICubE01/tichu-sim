@@ -10,6 +10,7 @@ import com.icube.sim.tichu.games.tichu.exceptions.InvalidTeamAssignmentException
 import com.icube.sim.tichu.games.tichu.exceptions.InvalidTichuDeclarationException;
 import com.icube.sim.tichu.games.tichu.mappers.CardMapper;
 import com.icube.sim.tichu.games.tichu.mappers.TichuMapper;
+import com.icube.sim.tichu.rooms.MemberMessagePublisher;
 import com.icube.sim.tichu.rooms.Room;
 import com.icube.sim.tichu.rooms.RoomRepository;
 import org.jspecify.annotations.NonNull;
@@ -25,8 +26,10 @@ public class TichuService extends AbstractGameService {
     private final TichuMapper tichuMapper;
     private final CardMapper cardMapper;
 
-    public TichuService(RoomRepository roomRepository, ApplicationEventPublisher eventPublisher) {
-        super(roomRepository, eventPublisher);
+    public TichuService(RoomRepository roomRepository,
+                        ApplicationEventPublisher eventPublisher,
+                        MemberMessagePublisher memberMessagePublisher) {
+        super(roomRepository, eventPublisher, memberMessagePublisher);
         tichuMapper = new TichuMapper();
         cardMapper = new CardMapper();
     }
