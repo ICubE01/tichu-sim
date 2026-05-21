@@ -3,6 +3,7 @@ package com.icube.sim.tichu.rooms;
 import com.icube.sim.tichu.games.common.domain.*;
 import com.icube.sim.tichu.games.common.exceptions.GameHasAlreadyStartedException;
 import com.icube.sim.tichu.games.common.exceptions.GameNotFoundException;
+import com.icube.sim.tichu.games.common.exceptions.NotHostException;
 import lombok.Getter;
 import lombok.Locked;
 
@@ -86,7 +87,11 @@ public class Room {
     }
 
     @Locked.Write
-    public void setGameRule(GameRule gameRule) {
+    public void setGameRule(GameRule gameRule, Long callerId) {
+        var caller = members.get(callerId);
+        if (caller == null || !caller.isHost()) {
+            throw new NotHostException();
+        }
         gameRuleWrapper.setGameRule(gameRule);
         members.values().forEach(member -> member.setReady(false));
         updatedAt = Instant.now();
@@ -98,9 +103,13 @@ public class Room {
     }
 
     @Locked.Write
-    public void startGame() {
+    public void startGame(Long callerId) {
         if (hasGameStarted()) {
             throw new GameHasAlreadyStartedException();
+        }
+        var caller = members.get(callerId);
+        if (caller == null || !caller.isHost()) {
+            throw new NotHostException();
         }
 
         gameRuleWrapper.setMutable(false);

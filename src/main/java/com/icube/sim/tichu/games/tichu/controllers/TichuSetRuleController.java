@@ -12,14 +12,16 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.stereotype.Controller;
 
+import java.security.Principal;
+
 @AllArgsConstructor
 @Controller
 public class TichuSetRuleController {
     private final TichuService tichuService;
 
     @MessageMapping("/rooms/{roomId}/game/tichu/set-rule")
-    public void setRule(@DestinationVariable("roomId") String roomId, @Payload TichuRule rule) {
-        tichuService.setRule(roomId, rule);
+    public void setRule(@DestinationVariable("roomId") String roomId, @Payload TichuRule rule, Principal principal) {
+        tichuService.setRule(roomId, rule, principal);
     }
 
     @MessageExceptionHandler(InvalidTeamAssignmentException.class)
