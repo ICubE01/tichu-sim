@@ -78,17 +78,7 @@ const RoomDetailPage = () => {
       if (!prevRoom) {
         return prevRoom;
       }
-
-      let members = [...(prevRoom.members || [])];
-      if (memberMessage.type === 'ENTER') {
-        if (!members.find(m => m.id === memberMessage.id)) {
-          members.push({ id: memberMessage.id, name: memberMessage.name });
-        }
-      } else if (memberMessage.type === 'LEAVE') {
-        members = members.filter(m => m.id !== memberMessage.id);
-      }
-
-      return { ...prevRoom, members: members };
+      return { ...prevRoom, members: memberMessage.members };
     });
   }, []);
 
