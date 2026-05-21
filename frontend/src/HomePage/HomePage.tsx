@@ -118,7 +118,7 @@ const HomePage = () => {
             })
           ) : (
             <tr>
-              <td colSpan={4} className={styles.noRooms}>
+              <td colSpan={5} className={styles.noRooms}>
                 방이 없습니다.
               </td>
             </tr>
