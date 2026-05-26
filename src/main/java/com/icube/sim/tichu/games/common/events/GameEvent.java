@@ -1,4 +1,4 @@
-package com.icube.sim.tichu.games.common.event;
+package com.icube.sim.tichu.games.common.events;
 
 import org.jspecify.annotations.Nullable;
 

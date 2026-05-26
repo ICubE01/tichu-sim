@@ -1,6 +1,6 @@
 package com.icube.sim.tichu.games.tichu.events;
 
-import com.icube.sim.tichu.games.common.event.GameStartEvent;
+import com.icube.sim.tichu.games.common.events.GameStartEvent;
 import com.icube.sim.tichu.games.tichu.Player;
 import lombok.Getter;
 
