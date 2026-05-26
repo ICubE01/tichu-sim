@@ -1,4 +1,4 @@
-package com.icube.sim.tichu.rooms;
+package com.icube.sim.tichu.rooms.dtos;
 
 import com.icube.sim.tichu.games.common.domain.GameName;
 import com.icube.sim.tichu.games.common.domain.GameRule;

@@ -5,6 +5,7 @@ import com.icube.sim.tichu.games.common.exceptions.GameHasAlreadyStartedExceptio
 import com.icube.sim.tichu.games.common.exceptions.GameNotFoundException;
 import com.icube.sim.tichu.games.common.exceptions.NotHostException;
 import com.icube.sim.tichu.games.common.exceptions.MemberNotReadyException;
+import com.icube.sim.tichu.rooms.exceptions.TooManyMembersException;
 import lombok.Getter;
 import lombok.Locked;
 

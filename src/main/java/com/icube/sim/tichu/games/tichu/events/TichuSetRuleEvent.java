@@ -1,6 +1,6 @@
 package com.icube.sim.tichu.games.tichu.events;
 
-import com.icube.sim.tichu.games.common.event.GameSetRuleEvent;
+import com.icube.sim.tichu.games.common.events.GameSetRuleEvent;
 import com.icube.sim.tichu.games.tichu.TichuRule;
 import lombok.Getter;
 

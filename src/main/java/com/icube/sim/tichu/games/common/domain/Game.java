@@ -1,6 +1,6 @@
 package com.icube.sim.tichu.games.common.domain;
 
-import com.icube.sim.tichu.games.common.event.GameEvent;
+import com.icube.sim.tichu.games.common.events.GameEvent;
 
 import java.util.List;
 

@@ -1,6 +1,8 @@
 package com.icube.sim.tichu.rooms;
 
 import com.icube.sim.tichu.common.websocket.ErrorMessage;
+import com.icube.sim.tichu.rooms.dtos.SetReadyRequest;
+import com.icube.sim.tichu.rooms.exceptions.RoomNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageExceptionHandler;

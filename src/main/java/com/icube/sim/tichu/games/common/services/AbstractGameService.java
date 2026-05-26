@@ -1,9 +1,9 @@
-package com.icube.sim.tichu.games.common.service;
+package com.icube.sim.tichu.games.common.services;
 
 import com.icube.sim.tichu.games.common.domain.Game;
 import com.icube.sim.tichu.games.common.domain.GameRule;
-import com.icube.sim.tichu.games.common.event.GameEvent;
-import com.icube.sim.tichu.games.common.event.GameSetRuleEvent;
+import com.icube.sim.tichu.games.common.events.GameEvent;
+import com.icube.sim.tichu.games.common.events.GameSetRuleEvent;
 import com.icube.sim.tichu.rooms.MemberMessagePublisher;
 import com.icube.sim.tichu.rooms.Room;
 import com.icube.sim.tichu.rooms.RoomRepository;

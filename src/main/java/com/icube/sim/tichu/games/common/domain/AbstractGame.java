@@ -1,7 +1,7 @@
 package com.icube.sim.tichu.games.common.domain;
 
-import com.icube.sim.tichu.games.common.event.GameEvent;
-import com.icube.sim.tichu.games.common.event.GameStartEvent;
+import com.icube.sim.tichu.games.common.events.GameEvent;
+import com.icube.sim.tichu.games.common.events.GameStartEvent;
 import lombok.Synchronized;
 
 import java.util.ArrayList;

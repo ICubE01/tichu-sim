@@ -2,6 +2,12 @@ package com.icube.sim.tichu.rooms;
 
 import com.icube.sim.tichu.auth.AuthService;
 import com.icube.sim.tichu.common.TimeService;
+import com.icube.sim.tichu.rooms.dtos.CreateRoomRequest;
+import com.icube.sim.tichu.rooms.dtos.CreateRoomResponse;
+import com.icube.sim.tichu.rooms.dtos.RoomDto;
+import com.icube.sim.tichu.rooms.dtos.RoomOpaqueDto;
+import com.icube.sim.tichu.rooms.exceptions.MemberAlreadyInOneRoomException;
+import com.icube.sim.tichu.rooms.exceptions.RoomNotFoundException;
 import lombok.Locked;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;

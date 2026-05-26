@@ -1,5 +1,8 @@
 package com.icube.sim.tichu.rooms;
 
+import com.icube.sim.tichu.rooms.dtos.MemberDto;
+import com.icube.sim.tichu.rooms.dtos.RoomDto;
+import com.icube.sim.tichu.rooms.dtos.RoomOpaqueDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

@@ -2,8 +2,8 @@ package com.icube.sim.tichu.games.tichu;
 
 import com.icube.sim.tichu.games.common.domain.Game;
 import com.icube.sim.tichu.games.common.domain.GameRule;
-import com.icube.sim.tichu.games.common.event.GameSetRuleEvent;
-import com.icube.sim.tichu.games.common.service.AbstractGameService;
+import com.icube.sim.tichu.games.common.events.GameSetRuleEvent;
+import com.icube.sim.tichu.games.common.services.AbstractGameService;
 import com.icube.sim.tichu.games.tichu.dtos.*;
 import com.icube.sim.tichu.games.tichu.events.TichuSetRuleEvent;
 import com.icube.sim.tichu.games.tichu.exceptions.InvalidTeamAssignmentException;

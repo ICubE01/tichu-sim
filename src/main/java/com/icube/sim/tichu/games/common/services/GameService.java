@@ -1,4 +1,4 @@
-package com.icube.sim.tichu.games.common.service;
+package com.icube.sim.tichu.games.common.services;
 
 import com.icube.sim.tichu.games.common.domain.GameRule;
 
