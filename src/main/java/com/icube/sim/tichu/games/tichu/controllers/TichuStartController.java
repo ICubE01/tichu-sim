@@ -10,14 +10,16 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.stereotype.Controller;
 
+import java.security.Principal;
+
 @AllArgsConstructor
 @Controller
 public class TichuStartController {
     private final TichuService tichuService;
 
     @MessageMapping("/rooms/{roomId}/game/tichu/start")
-    public void start(@DestinationVariable("roomId") String roomId) {
-        tichuService.start(roomId);
+    public void start(@DestinationVariable("roomId") String roomId, Principal principal) {
+        tichuService.start(roomId, principal);
     }
 
     @MessageExceptionHandler(InvalidTeamAssignmentException.class)

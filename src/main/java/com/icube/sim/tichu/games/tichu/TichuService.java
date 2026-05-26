@@ -10,9 +10,9 @@ import com.icube.sim.tichu.games.tichu.exceptions.InvalidTeamAssignmentException
 import com.icube.sim.tichu.games.tichu.exceptions.InvalidTichuDeclarationException;
 import com.icube.sim.tichu.games.tichu.mappers.CardMapper;
 import com.icube.sim.tichu.games.tichu.mappers.TichuMapper;
+import com.icube.sim.tichu.rooms.MemberMessagePublisher;
 import com.icube.sim.tichu.rooms.Room;
 import com.icube.sim.tichu.rooms.RoomRepository;
-import org.jspecify.annotations.NonNull;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
@@ -25,8 +25,10 @@ public class TichuService extends AbstractGameService {
     private final TichuMapper tichuMapper;
     private final CardMapper cardMapper;
 
-    public TichuService(RoomRepository roomRepository, ApplicationEventPublisher eventPublisher) {
-        super(roomRepository, eventPublisher);
+    public TichuService(RoomRepository roomRepository,
+                        ApplicationEventPublisher eventPublisher,
+                        MemberMessagePublisher memberMessagePublisher) {
+        super(roomRepository, eventPublisher, memberMessagePublisher);
         tichuMapper = new TichuMapper();
         cardMapper = new CardMapper();
     }
@@ -52,7 +54,7 @@ public class TichuService extends AbstractGameService {
     }
 
     public TichuDto get(String roomId, Principal principal) {
-        return withLock(roomId, game -> tichuMapper.toDto(game, getPlayerId(principal)));
+        return withLock(roomId, game -> tichuMapper.toDto(game, getUserId(principal)));
     }
 
     public void largeTichu(String roomId, LargeTichuSend largeTichuSend, Principal principal) {
@@ -63,14 +65,14 @@ public class TichuService extends AbstractGameService {
 
         withLockAndPublish(roomId, game -> {
             var round = game.getCurrentRound();
-            round.largeTichu(getPlayerId(principal), isLargeTichuDeclared);
+            round.largeTichu(getUserId(principal), isLargeTichuDeclared);
         });
     }
 
     public void smallTichu(String roomId, Principal principal) {
         withLockAndPublish(roomId, game -> {
             var round = game.getCurrentRound();
-            round.smallTichu(getPlayerId(principal));
+            round.smallTichu(getUserId(principal));
         });
     }
 
@@ -78,7 +80,7 @@ public class TichuService extends AbstractGameService {
         withLockAndPublish(roomId, game -> {
             var exchangePhase = game.getCurrentRound().getExchangePhase();
             exchangePhase.queueExchange(
-                    getPlayerId(principal),
+                    getUserId(principal),
                     cardMapper.toCardNullable(exchangeSend.getLeft()),
                     cardMapper.toCardNullable(exchangeSend.getMid()),
                     cardMapper.toCardNullable(exchangeSend.getRight()));
@@ -89,7 +91,7 @@ public class TichuService extends AbstractGameService {
         withLockAndPublish(roomId, game -> {
             var phase = game.getCurrentRound().getCurrentPhase();
             phase.playTrick(
-                    getPlayerId(principal),
+                    getUserId(principal),
                     cardMapper.toCards(trickSend.getCards()),
                     trickSend.getWish());
         });
@@ -98,14 +100,14 @@ public class TichuService extends AbstractGameService {
     public void playBomb(String roomId, BombSend bombSend, Principal principal) {
         withLockAndPublish(roomId, game -> {
             var phase = game.getCurrentRound().getCurrentPhase();
-            phase.playBomb(getPlayerId(principal), cardMapper.toCards(bombSend.getCards()));
+            phase.playBomb(getUserId(principal), cardMapper.toCards(bombSend.getCards()));
         });
     }
 
     public void pass(String roomId, Principal principal) {
         withLockAndPublish(roomId, game -> {
             var phase = game.getCurrentRound().getCurrentPhase();
-            phase.pass(getPlayerId(principal));
+            phase.pass(getUserId(principal));
         });
     }
 
@@ -116,7 +118,7 @@ public class TichuService extends AbstractGameService {
     ) {
         withLockAndPublish(roomId, game -> {
             var phase = game.getCurrentRound().getCurrentPhase();
-            phase.selectDragonReceiver(getPlayerId(principal), selectDragonReceiverSend.getGiveRight());
+            phase.selectDragonReceiver(getUserId(principal), selectDragonReceiverSend.getGiveRight());
         });
     }
 
@@ -144,9 +146,5 @@ public class TichuService extends AbstractGameService {
     @Override
     protected Tichu getGame(String roomId) {
         return (Tichu) super.getGame(roomId);
-    }
-
-    private static @NonNull Long getPlayerId(Principal principal) {
-        return Long.valueOf(principal.getName());
     }
 }

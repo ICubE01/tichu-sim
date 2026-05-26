@@ -16,6 +16,8 @@ export interface RoomOpaqueDto {
 export interface MemberDto {
   id: number;
   name: string;
+  isHost: boolean;
+  isReady: boolean;
 }
 
 export interface RoomDto {
@@ -30,4 +32,8 @@ export interface RoomDto {
 export interface ChatMessage {
   userId: number;
   message: string;
+}
+
+export interface MemberMessage {
+  members: MemberDto[];
 }

@@ -4,7 +4,6 @@ import com.icube.sim.tichu.auth.AuthService;
 import com.icube.sim.tichu.common.TimeService;
 import lombok.Locked;
 import lombok.RequiredArgsConstructor;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -18,11 +17,11 @@ import java.util.stream.IntStream;
 public class RoomService {
     private final RoomConfig roomConfig;
     private final AuthService authService;
+    private final TimeService timeService;
     private final RoomRepository roomRepository;
     private final MemberRepository memberRepository;
     private final RoomMapper roomMapper;
-    private final SimpMessagingTemplate messagingTemplate;
-    private final TimeService timeService;
+    private final MemberMessagePublisher memberMessagePublisher;
 
     @Locked.Read
     public List<RoomOpaqueDto> getRooms() {
@@ -43,6 +42,7 @@ public class RoomService {
 
         var room = new Room(id, request.getName(), request.getGameName());
         var member = new Member(user.getId(), user.getName());
+        member.setHost(true);
         room.addMember(member);
         roomRepository.save(room);
         memberRepository.save(member);
@@ -80,7 +80,14 @@ public class RoomService {
         room.addMember(member);
         memberRepository.save(member);
 
-        notifyEnter(id, user.getId(), user.getName());
+        memberMessagePublisher.publish(room);
+    }
+
+    @Locked.Write
+    public void setReady(String roomId, Long userId, boolean ready) {
+        var room = roomRepository.findById(roomId).orElseThrow(RoomNotFoundException::new);
+        room.setMemberReady(userId, ready);
+        memberMessagePublisher.publish(room);
     }
 
     @Locked.Write
@@ -95,7 +102,7 @@ public class RoomService {
         room.removeMember(user.getId());
         memberRepository.deleteById(user.getId());
 
-        notifyLeave(id, user.getId(), user.getName());
+        memberMessagePublisher.publish(room);
 
         if (room.getMembers().isEmpty()) {
             roomRepository.deleteById(id);
@@ -119,16 +126,6 @@ public class RoomService {
             room.getMembers().keySet().forEach(memberRepository::deleteById);
             roomRepository.deleteById(room.getId());
         }
-    }
-
-    private void notifyEnter(String roomId, Long userId, String userName) {
-        var chatMessage = MemberMessage.enter(userId, userName);
-        messagingTemplate.convertAndSend("/topic/rooms/" + roomId + "/members", chatMessage);
-    }
-
-    private void notifyLeave(String roomId, Long userId, String userName) {
-        var chatMessage = MemberMessage.leave(userId, userName);
-        messagingTemplate.convertAndSend("/topic/rooms/" + roomId + "/members", chatMessage);
     }
 
     private static String generateRandomAlphabetString(int length) {

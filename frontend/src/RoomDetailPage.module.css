@@ -116,7 +116,7 @@
   border-radius: 0.5rem;
 }
 
-.rule-button:hover {
+.rule-button:hover, .rule-button:active {
   background: #e9ecef;
   border-color: #ced4da;
 }
@@ -126,6 +126,11 @@
   background: #6c757d;
   border-color: #6c757d;
   box-shadow: 0 2px 4px rgba(108, 117, 125, 0.3);
+}
+
+.rule-button-readonly {
+  pointer-events: none;
+  cursor: default;
 }
 
 .rule-item-box {

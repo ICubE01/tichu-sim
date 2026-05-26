@@ -18,6 +18,10 @@ public interface RoomMapper {
     @Mapping(target = "gameRule", expression = "java(room.getGameRule())")
     RoomDto toDto(Room room);
 
+    @Mapping(source = "host", target = "isHost")
+    @Mapping(source = "ready", target = "isReady")
+    MemberDto toMemberDto(Member member);
+
     // Helper method
     default List<MemberDto> membersMapToDtoList(Map<Long, Member> map) {
         if (map == null) {
@@ -26,7 +30,7 @@ public interface RoomMapper {
 
         return map.values().stream()
                 .sorted(Comparator.comparing(Member::getSeq))
-                .map(member -> new MemberDto(member.getId(), member.getName()))
+                .map(this::toMemberDto)
                 .toList();
     }
 }
