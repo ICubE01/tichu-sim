@@ -194,7 +194,7 @@ public class TichuEventHandler {
         return room.getMembers().keySet();
     }
 
-    private void sendToUser(Long userId, TichuMessage message) {
-        messagingTemplate.convertAndSendToUser(userId.toString(), "/queue/game/tichu", message);
+    private void sendToUser(long userId, TichuMessage message) {
+        messagingTemplate.convertAndSendToUser(Long.toString(userId), "/queue/game/tichu", message);
     }
 }

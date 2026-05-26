@@ -5,10 +5,10 @@ import lombok.Getter;
 
 @Getter
 public class TichuPlayBombEvent extends TichuEvent {
-    private final Long playerId;
+    private final long playerId;
     private final Trick bomb;
 
-    public TichuPlayBombEvent(Long playerId, Trick bomb) {
+    public TichuPlayBombEvent(long playerId, Trick bomb) {
         this.playerId = playerId;
         this.bomb = bomb;
     }

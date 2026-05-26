@@ -61,7 +61,7 @@ public class Room {
     }
 
     @Locked.Write
-    public void removeMember(Long memberId) {
+    public void removeMember(long memberId) {
         if (hasGameStarted()) {
             throw new GameHasAlreadyStartedException();
         }
@@ -79,7 +79,7 @@ public class Room {
     }
 
     @Locked.Read
-    public boolean containsMember(Long memberId) {
+    public boolean containsMember(long memberId) {
         return members.containsKey(memberId);
     }
 
@@ -89,7 +89,7 @@ public class Room {
     }
 
     @Locked.Write
-    public void setGameRule(GameRule gameRule, Long callerId) {
+    public void setGameRule(GameRule gameRule, long callerId) {
         var caller = members.get(callerId);
         if (caller == null || !caller.isHost()) {
             throw new NotHostException();
@@ -100,7 +100,7 @@ public class Room {
     }
 
     @Locked.Write
-    public void setMemberReady(Long memberId, boolean ready) {
+    public void setMemberReady(long memberId, boolean ready) {
         var member = members.get(memberId);
         if (member == null) {
             throw new IllegalArgumentException("Member not found");
@@ -115,7 +115,7 @@ public class Room {
     }
 
     @Locked.Write
-    public void startGame(Long callerId) {
+    public void startGame(long callerId) {
         if (hasGameStarted()) {
             throw new GameHasAlreadyStartedException();
         }

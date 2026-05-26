@@ -27,35 +27,35 @@ public class TichuExchangeEvent extends TichuEvent {
         return new TichuExchangeEvent(playerIndexById, exchangingCards);
     }
 
-    public Card[] getCardsGaveFrom(Long playerId) {
+    public Card[] getCardsGaveFrom(long playerId) {
         return exchangingCards[playerIndexById.get(playerId)];
     }
 
-    public Card getCardGaveLeftFrom(Long playerId) {
+    public Card getCardGaveLeftFrom(long playerId) {
         return getCardsGaveFrom(playerId)[2];
     }
 
-    public Card getCardGaveMidFrom(Long playerId) {
+    public Card getCardGaveMidFrom(long playerId) {
         return getCardsGaveFrom(playerId)[1];
     }
 
-    public Card getCardGaveRightFrom(Long playerId) {
+    public Card getCardGaveRightFrom(long playerId) {
         return getCardsGaveFrom(playerId)[0];
     }
 
-    public Card getCardReceivedFromLeft(Long playerId) {
+    public Card getCardReceivedFromLeft(long playerId) {
         return exchangingCards[(playerIndexById.get(playerId) + 3) % 4][0];
     }
 
-    public Card getCardReceivedFromMid(Long playerId) {
+    public Card getCardReceivedFromMid(long playerId) {
         return exchangingCards[(playerIndexById.get(playerId) + 2) % 4][1];
     }
 
-    public Card getCardReceivedFromRight(Long playerId) {
+    public Card getCardReceivedFromRight(long playerId) {
         return exchangingCards[(playerIndexById.get(playerId) + 1) % 4][2];
     }
 
-    public List<Card> getCardsReceived(Long playerId) {
+    public List<Card> getCardsReceived(long playerId) {
         return List.of(
                 getCardReceivedFromLeft(playerId),
                 getCardReceivedFromMid(playerId),

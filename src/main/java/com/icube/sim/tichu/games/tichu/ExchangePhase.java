@@ -22,7 +22,7 @@ public class ExchangePhase {
     }
 
     public void queueExchange(
-            Long playerId,
+            long playerId,
             @Nullable Card leftCard,
             @Nullable Card midCard,
             @Nullable Card rightCard
@@ -76,7 +76,7 @@ public class ExchangePhase {
         round.finishExchangePhase();
     }
 
-    public Card[] getExchange(Long playerId) {
+    public Card[] getExchange(long playerId) {
         return exchangingCards[game.getPlayerIndexById(playerId)];
     }
 }
