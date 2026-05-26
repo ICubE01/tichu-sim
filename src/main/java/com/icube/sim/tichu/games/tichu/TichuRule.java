@@ -36,7 +36,7 @@ public record TichuRule(WinningScore winningScore, Map<Long, Team> teamAssignmen
         Collections.shuffle(userIds);
 
         int red = 0, blue = 0;
-        for (Long userId : userIds) {
+        for (var userId : userIds) {
             var team = teamAssignment.getOrDefault(userId, Team.NONE);
             if (team.equals(Team.RED)) {
                 red++;
@@ -51,7 +51,7 @@ public record TichuRule(WinningScore winningScore, Map<Long, Team> teamAssignmen
         }
 
         var determinedTeams = new HashMap<Long, Team>();
-        for (Long userId : userIds) {
+        for (var userId : userIds) {
             var team = teamAssignment.getOrDefault(userId, Team.NONE);
             if (!team.equals(Team.NONE)) {
                 determinedTeams.put(userId, team);

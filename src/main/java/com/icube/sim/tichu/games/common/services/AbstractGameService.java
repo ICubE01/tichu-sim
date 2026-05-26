@@ -7,7 +7,6 @@ import com.icube.sim.tichu.games.common.events.GameSetRuleEvent;
 import com.icube.sim.tichu.rooms.MemberMessagePublisher;
 import com.icube.sim.tichu.rooms.Room;
 import com.icube.sim.tichu.rooms.RoomRepository;
-import jakarta.annotation.Nonnull;
 import org.springframework.context.ApplicationEventPublisher;
 
 import java.security.Principal;
@@ -74,7 +73,7 @@ public abstract class AbstractGameService implements GameService {
         eventPublisher.publishEvent(event);
     }
 
-    protected static @Nonnull Long getUserId(Principal principal) {
-        return Long.valueOf(principal.getName());
+    protected static long getUserId(Principal principal) {
+        return Long.parseLong(principal.getName());
     }
 }

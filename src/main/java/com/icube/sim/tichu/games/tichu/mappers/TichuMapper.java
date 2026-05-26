@@ -17,7 +17,7 @@ public class TichuMapper {
     private final CardMapper cardMapper = new CardMapper();
     private final TrickMapper trickMapper = new TrickMapper();
 
-    public TichuDto toDto(Tichu game, Long playerId) {
+    public TichuDto toDto(Tichu game, long playerId) {
         var players = new ArrayList<Player>();
         for (var i = 0; i < 4; i++) {
             players.add(game.getPlayer(i));

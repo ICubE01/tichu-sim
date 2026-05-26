@@ -32,7 +32,7 @@ public class Phase {
         game.addEvent(new TichuPhaseStartEvent(firstPlayerIndex));
     }
 
-    public void playTrick(Long playerId, List<Card> cards, @Nullable Integer wish) {
+    public void playTrick(long playerId, List<Card> cards, @Nullable Integer wish) {
         if (status != PhaseStatus.PLAYING) {
             throw new InvalidTimeOfActionException();
         }
@@ -111,7 +111,7 @@ public class Phase {
         }
     }
 
-    public void playBomb(Long playerId, List<Card> cards) {
+    public void playBomb(long playerId, List<Card> cards) {
         if (status != PhaseStatus.PLAYING) {
             throw new InvalidTimeOfActionException();
         }
@@ -166,7 +166,7 @@ public class Phase {
         }
     }
 
-    public void pass(Long playerId) {
+    public void pass(long playerId) {
         if (status != PhaseStatus.PLAYING) {
             throw new InvalidTimeOfActionException();
         }
@@ -209,7 +209,7 @@ public class Phase {
         } while (round.isPlayerExited(turn));
     }
 
-    public void selectDragonReceiver(Long playerId, boolean giveRight) {
+    public void selectDragonReceiver(long playerId, boolean giveRight) {
         if (status != PhaseStatus.WAITING_DRAGON_SELECTION) {
             throw new InvalidTimeOfActionException();
         }

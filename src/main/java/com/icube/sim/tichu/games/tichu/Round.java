@@ -57,7 +57,7 @@ public class Round {
         game.addEvent(new TichuFirstDrawEvent(firstDraws));
     }
 
-    public void largeTichu(Long playerId, boolean isLargeTichuDeclared) {
+    public void largeTichu(long playerId, boolean isLargeTichuDeclared) {
         if (status != RoundStatus.WAITING_LARGE_TICHU) {
             throw new InvalidTimeOfActionException();
         }
@@ -90,7 +90,7 @@ public class Round {
         status = RoundStatus.EXCHANGING;
     }
 
-    public void smallTichu(Long playerId) {
+    public void smallTichu(long playerId) {
         if (status == RoundStatus.WAITING_LARGE_TICHU || status == RoundStatus.FINISHED) {
             throw new InvalidTimeOfActionException();
         }

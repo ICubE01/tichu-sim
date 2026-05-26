@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 public class Member {
-    private final Long id;
+    private final long id;
     private final String name;
 
     @Setter
@@ -18,7 +18,7 @@ public class Member {
     @Setter
     private int seq;
 
-    public Member(Long id, String name) {
+    public Member(long id, String name) {
         this.id = id;
         this.name = name;
         this.isHost = false;

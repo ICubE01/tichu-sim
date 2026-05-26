@@ -4,9 +4,9 @@ import lombok.Getter;
 
 @Getter
 public class TichuSelectDragonReceiverEvent extends TichuEvent {
-    private final Long receiverId;
+    private final long receiverId;
 
-    public TichuSelectDragonReceiverEvent(Long receiverId) {
+    public TichuSelectDragonReceiverEvent(long receiverId) {
         this.receiverId = receiverId;
     }
 }

@@ -22,7 +22,7 @@ public class MemberSetReadyController {
     public void setReady(@DestinationVariable("roomId") String roomId,
                          @Payload SetReadyRequest request,
                          Principal principal) {
-        var userId = Long.valueOf(principal.getName());
+        var userId = Long.parseLong(principal.getName());
         roomService.setReady(roomId, userId, request.ready());
     }
 

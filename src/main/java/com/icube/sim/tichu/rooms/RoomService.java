@@ -90,7 +90,7 @@ public class RoomService {
     }
 
     @Locked.Write
-    public void setReady(String roomId, Long userId, boolean ready) {
+    public void setReady(String roomId, long userId, boolean ready) {
         var room = roomRepository.findById(roomId).orElseThrow(RoomNotFoundException::new);
         room.setMemberReady(userId, ready);
         memberMessagePublisher.publish(room);

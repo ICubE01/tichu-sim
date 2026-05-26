@@ -14,7 +14,7 @@ public class ChatController {
             @Payload ChatSend chatSend,
             Principal principal
     ) {
-        var userId = Long.valueOf(principal.getName());
+        var userId = Long.parseLong(principal.getName());
         return new ChatMessage(userId, chatSend.getMessage());
     }
 }

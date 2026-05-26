@@ -14,15 +14,15 @@ public class MemberRepository {
         members.put(member.getId(), member);
     }
 
-    public Optional<Member> findById(Long id) {
+    public Optional<Member> findById(long id) {
         return Optional.ofNullable(members.get(id));
     }
 
-    public boolean existsById(Long id) {
+    public boolean existsById(long id) {
         return members.containsKey(id);
     }
 
-    public void deleteById(Long id) {
+    public void deleteById(long id) {
         members.remove(id);
     }
 }

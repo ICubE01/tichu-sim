@@ -13,7 +13,7 @@ import java.util.List;
 
 public class Player {
     @Getter
-    private final Long id;
+    private final long id;
     @Getter
     private final String name;
     @Getter

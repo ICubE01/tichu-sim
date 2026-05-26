@@ -4,9 +4,9 @@ import lombok.Getter;
 
 @Getter
 public class TichuSmallTichuEvent extends TichuEvent {
-    private final Long playerId;
+    private final long playerId;
 
-    public TichuSmallTichuEvent(Long playerId) {
+    public TichuSmallTichuEvent(long playerId) {
         this.playerId = playerId;
     }
 }

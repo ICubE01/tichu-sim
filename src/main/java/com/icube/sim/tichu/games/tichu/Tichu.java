@@ -52,7 +52,7 @@ public class Tichu extends AbstractGame {
         return players[index];
     }
 
-    public int getPlayerIndexById(Long id) {
+    public int getPlayerIndexById(long id) {
         return playerIndexById.get(id);
     }
 
