@@ -1,4 +1,4 @@
-package com.icube.sim.tichu.rooms;
+package com.icube.sim.tichu.rooms.dtos;
 
 import java.util.List;
 

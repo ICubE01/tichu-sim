@@ -2,6 +2,10 @@ package com.icube.sim.tichu.rooms;
 
 import com.icube.sim.tichu.common.ErrorDto;
 import com.icube.sim.tichu.games.common.exceptions.GameHasAlreadyStartedException;
+import com.icube.sim.tichu.rooms.dtos.CreateRoomRequest;
+import com.icube.sim.tichu.rooms.dtos.CreateRoomResponse;
+import com.icube.sim.tichu.rooms.dtos.RoomDto;
+import com.icube.sim.tichu.rooms.dtos.RoomOpaqueDto;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.jspecify.annotations.NonNull;
