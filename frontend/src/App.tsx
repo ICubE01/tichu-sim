@@ -1,10 +1,10 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { AuthProvider, useAuth } from './useAuth.tsx';
-import LoginPage from './LoginPage';
-import SignupPage from './SignupPage';
-import NavBar from "./NavBar";
+import { AuthProvider, useAuth } from '@/useAuth.tsx';
+import LoginPage from '@/LoginPage.tsx';
+import SignupPage from '@/SignupPage.tsx';
+import NavBar from "@/NavBar.tsx";
 import HomePage from '@/HomePage/HomePage.tsx';
-import RoomDetailPage from './RoomDetailPage';
+import RoomDetailPage from '@/RoomDetailPage.tsx';
 import './App.css';
 
 const AppContent = () => {

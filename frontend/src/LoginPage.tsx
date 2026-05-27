@@ -1,8 +1,8 @@
 import { SubmitEvent, useState } from 'react';
-import { useAuth } from './useAuth.tsx';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import styles from './LoginPage.module.css';
 import { JwtResponse } from "@/types.ts";
+import { useAuth } from '@/useAuth.tsx';
+import styles from './LoginPage.module.css';
 
 const LoginPage = () => {
   const { login } = useAuth();

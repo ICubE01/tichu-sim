@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { useEffect } from 'react';
-import { useAuth } from './useAuth.tsx';
 import { JwtResponse } from "@/types.ts";
+import { useAuth } from '@/useAuth.tsx';
 
 const api = axios.create({
   baseURL: '/api',
