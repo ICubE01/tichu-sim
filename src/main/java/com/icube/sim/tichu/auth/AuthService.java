@@ -66,6 +66,21 @@ public class AuthService {
         return new JwtIssueResult(accessToken, newRefreshToken);
     }
 
+    public void logout(String refreshToken) {
+        if (refreshToken == null) {
+            return;
+        }
+        var jwt = jwtService.parse(refreshToken).orElse(null);
+        if (jwt == null) {
+            return;
+        }
+
+        userRepository.findById(jwt.getUserId()).ifPresent(user -> {
+            user.setRefreshToken(null);
+            userRepository.save(user);
+        });
+    }
+
     public Jwt issueWebSocketToken() {
         return jwtService.generateWebSocketToken(getCurrentUser());
     }
