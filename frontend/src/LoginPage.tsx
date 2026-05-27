@@ -1,10 +1,14 @@
 import { SubmitEvent, useState } from 'react';
-import { useAuth } from './useAuth.tsx';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { JwtResponse } from "@/types.ts";
+import { useAuth } from '@/useAuth.tsx';
 import styles from './LoginPage.module.css';
 
 const LoginPage = () => {
   const { login } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const from = (location.state as { from?: string })?.from ?? '/';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
@@ -21,8 +25,9 @@ const LoginPage = () => {
       });
 
       if (response.ok) {
-        const data = await response.json();
+        const data = await response.json() as JwtResponse;
         login(data.token);
+        navigate(from, { replace: true });
       } else {
         setErrorMessage('로그인에 실패했습니다.');
       }

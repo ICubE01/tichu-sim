@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { useEffect } from 'react';
-import { useAuth } from './useAuth.tsx';
+import { JwtResponse } from "@/types.ts";
+import { useAuth } from '@/useAuth.tsx';
 
 const api = axios.create({
   baseURL: '/api',
@@ -32,7 +33,7 @@ export const useAxios = () => {
         prevRequest.sent = true;
         try {
           const res = await axios.post('/api/auth/refresh', {}, { withCredentials: true });
-          const newAccessToken = res.data.token;
+          const newAccessToken = (res.data as JwtResponse).token;
 
           login(newAccessToken);
 

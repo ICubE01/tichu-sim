@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CreateRoomRequest, useRoom } from "@/useRoom.tsx";
 import { RoomOpaqueDto } from "@/types.ts";
-import styles from './HomePage.module.css';
-import CreateRoomModal from './CreateRoomModal';
+import { CreateRoomRequest, useRoom } from "@/useRoom.tsx";
 import { GameName } from "@/games/types.ts";
+import CreateRoomModal from './CreateRoomModal';
+import styles from './HomePage.module.css';
 
 const HomePage = () => {
   const navigate = useNavigate();
