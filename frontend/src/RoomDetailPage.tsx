@@ -140,7 +140,7 @@ const RoomDetailPage = () => {
       stomp.unsubscribe(`/user/${user.id}/queue/errors`, handleError);
       stomp.disconnect();
     };
-  }, [roomId, room, user, handleMemberChange, handleReceiveChatMessage]);
+  }, [roomId, room == null, user, handleMemberChange, handleReceiveChatMessage]);
 
   const handleGameStartRequest = () => {
     stomp.publish(`/app/rooms/${roomId}/game/tichu/start`, {});
