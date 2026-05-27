@@ -2,6 +2,7 @@ import { SubmitEvent, useState } from 'react';
 import { useAuth } from './useAuth.tsx';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import styles from './LoginPage.module.css';
+import { JwtResponse } from "@/types.ts";
 
 const LoginPage = () => {
   const { login } = useAuth();
@@ -24,7 +25,7 @@ const LoginPage = () => {
       });
 
       if (response.ok) {
-        const data = await response.json();
+        const data = await response.json() as JwtResponse;
         login(data.token);
         navigate(from, { replace: true });
       } else {

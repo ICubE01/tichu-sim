@@ -4,6 +4,10 @@ export interface Equatable<T> {
   equals(other: T | null): boolean;
 }
 
+export interface JwtResponse {
+  token: string;
+}
+
 export interface RoomOpaqueDto {
   id: string;
   name: string;
