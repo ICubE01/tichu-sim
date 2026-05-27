@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './useAuth.tsx';
 import LoginPage from './LoginPage';
 import SignupPage from './SignupPage';
@@ -9,6 +9,8 @@ import './App.css';
 
 const AppContent = () => {
   const { ready: authReady, accessToken } = useAuth();
+  const location = useLocation();
+
   if (!authReady) {
     return <div>Authenticating...</div>;
   }
@@ -19,7 +21,7 @@ const AppContent = () => {
         <Routes>
           <Route path="/" element={<LoginPage/>}/>
           <Route path="/signup" element={<SignupPage/>}/>
-          <Route path="*" element={<Navigate to="/" replace/>}/>
+          <Route path="*" element={<Navigate to="/" replace state={{ from: location.pathname + location.search }}/>}/>
         </Routes>
       </div>
     );
