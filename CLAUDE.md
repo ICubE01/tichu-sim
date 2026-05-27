@@ -140,6 +140,8 @@ Game-specific changes add a sub-path: `bugfix/tichu/cannot-play-dog`, `enhance/t
 ### Body
 Organize by stack, then by change category. Omit sections with no changes. Small/obvious PRs may have no body.
 
+When the body exceeds ~15–20 lines, add a `## Summary` section at the top with 2–4 bullet points describing what changed from an end user's perspective (what they can now do, or what broke and is now fixed).
+
 ```
 ## General          ← cross-cutting changes
 - ...
