@@ -57,6 +57,22 @@ public class AuthController {
         return cookie;
     }
 
+    @PostMapping("/logout")
+    public ResponseEntity<@NonNull Void> logout(
+            @CookieValue(value = REFRESH_TOKEN_COOKIE_NAME, required = false) String refreshToken,
+            HttpServletResponse response
+    ) {
+        authService.logout(refreshToken);
+
+        var cookie = new Cookie(REFRESH_TOKEN_COOKIE_NAME, "");
+        cookie.setHttpOnly(true);
+        cookie.setPath("/api/auth/refresh");
+        cookie.setMaxAge(0);
+        cookie.setSecure(true);
+        response.addCookie(cookie);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/me")
     public MeResponse getMe() {
         var user = authService.getCurrentUser();

@@ -10,7 +10,7 @@ interface Auth {
   accessToken: string | null;
   user: MeResponse | null;
   login: (token: string) => void;
-  logout: () => void;
+  logout: () => Promise<void>;
   refresh: () => Promise<void>;
 }
 
@@ -41,7 +41,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setReady(true);
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+    } catch (error) {
+      console.error('Failed to call logout endpoint:', error);
+    }
     setAccessToken(null);
     setUser(null);
     setReady(true);
