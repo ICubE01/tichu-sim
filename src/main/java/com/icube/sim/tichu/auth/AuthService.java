@@ -41,6 +41,9 @@ public class AuthService {
         var accessToken = jwtService.generateAccessToken(user);
         var refreshToken = jwtService.generateRefreshToken(user);
 
+        user.setRefreshToken(refreshToken.toString());
+        userRepository.save(user);
+
         return new JwtIssueResult(accessToken, refreshToken);
     }
 
@@ -51,8 +54,14 @@ public class AuthService {
         }
 
         var user = userRepository.findById(jwt.getUserId()).orElseThrow();
+        if (!oldRefreshToken.equals(user.getRefreshToken())) {
+            throw new BadCredentialsException("Refresh token is invalid.");
+        }
+
         var accessToken = jwtService.generateAccessToken(user);
         var newRefreshToken = jwtService.generateRefreshToken(user);
+        user.setRefreshToken(newRefreshToken.toString());
+        userRepository.save(user);
 
         return new JwtIssueResult(accessToken, newRefreshToken);
     }
