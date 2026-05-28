@@ -24,6 +24,7 @@ public class Jwt {
         return claims.get("role", String.class);
     }
 
+    @Override
     public String toString() {
         return Jwts.builder()
                 .claims(claims)
