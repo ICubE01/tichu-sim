@@ -13,7 +13,9 @@ import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Component;
 
-import java.util.Collections;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+
+import java.util.List;
 
 @AllArgsConstructor
 @Component
@@ -35,14 +37,15 @@ public class JwtAuthenticationInterceptor implements ChannelInterceptor {
 
             var token = authHeader.replace("Bearer ", "");
             var jwt = jwtService.parse(token).orElse(null);
-            if (jwt == null || jwt.isExpired()) {
+            if (jwt == null || jwt.isExpired() || jwt.getRole() == null) {
                 throw new MessageDeliveryException(message, "Access denied.");
             }
 
+            var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + jwt.getRole()));
             var authentication = new UsernamePasswordAuthenticationToken(
                     jwt.getUserId(),
                     null,
-                    Collections.emptyList()
+                    authorities
             );
             sessionAttributes.put(AUTH_TOKEN_KEY, authentication);
             accessor.setUser(authentication);
