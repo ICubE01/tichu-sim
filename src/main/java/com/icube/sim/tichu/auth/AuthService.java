@@ -59,6 +59,9 @@ public class AuthService {
         }
 
         var user = userRepository.findById(jwt.getUserId()).orElseThrow();
+        if (user.getRole() == Role.BOT) {
+            throw new BadCredentialsException("Refresh token is invalid.");
+        }
         if (!oldRefreshToken.equals(user.getRefreshToken())) {
             throw new BadCredentialsException("Refresh token is invalid.");
         }
