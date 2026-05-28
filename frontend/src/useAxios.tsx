@@ -35,12 +35,12 @@ export const useAxios = () => {
           const res = await axios.post('/api/auth/refresh', {}, { withCredentials: true });
           const newAccessToken = (res.data as JwtResponse).token;
 
-          login(newAccessToken);
+          await login(newAccessToken);
 
           prevRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
           return api(prevRequest);
         } catch (refreshError) {
-          logout();
+          await logout();
           return Promise.reject(refreshError);
         }
       }

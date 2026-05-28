@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
+import { JwtResponse } from "@/types.ts";
 
 export type Role = 'USER' | 'ADMIN' | 'BOT';
 
@@ -13,7 +14,7 @@ interface Auth {
   accessToken: string | null;
   user: MeResponse | null;
   impersonating: string | null;
-  login: (token: string) => void;
+  login: (token: string) => Promise<void>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
   becomeBot: (token: string, botName: string) => Promise<void>;
@@ -33,18 +34,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (response.ok) {
-        const userData = await response.json();
-        setUser(userData);
+        setUser(await response.json() as MeResponse);
       }
     } catch (error) {
       console.error("Failed to fetch user info:", error);
     }
   };
 
-  const login = (token: string) => {
+  const login = async (token: string) => {
     setAccessToken(token);
+    await fetchUserInfo(token);
     setImpersonating(null);
-    fetchUserInfo(token).then();
     setReady(true);
   };
 
@@ -68,22 +68,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
 
       if (response.ok) {
-        const data = await response.json();
+        const data = await response.json() as JwtResponse;
         // Match user's manual change in useAxios where res.data.accessToken is used
         const newToken = data.token;
         if (newToken) {
           setAccessToken(newToken);
-          setImpersonating(null);
           await fetchUserInfo(newToken);
+          setImpersonating(null);
         } else {
-          logout();
+          await logout();
         }
       } else {
-        logout();
+        await logout();
       }
     } catch (error) {
       console.log("Failed token refreshing:", error);
-      logout();
+      await logout();
     } finally {
       setReady(true);
     }
@@ -92,8 +92,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const becomeBot = async (token: string, botName: string) => {
     setUser(null);
     setAccessToken(token);
-    setImpersonating(botName);
     await fetchUserInfo(token);
+    setImpersonating(botName);
   };
 
   // Refresh tokens when a window is refreshed

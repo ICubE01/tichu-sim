@@ -26,7 +26,7 @@ const LoginPage = () => {
 
       if (response.ok) {
         const data = await response.json() as JwtResponse;
-        login(data.token);
+        await login(data.token);
         navigate(from, { replace: true });
       } else {
         setErrorMessage('로그인에 실패했습니다.');
