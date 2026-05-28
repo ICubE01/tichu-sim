@@ -15,6 +15,7 @@ public class JwtConfig {
     private int accessTokenExpiration;
     private int refreshTokenExpiration;
     private int webSocketTokenExpiration;
+    private int botAccessTokenExpiration;
 
     public SecretKey getSecretKey() {
         return Keys.hmacShaKeyFor(secret.getBytes());

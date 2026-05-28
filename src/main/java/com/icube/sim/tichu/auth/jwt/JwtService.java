@@ -27,6 +27,10 @@ public class JwtService {
         return generateToken(user, jwtConfig.getWebSocketTokenExpiration());
     }
 
+    public Jwt generateBotAccessToken(User user) {
+        return generateToken(user, jwtConfig.getBotAccessTokenExpiration());
+    }
+
     private Jwt generateToken(User user, long tokenExpiration) {
         var claims = Jwts.claims()
                 .subject(user.getId().toString())
