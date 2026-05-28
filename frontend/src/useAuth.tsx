@@ -1,8 +1,11 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 
+export type Role = 'USER' | 'ADMIN' | 'BOT';
+
 interface MeResponse {
   id: number;
   name: string;
+  role: Role;
 }
 
 interface Auth {

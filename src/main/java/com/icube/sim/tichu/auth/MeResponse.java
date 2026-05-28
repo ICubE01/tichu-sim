@@ -1,5 +1,6 @@
 package com.icube.sim.tichu.auth;
 
+import com.icube.sim.tichu.users.Role;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -8,4 +9,5 @@ import lombok.Getter;
 public class MeResponse {
     private Long id;
     private String name;
+    private Role role;
 }

@@ -76,7 +76,7 @@ public class AuthController {
     @GetMapping("/me")
     public MeResponse getMe() {
         var user = authService.getCurrentUser();
-        return new MeResponse(user.getId(), user.getName());
+        return new MeResponse(user.getId(), user.getName(), user.getRole());
     }
 
     @GetMapping("/issue/web-socket-token")
