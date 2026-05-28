@@ -3,6 +3,7 @@ package com.icube.sim.tichu.auth;
 import com.icube.sim.tichu.auth.jwt.Jwt;
 import com.icube.sim.tichu.auth.jwt.JwtIssueResult;
 import com.icube.sim.tichu.auth.jwt.JwtService;
+import com.icube.sim.tichu.users.Role;
 import com.icube.sim.tichu.users.User;
 import com.icube.sim.tichu.users.UserRepository;
 import lombok.AllArgsConstructor;
@@ -38,6 +39,10 @@ public class AuthService {
         );
 
         var user = userRepository.findByEmail(request.getEmail()).orElseThrow();
+        if (user.getRole() == Role.BOT) {
+            throw new BadCredentialsException("Bots cannot log in.");
+        }
+
         var accessToken = jwtService.generateAccessToken(user);
         var refreshToken = jwtService.generateRefreshToken(user);
 
