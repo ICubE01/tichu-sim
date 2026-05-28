@@ -1,0 +1,30 @@
+.overlay {
+  position: fixed;
+  top: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 101;
+  background-color: #f59e0b;
+  color: #1f2937;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: bold;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+}
+
+.stop-btn {
+  cursor: pointer;
+  border: 1px solid #1f2937;
+  background: none;
+  border-radius: 999px;
+  padding: 0 0.5rem;
+  font-size: 0.75rem;
+  font-weight: bold;
+  pointer-events: auto;
+}
