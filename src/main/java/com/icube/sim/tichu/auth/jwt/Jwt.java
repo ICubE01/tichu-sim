@@ -20,6 +20,10 @@ public class Jwt {
         return Long.parseLong(claims.getSubject());
     }
 
+    public String getRole() {
+        return claims.get("role", String.class);
+    }
+
     public String toString() {
         return Jwts.builder()
                 .claims(claims)
