@@ -12,9 +12,11 @@ interface Auth {
   ready: boolean;
   accessToken: string | null;
   user: MeResponse | null;
+  impersonating: string | null;
   login: (token: string) => void;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
+  becomeBot: (token: string, botName: string) => Promise<void>;
 }
 
 const AuthContext = createContext<Auth | null>(null);
@@ -23,6 +25,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [ready, setReady] = useState(false);
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [user, setUser] = useState<MeResponse | null>(null);
+  const [impersonating, setImpersonating] = useState<string | null>(null);
 
   const fetchUserInfo = async (token: string) => {
     try {
@@ -40,6 +43,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const login = (token: string) => {
     setAccessToken(token);
+    setImpersonating(null);
     fetchUserInfo(token).then();
     setReady(true);
   };
@@ -52,6 +56,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
     setAccessToken(null);
     setUser(null);
+    setImpersonating(null);
     setReady(true);
   };
 
@@ -68,6 +73,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const newToken = data.token;
         if (newToken) {
           setAccessToken(newToken);
+          setImpersonating(null);
           await fetchUserInfo(newToken);
         } else {
           logout();
@@ -83,13 +89,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  const becomeBot = async (token: string, botName: string) => {
+    setUser(null);
+    setAccessToken(token);
+    setImpersonating(botName);
+    await fetchUserInfo(token);
+  };
+
   // Refresh tokens when a window is refreshed
   useEffect(() => {
     refresh().then();
   }, []);
 
   return (
-    <AuthContext.Provider value={{ ready, accessToken, user, login, logout, refresh }}>
+    <AuthContext.Provider value={{ ready, accessToken, user, impersonating, login, logout, refresh, becomeBot }}>
       {children}
     </AuthContext.Provider>
   );
