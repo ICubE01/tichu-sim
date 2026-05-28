@@ -32,20 +32,24 @@ const AppContent = () => {
   }
 
   return (
-    <div className='container'>
-      <Suspense fallback={null}><ImpersonationOverlay/></Suspense>
+    <>
+      <Suspense fallback={null}>
+        <ImpersonationOverlay/>
+      </Suspense>
       <NavBar/>
-      <Routes>
-        <Route path="/" element={<HomePage/>}/>
-        <Route path="/:roomId" element={<RoomDetailPage/>}/>
-        {user?.role === 'ADMIN' && (
-          <Route path="/admin" element={<Suspense fallback={<div>Loading...</div>}>
-            <AdminPage/>
-          </Suspense>}/>
-        )}
-        <Route path="*" element={<Navigate to="/" replace/>}/>
-      </Routes>
-    </div>
+      <div className='container'>
+        <Routes>
+          <Route path="/" element={<HomePage/>}/>
+          <Route path="/:roomId" element={<RoomDetailPage/>}/>
+          {user?.role === 'ADMIN' && (
+            <Route path="/admin" element={<Suspense fallback={<div>Loading...</div>}>
+              <AdminPage/>
+            </Suspense>}/>
+          )}
+          <Route path="*" element={<Navigate to="/" replace/>}/>
+        </Routes>
+      </div>
+    </>
   );
 };
 

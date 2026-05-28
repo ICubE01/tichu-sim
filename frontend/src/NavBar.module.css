@@ -1,5 +1,5 @@
 .navbar-container {
-  position: sticky;
+  position: fixed;
   top: 0;
   width: 100%;
   display: flex;
@@ -8,7 +8,6 @@
   background-color: white;
   border-bottom: 1px solid #ddd;
   z-index: 100;
-  margin-bottom: 1rem;
 }
 
 .navbar-content {
