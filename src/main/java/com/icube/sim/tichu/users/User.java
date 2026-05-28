@@ -6,6 +6,8 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
+import static jakarta.persistence.EnumType.STRING;
+
 @Getter
 @Setter
 @Entity
@@ -33,5 +35,10 @@ public class User {
 
     @Column(name = "refresh_token")
     private String refreshToken;
+
+    @NotNull
+    @Enumerated(STRING)
+    @Column(name = "role", nullable = false)
+    private Role role = Role.USER;
 
 }
