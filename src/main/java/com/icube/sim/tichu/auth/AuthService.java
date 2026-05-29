@@ -27,7 +27,7 @@ public class AuthService {
         var userId = (Long) authentication.getPrincipal();
         assert userId != null;
 
-        return userRepository.findById(userId).orElse(null);
+        return userRepository.findById(userId).orElseThrow();
     }
 
     public JwtIssueResult login(LoginRequest request) {
