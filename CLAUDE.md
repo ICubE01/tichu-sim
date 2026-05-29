@@ -115,6 +115,10 @@ GitHub Actions runs on every PR and push to `main`:
 
 Reusable workflows live in `.github/workflows/reusable-*.yaml`.
 
+## Commit Conventions
+
+- Do not include a `Co-Authored-By` trailer in commit messages.
+
 ## PR Conventions
 
 ### Title
