@@ -16,15 +16,15 @@ export const useRoom = () => {
   const api = useAxios();
 
   const fetchRooms = () =>
-    api.get('/rooms')
-      .then(response => response.data as RoomOpaqueDto[]);
+    api.get<RoomOpaqueDto[]>('/rooms')
+      .then(response => response.data);
 
   const createRoom = (createRoomRequest: CreateRoomRequest) =>
-    api.post('/rooms', createRoomRequest)
-      .then(response => response.data as CreateRoomResponse);
+    api.post<CreateRoomResponse>('/rooms', createRoomRequest)
+      .then(response => response.data);
 
   const fetchMyRoom = () =>
-    api.get('/rooms/me')
+    api.get<RoomDto | null>('/rooms/me')
       .then(response => {
         if (response.status === HttpStatusCode.NoContent) {
           return null;
@@ -33,8 +33,8 @@ export const useRoom = () => {
       });
 
   const fetchRoom = (roomId: string) =>
-    api.get(`/rooms/${roomId}`)
-      .then(response => response.data as RoomDto);
+    api.get<RoomDto>(`/rooms/${roomId}`)
+      .then(response => response.data);
 
   const enterRoom = (roomId: string) =>
     api.post(`/rooms/${roomId}`);

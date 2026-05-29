@@ -129,8 +129,8 @@ const RoomDetailPage = () => {
     stomp.subscribe(`/user/${user.id}/queue/game/tichu`, handleTichuMessage);
     stomp.subscribe(`/user/${user.id}/queue/errors`, handleError);
 
-    api.get('/auth/issue/web-socket-token')
-      .then(response => (response.data as JwtResponse).token)
+    api.get<JwtResponse>('/auth/issue/web-socket-token')
+      .then(response => response.data.token)
       .then(token => stomp.connect(token));
 
     return () => {
