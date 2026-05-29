@@ -27,11 +27,16 @@ public class JwtService {
         return generateToken(user, jwtConfig.getWebSocketTokenExpiration());
     }
 
+    public Jwt generateBotAccessToken(User user) {
+        return generateToken(user, jwtConfig.getBotAccessTokenExpiration());
+    }
+
     private Jwt generateToken(User user, long tokenExpiration) {
         var claims = Jwts.claims()
                 .subject(user.getId().toString())
                 .add("name", user.getName())
                 .add("email", user.getEmail())
+                .add("role", user.getRole().name())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + tokenExpiration * 1000))
                 .build();

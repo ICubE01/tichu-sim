@@ -1,13 +1,12 @@
-package com.icube.sim.tichu.auth;
+package com.icube.sim.tichu.admin;
 
-import com.icube.sim.tichu.users.Role;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
-public class MeResponse {
+public class BotDto {
     private Long id;
     private String name;
-    private Role role;
+    private String email;
 }

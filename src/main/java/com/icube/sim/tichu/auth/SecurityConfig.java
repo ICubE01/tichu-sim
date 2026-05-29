@@ -1,6 +1,7 @@
 package com.icube.sim.tichu.auth;
 
 import com.icube.sim.tichu.auth.jwt.JwtAuthenticationFilter;
+import com.icube.sim.tichu.users.Role;
 import com.icube.sim.tichu.users.TichuSimUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -70,6 +71,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/refresh", "/api/auth/logout").permitAll()
                         .requestMatchers("/api/ws").permitAll()
+                        .requestMatchers("/api/admin/**").hasRole(Role.ADMIN.name())
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(c -> c

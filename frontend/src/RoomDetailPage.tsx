@@ -1,6 +1,6 @@
 import { KeyboardEventHandler, useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ChatMessage, MemberDto, MemberMessage, RoomDto } from "@/types.ts";
+import { ChatMessage, JwtResponse, MemberDto, MemberMessage, RoomDto } from "@/types.ts";
 import { useAuth } from '@/useAuth.tsx';
 import { useAxios } from "@/useAxios.tsx";
 import { useRoom } from "@/useRoom.tsx";
@@ -130,7 +130,7 @@ const RoomDetailPage = () => {
     stomp.subscribe(`/user/${user.id}/queue/errors`, handleError);
 
     api.get('/auth/issue/web-socket-token')
-      .then(response => response.data.token)
+      .then(response => (response.data as JwtResponse).token)
       .then(token => stomp.connect(token));
 
     return () => {

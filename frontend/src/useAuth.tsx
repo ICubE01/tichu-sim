@@ -1,17 +1,23 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
+import { JwtResponse } from "@/types.ts";
+
+export type Role = 'USER' | 'ADMIN' | 'BOT';
 
 interface MeResponse {
   id: number;
   name: string;
+  role: Role;
 }
 
 interface Auth {
   ready: boolean;
   accessToken: string | null;
   user: MeResponse | null;
-  login: (token: string) => void;
+  impersonating: string | null;
+  login: (token: string) => Promise<void>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
+  becomeBot: (token: string, botName: string) => Promise<void>;
 }
 
 const AuthContext = createContext<Auth | null>(null);
@@ -20,6 +26,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [ready, setReady] = useState(false);
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [user, setUser] = useState<MeResponse | null>(null);
+  const [impersonating, setImpersonating] = useState<string | null>(null);
 
   const fetchUserInfo = async (token: string) => {
     try {
@@ -27,17 +34,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (response.ok) {
-        const userData = await response.json();
-        setUser(userData);
+        setUser(await response.json() as MeResponse);
       }
     } catch (error) {
       console.error("Failed to fetch user info:", error);
     }
   };
 
-  const login = (token: string) => {
+  const login = async (token: string) => {
     setAccessToken(token);
-    fetchUserInfo(token).then();
+    await fetchUserInfo(token);
+    setImpersonating(null);
     setReady(true);
   };
 
@@ -49,6 +56,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
     setAccessToken(null);
     setUser(null);
+    setImpersonating(null);
     setReady(true);
   };
 
@@ -60,24 +68,32 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
 
       if (response.ok) {
-        const data = await response.json();
+        const data = await response.json() as JwtResponse;
         // Match user's manual change in useAxios where res.data.accessToken is used
         const newToken = data.token;
         if (newToken) {
           setAccessToken(newToken);
           await fetchUserInfo(newToken);
+          setImpersonating(null);
         } else {
-          logout();
+          await logout();
         }
       } else {
-        logout();
+        await logout();
       }
     } catch (error) {
       console.log("Failed token refreshing:", error);
-      logout();
+      await logout();
     } finally {
       setReady(true);
     }
+  };
+
+  const becomeBot = async (token: string, botName: string) => {
+    setUser(null);
+    setAccessToken(token);
+    await fetchUserInfo(token);
+    setImpersonating(botName);
   };
 
   // Refresh tokens when a window is refreshed
@@ -86,7 +102,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ ready, accessToken, user, login, logout, refresh }}>
+    <AuthContext.Provider value={{ ready, accessToken, user, impersonating, login, logout, refresh, becomeBot }}>
       {children}
     </AuthContext.Provider>
   );
