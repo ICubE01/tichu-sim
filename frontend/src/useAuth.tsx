@@ -17,7 +17,7 @@ interface Auth {
   login: (token: string) => Promise<void>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
-  becomeBot: (token: string, botName: string) => Promise<void>;
+  impersonateBot: (token: string, botName: string) => Promise<void>;
 }
 
 const AuthContext = createContext<Auth | null>(null);
@@ -86,7 +86,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const becomeBot = async (token: string, botName: string) => {
+  const impersonateBot = async (token: string, botName: string) => {
     const botUser = await fetchUserInfo(token);
     setUser(botUser);
     setAccessToken(token);
@@ -99,7 +99,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ ready, accessToken, user, impersonating, login, logout, refresh, becomeBot }}>
+    <AuthContext.Provider value={{ ready, accessToken, user, impersonating, login, logout, refresh, impersonateBot }}>
       {children}
     </AuthContext.Provider>
   );

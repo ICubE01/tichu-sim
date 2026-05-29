@@ -8,14 +8,14 @@ import styles from './HomePage.module.css';
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const { fetchMyRoom, fetchRooms, createRoom, enterRoom } = useRoom();
+  const roomApi = useRoom();
   const [rooms, setRooms] = useState<RoomOpaqueDto[]>([]);
   const [loading, setLoading] = useState(false);
   const [isCreateRoomModalOpen, setIsCreateModalOpen] = useState(false);
 
   const checkMyRoom = async () => {
     try {
-      const myRoom = await fetchMyRoom();
+      const myRoom = await roomApi.fetchMyRoom();
       if (myRoom !== null) {
         navigate(`/${myRoom.id}`, { replace: true });
       }
@@ -24,18 +24,18 @@ const HomePage = () => {
     }
   };
 
-  const handleFetchRooms = async () => {
+  const fetchRooms = async () => {
     try {
-      setRooms(await fetchRooms());
+      setRooms(await roomApi.fetchRooms());
     } catch (error) {
       console.error('Failed to fetch rooms:', error);
       alert('Failed to get rooms data. Please try again.')
     }
   }
 
-  const handleCreateRoom = async (createRoomRequest: CreateRoomRequest) => {
+  const createRoom = async (createRoomRequest: CreateRoomRequest) => {
     try {
-      const res = await createRoom(createRoomRequest);
+      const res = await roomApi.createRoom(createRoomRequest);
       navigate(`/${res.id}`);
     } catch (error) {
       console.error('Failed to create room:', error);
@@ -44,13 +44,13 @@ const HomePage = () => {
     }
   }
 
-  const handleEnterRoom = async (room: RoomOpaqueDto) => {
+  const enterRoom = async (room: RoomOpaqueDto) => {
     if (room.memberCount >= room.maxPlayers || room.hasGameStarted) {
       alert('Unable to enter the room.');
       return;
     }
     try {
-      await enterRoom(room.id);
+      await roomApi.enterRoom(room.id);
       navigate(`/${room.id}`);
     } catch (error) {
       console.error('Failed to enter room:', error)
@@ -60,7 +60,7 @@ const HomePage = () => {
   useEffect(() => {
     setLoading(true);
     checkMyRoom().then();
-    handleFetchRooms().then();
+    fetchRooms().then();
     setLoading(false);
   }, []);
 
@@ -81,7 +81,7 @@ const HomePage = () => {
           <button onClick={() => setIsCreateModalOpen(true)}>
             방 만들기
           </button>
-          <button onClick={handleFetchRooms}>새로고침</button>
+          <button onClick={fetchRooms}>새로고침</button>
         </div>
       </div>
 
@@ -105,7 +105,7 @@ const HomePage = () => {
               return (
                 <tr
                   key={room.id}
-                  onClick={() => handleEnterRoom(room)}
+                  onClick={() => enterRoom(room)}
                   className={`${styles.roomRow} ${isAvailable ? styles.available : styles.unavailable}`}
                 >
                   <td>{room.id}</td>
@@ -130,7 +130,7 @@ const HomePage = () => {
       <CreateRoomModal
         isOpen={isCreateRoomModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
-        onCreate={handleCreateRoom}
+        onCreate={createRoom}
       />
     </div>
   );

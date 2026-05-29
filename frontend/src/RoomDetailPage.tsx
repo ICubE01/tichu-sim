@@ -16,7 +16,7 @@ const RoomDetailPage = () => {
   const { roomId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { fetchMyRoom, enterRoom, leaveRoom, fetchRoom } = useRoom();
+  const roomApi = useRoom();
   const [room, setRoom] = useState<RoomDto | null>(null);
   const [loading, setLoading] = useState(true);
   const stomp = new useStomp();
@@ -29,9 +29,9 @@ const RoomDetailPage = () => {
     return;
   }
 
-  const handleLeaveRoom = async () => {
+  const leaveRoom = async () => {
     try {
-      await leaveRoom(roomId);
+      await roomApi.leaveRoom(roomId);
       navigate('/');
     } catch (error) {
       console.error('Failed to leave room:', error);
@@ -43,14 +43,14 @@ const RoomDetailPage = () => {
       setLoading(true);
       let myRoom;
       try {
-        myRoom = await fetchMyRoom();
+        myRoom = await roomApi.fetchMyRoom();
       } catch (error) {
         console.error('Failed to fetch my room:', error);
         return;
       }
       if (myRoom === null) {
         try {
-          await enterRoom(roomId);
+          await roomApi.enterRoom(roomId);
         } catch (error) {
           console.error('Failed to enter room:', error);
           navigate('/');
@@ -63,7 +63,7 @@ const RoomDetailPage = () => {
       }
 
       try {
-        setRoom(await fetchRoom(roomId));
+        setRoom(await roomApi.fetchRoom(roomId));
         setLoading(false);
       } catch (error) {
         console.error('Failed to fetch room detail:', error);
@@ -86,7 +86,7 @@ const RoomDetailPage = () => {
     setChatMessages((prev) => [...prev, chatMessage]);
   }, []);
 
-  const handleSendChatMessage = () => {
+  const sendChatMessage = () => {
     if (chatInput.trim() === '') {
       return;
     }
@@ -100,7 +100,7 @@ const RoomDetailPage = () => {
 
   const handleKeyPressOnChatInput: KeyboardEventHandler = (e) => {
     if (e.key === 'Enter') {
-      handleSendChatMessage();
+      sendChatMessage();
     }
   };
 
@@ -142,28 +142,28 @@ const RoomDetailPage = () => {
     };
   }, [roomId, room == null, user, handleMemberChange, handleReceiveChatMessage]);
 
-  const handleGameStartRequest = () => {
+  const startGame = () => {
     stomp.publish(`/app/rooms/${roomId}/game/tichu/start`, {});
   }
 
-  const handleSetReady = () => {
+  const toggleReady = () => {
     const isReadyNow = room?.members.find(m => m.id === user?.id)?.isReady ?? false;
     stomp.publish(`/app/rooms/${roomId}/set-ready`, { ready: !isReadyNow });
   };
 
-  const handleSetRule = (newRule: GameRule) => {
+  const setRule = (newRule: GameRule) => {
     stomp.publish(`/app/rooms/${roomId}/game/tichu/set-rule`, newRule);
   };
 
-  const handleWinningScoreChange = (score: TichuWinningScore) => {
+  const changeWinningScore = (score: TichuWinningScore) => {
     const newRule = {
       ...room!.gameRule,
       winningScore: score
     };
-    handleSetRule(newRule);
+    setRule(newRule);
   };
 
-  const handleTeamChange = (member: MemberDto, team: Team) => {
+  const changeTeam = (member: MemberDto, team: Team) => {
     const newRule = {
       ...room!.gameRule,
       teamAssignment: {
@@ -171,7 +171,7 @@ const RoomDetailPage = () => {
         [member.id]: team
       }
     };
-    handleSetRule(newRule);
+    setRule(newRule);
   };
 
   if (loading || room === null) {
@@ -220,10 +220,10 @@ const RoomDetailPage = () => {
         <h2>[{room.id}] {room.name}</h2>
         <div className={styles.roomDetailHeaderButtons}>
           {isHost
-            ? <button onClick={handleGameStartRequest} className={styles.gameStartButton} disabled={!canStartGame}>게임 시작</button>
-            : <button onClick={handleSetReady} className={styles.gameStartButton}>{currentMember?.isReady ? '준비 취소' : '준비'}</button>
+            ? <button onClick={startGame} className={styles.gameStartButton} disabled={!canStartGame}>게임 시작</button>
+            : <button onClick={toggleReady} className={styles.gameStartButton}>{currentMember?.isReady ? '준비 취소' : '준비'}</button>
           }
-          <button onClick={handleLeaveRoom} className={styles.leaveButton}>나가기</button>
+          <button onClick={leaveRoom} className={styles.leaveButton}>나가기</button>
         </div>
       </div>
 
@@ -252,7 +252,7 @@ const RoomDetailPage = () => {
                     <button
                       key={score}
                       className={`${styles.ruleButton} ${!isHost ? styles.ruleButtonReadonly : ''} ${(room.gameRule as TichuRule).winningScore === score ? styles.active : ''}`}
-                      onClick={() => handleWinningScoreChange(score)}
+                      onClick={() => changeWinningScore(score)}
                     >
                       {formatWinningScore(score) || score}
                     </button>
@@ -272,7 +272,7 @@ const RoomDetailPage = () => {
                             <button
                               key={`team-assignment-${member.id}-${team.toLowerCase()}`}
                               className={`${styles.ruleButton} ${!isHost ? styles.ruleButtonReadonly : ''} ${team === Team.NONE ? '' : team === Team.RED ? styles.teamRed : styles.teamBlue} ${assignedTeam === team ? styles.active : ''}`}
-                              onClick={() => handleTeamChange(member, team)}
+                              onClick={() => changeTeam(member, team)}
                             >
                               {team === 'NONE' ? '자동' : team}
                             </button>
@@ -312,7 +312,7 @@ const RoomDetailPage = () => {
               onChange={(e) => setChatInput(e.target.value)}
               onKeyDown={handleKeyPressOnChatInput}
             />
-            <button onClick={handleSendChatMessage}>전송</button>
+            <button onClick={sendChatMessage}>전송</button>
           </div>
         </div>
       </div>
