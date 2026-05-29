@@ -766,7 +766,7 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
     );
   };
 
-  const handleSendChatMessage = () => {
+  const sendChatMessage = () => {
     if (chatInput.trim() === '') {
       return;
     }
@@ -778,7 +778,7 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
 
   const handleKeyPressOnChatInput: KeyboardEventHandler = (event) => {
     if (event.key === 'Enter') {
-      handleSendChatMessage();
+      sendChatMessage();
     }
   };
 
@@ -844,7 +844,7 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
               onChange={(e) => setChatInput(e.target.value)}
               onKeyDown={handleKeyPressOnChatInput}
             />
-            <button onClick={handleSendChatMessage}>전송</button>
+            <button onClick={sendChatMessage}>전송</button>
           </div>
         </div>
 

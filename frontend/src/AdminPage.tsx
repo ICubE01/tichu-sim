@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState, SubmitEvent } from 'react';
 import { useAxios } from '@/useAxios.tsx';
 import { useAuth } from '@/useAuth.tsx';
 import { JwtResponse } from '@/types.ts';
@@ -13,7 +13,7 @@ interface BotDto {
 const AdminPage = () => {
   const navigate = useNavigate();
   const api = useAxios();
-  const { becomeBot } = useAuth();
+  const { impersonateBot } = useAuth();
   const [bots, setBots] = useState<BotDto[]>([]);
   const [newBotName, setNewBotName] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -27,7 +27,7 @@ const AdminPage = () => {
     }
   };
 
-  const handleCreateBot = async (e: React.SubmitEvent) => {
+  const createBot = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       const res = await api.post<BotDto>('/admin/bots', { name: newBotName });
@@ -39,10 +39,10 @@ const AdminPage = () => {
     }
   };
 
-  const handleBecome = async (bot: BotDto) => {
+  const becomeBot = async (bot: BotDto) => {
     try {
       const res = await api.post<JwtResponse>(`/admin/bots/${bot.id}/token`);
-      await becomeBot(res.data.token, bot.name);
+      await impersonateBot(res.data.token, bot.name);
       navigate("/");
     } catch {
       setError('Failed to become bot.');
@@ -73,7 +73,7 @@ const AdminPage = () => {
               <td>{bot.name}</td>
               <td>{bot.email}</td>
               <td>
-                <button onClick={() => handleBecome(bot)}>Become</button>
+                <button onClick={() => becomeBot(bot)}>Become</button>
               </td>
             </tr>
           ))}
@@ -86,7 +86,7 @@ const AdminPage = () => {
       </table>
 
       <h3>Create Bot</h3>
-      <form onSubmit={handleCreateBot}>
+      <form onSubmit={createBot}>
         <input
           type="text"
           value={newBotName}

@@ -17,7 +17,7 @@ interface Auth {
   login: (token: string) => Promise<void>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
-  becomeBot: (token: string, botName: string) => Promise<void>;
+  impersonateBot: (token: string, botName: string) => Promise<void>;
 }
 
 const AuthContext = createContext<Auth | null>(null);
@@ -28,22 +28,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<MeResponse | null>(null);
   const [impersonating, setImpersonating] = useState<string | null>(null);
 
-  const fetchUserInfo = async (token: string) => {
-    try {
-      const response = await fetch('/api/auth/me', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (response.ok) {
-        setUser(await response.json() as MeResponse);
-      }
-    } catch (error) {
-      console.error("Failed to fetch user info:", error);
+  const fetchUserInfo = async (token: string): Promise<MeResponse> => {
+    const response = await fetch('/api/auth/me', { headers: { 'Authorization': `Bearer ${token}` } });
+    if (!response.ok) {
+      throw new Error('Failed to fetch user info');
     }
+    return await response.json() as MeResponse;
   };
 
   const login = async (token: string) => {
+    const userData = await fetchUserInfo(token);
+    setUser(userData);
     setAccessToken(token);
-    await fetchUserInfo(token);
     setImpersonating(null);
     setReady(true);
   };
@@ -72,8 +68,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         // Match user's manual change in useAxios where res.data.accessToken is used
         const newToken = data.token;
         if (newToken) {
+          const userData = await fetchUserInfo(newToken);
+          setUser(userData);
           setAccessToken(newToken);
-          await fetchUserInfo(newToken);
           setImpersonating(null);
         } else {
           await logout();
@@ -89,10 +86,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const becomeBot = async (token: string, botName: string) => {
-    setUser(null);
+  const impersonateBot = async (token: string, botName: string) => {
+    const botUser = await fetchUserInfo(token);
+    setUser(botUser);
     setAccessToken(token);
-    await fetchUserInfo(token);
     setImpersonating(botName);
   };
 
@@ -102,7 +99,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ ready, accessToken, user, impersonating, login, logout, refresh, becomeBot }}>
+    <AuthContext.Provider value={{ ready, accessToken, user, impersonating, login, logout, refresh, impersonateBot }}>
       {children}
     </AuthContext.Provider>
   );

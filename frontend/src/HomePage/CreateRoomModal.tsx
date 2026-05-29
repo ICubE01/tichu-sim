@@ -55,7 +55,7 @@ const CreateRoomModal = ({ isOpen, onClose, onCreate }: CreateRoomModalProps) =>
     setIsOverlayMouseDown(false);
   };
 
-  const handleCreate = () => {
+  const createRoom = () => {
     if (roomName.trim()) {
       onCreate({ name: roomName.trim(), gameName: gameName });
       setRoomName('');
@@ -64,7 +64,7 @@ const CreateRoomModal = ({ isOpen, onClose, onCreate }: CreateRoomModalProps) =>
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
-      handleCreate();
+      createRoom();
     } else if (e.key === 'Escape') {
       onClose();
     }
@@ -115,7 +115,7 @@ const CreateRoomModal = ({ isOpen, onClose, onCreate }: CreateRoomModalProps) =>
           </button>
           <button
             className={styles.createButton}
-            onClick={handleCreate}
+            onClick={createRoom}
             disabled={!roomName.trim()}
           >
             방 생성하기
