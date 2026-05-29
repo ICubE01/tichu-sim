@@ -17,7 +17,7 @@ const HomePage = () => {
     try {
       const myRoom = await roomApi.fetchMyRoom();
       if (myRoom !== null) {
-        navigate(`/${myRoom.id}`, { replace: true });
+        navigate(`/rooms/${myRoom.id}`, { replace: true });
       }
     } catch (error) {
       console.error('Failed to fetch my room:', error);
@@ -36,7 +36,7 @@ const HomePage = () => {
   const createRoom = async (createRoomRequest: CreateRoomRequest) => {
     try {
       const res = await roomApi.createRoom(createRoomRequest);
-      navigate(`/${res.id}`);
+      navigate(`/rooms/${res.id}`);
     } catch (error) {
       console.error('Failed to create room:', error);
     } finally {
@@ -51,7 +51,7 @@ const HomePage = () => {
     }
     try {
       await roomApi.enterRoom(room.id);
-      navigate(`/${room.id}`);
+      navigate(`/rooms/${room.id}`);
     } catch (error) {
       console.error('Failed to enter room:', error)
     }

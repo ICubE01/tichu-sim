@@ -58,7 +58,7 @@ const RoomDetailPage = () => {
         }
       } else if (String(myRoom.id) !== String(roomId)) {
         alert('You are already in another room. Please leave the current room first.');
-        navigate(`/${myRoom.id}`);
+        navigate(`/rooms/${myRoom.id}`);
         return;
       }
 

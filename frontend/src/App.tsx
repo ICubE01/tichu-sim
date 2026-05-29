@@ -40,7 +40,7 @@ const AppContent = () => {
       <div className='container'>
         <Routes>
           <Route path="/" element={<HomePage/>}/>
-          <Route path="/:roomId" element={<RoomDetailPage/>}/>
+          <Route path="/rooms/:roomId" element={<RoomDetailPage/>}/>
           {user?.role === 'ADMIN' && (
             <Route path="/admin" element={<Suspense fallback={<div>Loading...</div>}>
               <AdminPage/>
