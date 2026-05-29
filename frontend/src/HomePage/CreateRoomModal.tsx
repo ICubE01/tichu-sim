@@ -40,7 +40,7 @@ const CreateRoomModal = ({ isOpen, onClose, onCreate }: CreateRoomModalProps) =>
     return null;
   }
 
-  const handleOverlayMouseDown = (e: MouseEvent) => {
+  const overlayMouseDown = (e: MouseEvent) => {
     if (e.target === e.currentTarget) {
       setIsOverlayMouseDown(true);
     } else {
@@ -48,7 +48,7 @@ const CreateRoomModal = ({ isOpen, onClose, onCreate }: CreateRoomModalProps) =>
     }
   };
 
-  const handleOverlayMouseUp = (e: MouseEvent) => {
+  const overlayMouseUp = (e: MouseEvent) => {
     if (isOverlayMouseDown && e.target === e.currentTarget) {
       onClose();
     }
@@ -62,7 +62,7 @@ const CreateRoomModal = ({ isOpen, onClose, onCreate }: CreateRoomModalProps) =>
     }
   };
 
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+  const inputKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       createRoom();
     } else if (e.key === 'Escape') {
@@ -73,8 +73,8 @@ const CreateRoomModal = ({ isOpen, onClose, onCreate }: CreateRoomModalProps) =>
   return (
     <div
       className={styles.modalOverlay}
-      onMouseDown={handleOverlayMouseDown}
-      onMouseUp={handleOverlayMouseUp}
+      onMouseDown={overlayMouseDown}
+      onMouseUp={overlayMouseUp}
     >
       <div className={styles.modalContent}>
         <h2>방 만들기</h2>
@@ -91,7 +91,7 @@ const CreateRoomModal = ({ isOpen, onClose, onCreate }: CreateRoomModalProps) =>
             placeholder="방 이름을 입력해주세요..."
             value={roomName}
             onChange={(e) => setRoomName(e.target.value)}
-            onKeyDown={handleKeyDown}
+            onKeyDown={inputKeyDown}
             maxLength={20}
           />
         </div>

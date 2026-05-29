@@ -98,7 +98,7 @@ const RoomDetailPage = () => {
     setChatInput('');
   };
 
-  const handleKeyPressOnChatInput: KeyboardEventHandler = (e) => {
+  const chatInputKeyDown: KeyboardEventHandler = (e) => {
     if (e.key === 'Enter') {
       sendChatMessage();
     }
@@ -310,7 +310,7 @@ const RoomDetailPage = () => {
               value={chatInput}
               autoComplete="off"
               onChange={(e) => setChatInput(e.target.value)}
-              onKeyDown={handleKeyPressOnChatInput}
+              onKeyDown={chatInputKeyDown}
             />
             <button onClick={sendChatMessage}>전송</button>
           </div>
