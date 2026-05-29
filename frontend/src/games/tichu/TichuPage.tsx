@@ -776,7 +776,7 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
     setChatInput('');
   };
 
-  const handleKeyPressOnChatInput: KeyboardEventHandler = (event) => {
+  const chatInputKeyDown: KeyboardEventHandler = (event) => {
     if (event.key === 'Enter') {
       sendChatMessage();
     }
@@ -842,7 +842,7 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
               value={chatInput}
               autoComplete="off"
               onChange={(e) => setChatInput(e.target.value)}
-              onKeyDown={handleKeyPressOnChatInput}
+              onKeyDown={chatInputKeyDown}
             />
             <button onClick={sendChatMessage}>전송</button>
           </div>
