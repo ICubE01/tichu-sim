@@ -12,7 +12,7 @@ const AdminPage = lazy(() => import('@/AdminPage.tsx'));
 const ImpersonationOverlay = lazy(() => import('@/ImpersonationOverlay.tsx'));
 
 const AppContent = () => {
-  const { ready: authReady, accessToken, user } = useAuth();
+  const { ready: authReady, accessToken, user, impersonating } = useAuth();
   const location = useLocation();
 
   if (!authReady) {
@@ -31,9 +31,11 @@ const AppContent = () => {
 
   return (
     <>
-      <Suspense fallback={null}>
-        <ImpersonationOverlay/>
-      </Suspense>
+      {impersonating !== null && (
+        <Suspense fallback={null}>
+          <ImpersonationOverlay/>
+        </Suspense>
+      )}
       <NavBar/>
       <div className='container'>
         <Routes>
