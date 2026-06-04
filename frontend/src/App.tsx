@@ -21,13 +21,11 @@ const AppContent = () => {
 
   if (!accessToken) {
     return (
-      <div className='container'>
-        <Routes>
-          <Route path="/" element={<LoginPage/>}/>
-          <Route path="/signup" element={<SignupPage/>}/>
-          <Route path="*" element={<Navigate to="/" replace state={{ from: location.pathname + location.search }}/>}/>
-        </Routes>
-      </div>
+      <Routes>
+        <Route path="/" element={<LoginPage/>}/>
+        <Route path="/signup" element={<SignupPage/>}/>
+        <Route path="*" element={<Navigate to="/" replace state={{ from: location.pathname + location.search }}/>}/>
+      </Routes>
     );
   }
 
