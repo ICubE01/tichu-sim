@@ -20,6 +20,10 @@ public class TichuSimUserDetailsService implements UserDetailsService {
         var user = userRepository.findByEmail(username)
                 .orElseThrow(() -> UsernameNotFoundException.fromUsername(username));
 
+        if (user.getPassword() == null) {
+            throw UsernameNotFoundException.fromUsername(username);
+        }
+
         return new User(user.getEmail(), user.getPassword(), Collections.emptyList());
     }
 }
