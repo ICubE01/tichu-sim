@@ -4,6 +4,7 @@ import com.icube.sim.tichu.common.ErrorDto;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.jspecify.annotations.NonNull;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,7 +21,7 @@ public class UserController {
 
     @ExceptionHandler(DuplicateUserException.class)
     public ResponseEntity<@NonNull ErrorDto> handleDuplicateUser() {
-        return ResponseEntity.badRequest().body(new ErrorDto(
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorDto(
                 "The email is already registered."
         ));
     }
