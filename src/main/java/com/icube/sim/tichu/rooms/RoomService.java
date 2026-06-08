@@ -58,16 +58,16 @@ public class RoomService {
 
     @Locked.Read
     public Optional<RoomDto> getMyRoom() {
-        var user = authService.getCurrentUser();
-        var myRoom = memberRepository.findById(user.getId()).map(Member::getRoom);
+        var userId = authService.getCurrentUserId();
+        var myRoom = memberRepository.findById(userId).map(Member::getRoom);
         return myRoom.map(roomMapper::toDto);
     }
 
     @Locked.Read
     public RoomDto getRoom(String id) {
-        var user = authService.getCurrentUser();
+        var userId = authService.getCurrentUserId();
         var room = roomRepository.findById(id).orElseThrow(RoomNotFoundException::new);
-        if (!room.containsMember(user.getId())) {
+        if (!room.containsMember(userId)) {
             throw new AccessDeniedException("Not a member of this room.");
         }
 
@@ -98,15 +98,15 @@ public class RoomService {
 
     @Locked.Write
     public void leaveRoom(String id) {
-        var user = authService.getCurrentUser();
-        var member = memberRepository.findById(user.getId()).orElse(null);
+        var userId = authService.getCurrentUserId();
+        var member = memberRepository.findById(userId).orElse(null);
         if (member == null || member.getRoom() == null || !member.getRoom().getId().equals(id)) {
             return;
         }
 
         var room = roomRepository.findById(id).orElseThrow(RoomNotFoundException::new);
-        room.removeMember(user.getId());
-        memberRepository.deleteById(user.getId());
+        room.removeMember(userId);
+        memberRepository.deleteById(userId);
 
         memberMessagePublisher.publish(room);
 

@@ -21,14 +21,17 @@ public class AuthService {
     private final UserRepository userRepository;
     private final JwtService jwtService;
 
-    public User getCurrentUser() {
+    public long getCurrentUserId() {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         assert authentication != null;
 
         var userId = (Long) authentication.getPrincipal();
         assert userId != null;
+        return userId;
+    }
 
-        return userRepository.findById(userId).orElseThrow();
+    public User getCurrentUser() {
+        return userRepository.findById(getCurrentUserId()).orElseThrow();
     }
 
     public JwtIssueResult login(LoginRequest request) {
