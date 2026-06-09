@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/auth/social")
 public class SocialAuthController {
-    private final RefreshTokenCookieFactory cookieFactory;
+    private final RefreshTokenCookieFactory refreshTokenCookieFactory;
     private final SocialAuthService socialAuthService;
 
     @GetMapping
@@ -33,14 +33,17 @@ public class SocialAuthController {
     }
 
     @PostMapping("/{provider}/login")
-    public JwtResponse socialLogin(
+    public ResponseEntity<JwtResponse> socialLogin(
             @PathVariable String provider,
             @Valid @RequestBody SocialAuthRequest request,
             HttpServletResponse response
     ) {
         var result = socialAuthService.socialLogin(parseProvider(provider), request);
-        response.addCookie(cookieFactory.create(result));
-        return new JwtResponse(result.getAccessToken().toString());
+
+        response.addCookie(refreshTokenCookieFactory.create(result.jwtIssueResult()));
+        var status = result.created() ? HttpStatus.CREATED : HttpStatus.OK;
+        var body = new JwtResponse(result.jwtIssueResult().getAccessToken().toString());
+        return ResponseEntity.status(status).body(body);
     }
 
     @PostMapping("/{provider}/connect")

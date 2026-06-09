@@ -1,7 +1,6 @@
 package com.icube.sim.tichu.auth.social;
 
 import com.icube.sim.tichu.auth.AuthService;
-import com.icube.sim.tichu.auth.jwt.JwtIssueResult;
 import com.icube.sim.tichu.auth.social.providers.OidcProviderClientRegistry;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,10 +22,11 @@ public class SocialAuthService {
         return oidcProviderClientRegistry.get(provider).getAuthorizationUrl();
     }
 
-    public JwtIssueResult socialLogin(OidcProviderName provider, SocialAuthRequest request) {
+    public SocialLoginResult socialLogin(OidcProviderName provider, SocialAuthRequest request) {
         var idToken = oidcProviderClientRegistry.get(provider).fetchIdToken(request.code(), request.state());
-        var user = userIdentityService.findOrCreateUser(provider, idToken);
-        return authService.issueTokens(user);
+        var findOrCreateResult = userIdentityService.findOrCreateUser(provider, idToken);
+        var jwtIssueResult = authService.issueTokens(findOrCreateResult.user());
+        return new SocialLoginResult(jwtIssueResult, findOrCreateResult.created());
     }
 
     public void connectProvider(OidcProviderName provider, SocialAuthRequest request) {

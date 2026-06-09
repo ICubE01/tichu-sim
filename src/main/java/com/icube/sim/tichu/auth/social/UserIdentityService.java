@@ -25,10 +25,10 @@ public class UserIdentityService {
     }
 
     @Transactional
-    public User findOrCreateUser(OidcProviderName provider, OidcIdToken idToken) {
+    public FindOrCreateResult findOrCreateUser(OidcProviderName provider, OidcIdToken idToken) {
         var identity = userIdentityRepository.findByProviderAndProviderSubject(provider, idToken.getSubject());
         if (identity.isPresent()) {
-            return identity.get().getUser();
+            return new FindOrCreateResult(identity.get().getUser(), false);
         }
 
         User user;
@@ -47,7 +47,7 @@ public class UserIdentityService {
             throw new IdentityConflictException();
         }
 
-        return user;
+        return new FindOrCreateResult(user, true);
     }
 
     @Transactional
