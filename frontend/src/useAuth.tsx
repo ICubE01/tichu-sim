@@ -1,13 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { JwtResponse } from "@/types.ts";
-
-export type Role = 'USER' | 'ADMIN' | 'BOT';
-
-interface MeResponse {
-  id: number;
-  name: string;
-  role: Role;
-}
+import { JwtResponse, MeResponse } from "@/types.ts";
 
 interface Auth {
   ready: boolean;

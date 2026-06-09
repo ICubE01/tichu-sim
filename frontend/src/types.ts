@@ -8,6 +8,14 @@ export interface JwtResponse {
   token: string;
 }
 
+export type Role = 'USER' | 'ADMIN' | 'BOT';
+
+export interface MeResponse {
+  id: number;
+  name: string;
+  role: Role;
+}
+
 export interface RoomOpaqueDto {
   id: string;
   name: string;
