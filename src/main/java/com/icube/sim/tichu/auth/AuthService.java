@@ -79,7 +79,7 @@ public class AuthService {
         });
     }
 
-    private JwtIssueResult issueTokens(User user) {
+    public JwtIssueResult issueTokens(User user) {
         if (user.getRole() == Role.BOT) {
             throw new BadCredentialsException("Bots cannot log in.");
         }
