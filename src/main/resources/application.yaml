@@ -19,9 +19,9 @@ spring:
     show-sql: true
   jwt:
     secret: ${JWT_SECRET}
-    accessTokenExpiration: 600    # 10 mins
-    refreshTokenExpiration: 7200  # 2 hrs
-    webSocketTokenExpiration: 60  # 1 min
+    accessTokenExpiration: 600      # 10 mins
+    refreshTokenExpiration: 604800  # 7 days
+    webSocketTokenExpiration: 5     # 5 secs
     botAccessTokenExpiration: 7200  # 2 hrs
   cors:
     allowed-origin: ${WEB_ORIGIN}
