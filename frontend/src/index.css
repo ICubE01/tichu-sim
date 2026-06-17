@@ -32,6 +32,7 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
+  color: #111111;
   background-color: #f8f8f8;
   cursor: pointer;
   transition: background-color 0.2s;
@@ -45,16 +46,14 @@ button:focus-visible {
   outline: 2px solid #4facfe;
 }
 
-button:active {
-  background-color: #e0e0e0;
-}
-
 button:disabled {
   background-color: #cccccc;
   cursor: not-allowed;
 }
 
 input {
+  color: #111111;
+  background-color: white;
   border: 1px solid #ddd;
   border-radius: 0.5rem;
   padding: 0.5rem;
@@ -62,4 +61,13 @@ input {
 
 input:focus, input:focus-visible {
   outline: 2px solid #4facfe;
+}
+
+select {
+  color: #111111;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  appearance: none;
 }

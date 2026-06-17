@@ -35,7 +35,7 @@ jobs:
           DATASOURCE_USERNAME: root
           DATASOURCE_PASSWORD: rootpasswd
           JWT_SECRET: dummy_secret
-          CORS_ALLOWED_ORIGIN: http://localhost
+          WEB_ORIGIN: http://localhost
 
   check-frontend:
     runs-on: ubuntu-latest

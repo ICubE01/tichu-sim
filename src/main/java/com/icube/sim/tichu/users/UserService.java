@@ -23,4 +23,10 @@ public class UserService {
 
         return userMapper.toDto(user);
     }
+
+    public void updateName(long userId, String name) {
+        var user = userRepository.findById(userId).orElseThrow();
+        user.setName(name);
+        userRepository.save(user);
+    }
 }
