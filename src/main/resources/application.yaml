@@ -9,7 +9,7 @@ spring:
             client-id: ${GOOGLE_CLIENT_ID}
             client-secret: ${GOOGLE_CLIENT_SECRET}
             scope: openid,email,profile
-            redirect-uri: ${CORS_ALLOWED_ORIGIN}/auth/callback/google
+            redirect-uri: ${WEB_ORIGIN}/auth/callback/google
             authorization-grant-type: authorization_code
   datasource:
     url: ${DATASOURCE_URL}
@@ -24,7 +24,7 @@ spring:
     webSocketTokenExpiration: 60  # 1 min
     botAccessTokenExpiration: 7200  # 2 hrs
   cors:
-    allowed-origin: ${CORS_ALLOWED_ORIGIN}
+    allowed-origin: ${WEB_ORIGIN}
   rooms:
     idLength: 5
     outGameExpiration: 3600  # 1 hour

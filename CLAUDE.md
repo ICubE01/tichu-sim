@@ -88,7 +88,7 @@ Game page hierarchy: `App (router)` → `HomePage` → `RoomDetailPage` → `Tic
 
 ### Security
 - Stateless JWT; access token 10 min, refresh 2 hr, WebSocket token 1 min (short-lived for WS handshake)
-- CORS origin controlled via `CORS_ALLOWED_ORIGIN` env var
+- CORS origin controlled via `WEB_ORIGIN` env var
 - `SecurityConfig.java` is the central Spring Security configuration
 
 ### Database
@@ -103,7 +103,7 @@ JWT_SECRET=
 DATASOURCE_URL=jdbc:mysql://localhost:3306/tichu?createDatabaseIfNotExist=true
 DATASOURCE_USERNAME=
 DATASOURCE_PASSWORD=
-CORS_ALLOWED_ORIGIN=http://localhost:5173
+WEB_ORIGIN=http://localhost:5173
 ```
 
 ## CI/CD
