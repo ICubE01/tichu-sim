@@ -9,6 +9,7 @@ interface Auth {
   login: (token: string) => Promise<void>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
+  reloadUser: () => Promise<void>;
   impersonateBot: (token: string, botName: string) => Promise<void>;
 }
 
@@ -78,6 +79,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  const reloadUser = async () => {
+    if (!accessToken) {
+      return;
+    }
+    try {
+      const userData = await fetchUserInfo(accessToken);
+      setUser(userData);
+    } catch (error) {
+      console.error('Failed to fetch user info:', error);
+    }
+  }
+
   const impersonateBot = async (token: string, botName: string) => {
     const botUser = await fetchUserInfo(token);
     setUser(botUser);
@@ -91,7 +104,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ ready, accessToken, user, impersonating, login, logout, refresh, impersonateBot }}>
+    <AuthContext.Provider value={{ ready, accessToken, user, impersonating, login, logout, refresh, reloadUser, impersonateBot }}>
       {children}
     </AuthContext.Provider>
   );
