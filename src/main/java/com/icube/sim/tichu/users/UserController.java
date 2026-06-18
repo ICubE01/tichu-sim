@@ -20,8 +20,7 @@ public class UserController {
 
     @GetMapping("/{id}")
     public ResponseEntity<AccountDto> getUserAccount(@PathVariable long id) {
-        var currentUserId = authService.getCurrentUserId();
-        if (currentUserId != id) {
+        if (isNotCurrentUserId(id)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
@@ -40,8 +39,7 @@ public class UserController {
             @PathVariable long id,
             @Valid @RequestBody UpdateUserRequest request
     ) {
-        var currentUserId = authService.getCurrentUserId();
-        if (currentUserId != id) {
+        if (isNotCurrentUserId(id)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
@@ -54,13 +52,16 @@ public class UserController {
             @PathVariable long id,
             @Valid @RequestBody UpdatePasswordRequest request
     ) {
-        var currentUserId = authService.getCurrentUserId();
-        if (currentUserId != id) {
+        if (isNotCurrentUserId(id)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
         userService.updatePassword(id, request);
         return ResponseEntity.noContent().build();
+    }
+
+    private boolean isNotCurrentUserId(long id) {
+        return authService.getCurrentUserId() != id;
     }
 
     @ExceptionHandler(DuplicateUserException.class)
