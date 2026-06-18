@@ -64,8 +64,8 @@ public class UserController {
         return authService.getCurrentUserId() != id;
     }
 
-    @ExceptionHandler(DuplicateUserException.class)
-    public ResponseEntity<@NonNull ErrorDto> handleDuplicateUser() {
+    @ExceptionHandler(DuplicateEmailException.class)
+    public ResponseEntity<@NonNull ErrorDto> handleDuplicateEmail() {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorDto(
                 "The email is already registered."
         ));

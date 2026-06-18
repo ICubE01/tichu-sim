@@ -17,7 +17,7 @@ public class UserService {
 
     public UserDto register(RegisterUserRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new DuplicateUserException();
+            throw new DuplicateEmailException();
         }
 
         var user = userMapper.toEntity(request);
