@@ -11,6 +11,10 @@ public class UserService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
 
+    public UserDto getUser(long id) {
+        return userMapper.toDto(userRepository.findById(id).orElseThrow());
+    }
+
     public UserDto register(RegisterUserRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new DuplicateUserException();

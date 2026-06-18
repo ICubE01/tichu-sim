@@ -1,9 +1,12 @@
 package com.icube.sim.tichu.users;
 
-import lombok.Data;
+import java.time.Instant;
 
-@Data
-public class UserDto {
-    private String name;
-    private String email;
+public record UserDto(
+        Long id,
+        String name,
+        String email,
+        boolean hasPassword,
+        Instant createdAt
+) {
 }
