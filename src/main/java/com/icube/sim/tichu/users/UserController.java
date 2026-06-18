@@ -49,10 +49,38 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
+    @PatchMapping("/{id}/password")
+    public ResponseEntity<@NonNull Void> updatePassword(
+            @PathVariable long id,
+            @Valid @RequestBody UpdatePasswordRequest request
+    ) {
+        var currentUserId = authService.getCurrentUserId();
+        if (currentUserId != id) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        userService.updatePassword(id, request);
+        return ResponseEntity.noContent().build();
+    }
+
     @ExceptionHandler(DuplicateUserException.class)
     public ResponseEntity<@NonNull ErrorDto> handleDuplicateUser() {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorDto(
                 "The email is already registered."
+        ));
+    }
+
+    @ExceptionHandler(NoPasswordException.class)
+    public ResponseEntity<@NonNull ErrorDto> handleNoPassword() {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(
+                "The account does not have a password. It is social only account."
+        ));
+    }
+
+    @ExceptionHandler(WrongPasswordException.class)
+    public ResponseEntity<@NonNull ErrorDto> handleWrongPassword() {
+        return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(new ErrorDto(
+                "Current password is incorrect."
         ));
     }
 }

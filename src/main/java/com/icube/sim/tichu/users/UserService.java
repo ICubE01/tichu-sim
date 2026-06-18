@@ -33,4 +33,16 @@ public class UserService {
         user.setName(name);
         userRepository.save(user);
     }
+
+    public void updatePassword(long userId, UpdatePasswordRequest request) {
+        var user = userRepository.findById(userId).orElseThrow();
+        if (user.getPassword() == null) {
+            throw new NoPasswordException();
+        }
+        if (!passwordEncoder.matches(request.currentPassword(), user.getPassword())) {
+            throw new WrongPasswordException();
+        }
+        user.setPassword(passwordEncoder.encode(request.newPassword()));
+        userRepository.save(user);
+    }
 }
