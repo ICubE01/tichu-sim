@@ -49,3 +49,26 @@ export interface ChatMessage {
 export interface MemberMessage {
   members: MemberDto[];
 }
+
+export enum OidcProviderName {
+  GOOGLE = 'GOOGLE',
+}
+
+export interface UserIdentityDto {
+  provider: OidcProviderName;
+  providerEmail: string;
+  connectedAt: string;
+}
+
+export interface UserDto {
+  id: number;
+  name: string;
+  email: string;
+  hasPassword: boolean;
+  createdAt: string;
+}
+
+export interface AccountDto {
+  user: UserDto;
+  identities: UserIdentityDto[];
+}
