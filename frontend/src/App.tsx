@@ -6,6 +6,8 @@ import SignupPage from '@/SignupPage.tsx';
 import GoogleCallbackPage from '@/GoogleCallbackPage.tsx';
 import InitNamePage from '@/InitNamePage.tsx';
 import NavBar from "@/NavBar.tsx";
+import AccountPage from '@/AccountPage.tsx';
+import ChangePasswordPage from '@/ChangePasswordPage.tsx';
 import HomePage from '@/HomePage/HomePage.tsx';
 import RoomDetailPage from '@/RoomDetailPage.tsx';
 import './App.css';
@@ -47,6 +49,8 @@ const AppContent = () => {
         <Route element={<AuthenticatedLayout/>}>
           <Route path="/" element={<HomePage/>}/>
           <Route path="/rooms/:roomId" element={<RoomDetailPage/>}/>
+          <Route path="/account" element={<AccountPage/>}/>
+          <Route path="/account/change-password" element={<ChangePasswordPage/>}/>
           {user?.role === 'ADMIN' && (
             <Route path="/admin" element={<Suspense fallback={<div>Loading...</div>}>
               <AdminPage/>
