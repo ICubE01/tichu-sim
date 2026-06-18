@@ -23,7 +23,7 @@ public class SocialAuthController {
     private final SocialAuthService socialAuthService;
 
     @GetMapping
-    public List<ConnectedIdentityResponse> getConnectedIdentities() {
+    public List<UserIdentityDto> getConnectedIdentities() {
         return socialAuthService.getConnectedIdentities();
     }
 

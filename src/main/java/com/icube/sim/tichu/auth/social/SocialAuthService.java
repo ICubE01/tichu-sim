@@ -14,7 +14,7 @@ public class SocialAuthService {
     private final UserIdentityService userIdentityService;
     private final OidcProviderClientRegistry oidcProviderClientRegistry;
 
-    public List<ConnectedIdentityResponse> getConnectedIdentities() {
+    public List<UserIdentityDto> getConnectedIdentities() {
         return userIdentityService.getIdentities(authService.getCurrentUserId());
     }
 
