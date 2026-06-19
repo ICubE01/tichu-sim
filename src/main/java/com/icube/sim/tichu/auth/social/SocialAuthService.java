@@ -14,10 +14,6 @@ public class SocialAuthService {
     private final UserIdentityService userIdentityService;
     private final OidcProviderClientRegistry oidcProviderClientRegistry;
 
-    public List<ConnectedIdentityResponse> getConnectedIdentities() {
-        return userIdentityService.getIdentities(authService.getCurrentUserId());
-    }
-
     public SocialAuthUrlResponse getAuthorizationUrl(OidcProviderName provider) {
         return oidcProviderClientRegistry.get(provider).getAuthorizationUrl();
     }

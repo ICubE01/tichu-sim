@@ -22,11 +22,6 @@ public class SocialAuthController {
     private final RefreshTokenCookieFactory refreshTokenCookieFactory;
     private final SocialAuthService socialAuthService;
 
-    @GetMapping
-    public List<ConnectedIdentityResponse> getConnectedIdentities() {
-        return socialAuthService.getConnectedIdentities();
-    }
-
     @GetMapping("/{provider}/url")
     public SocialAuthUrlResponse getAuthorizationUrl(@PathVariable String provider) {
         return socialAuthService.getAuthorizationUrl(parseProvider(provider));

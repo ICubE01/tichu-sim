@@ -5,6 +5,7 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface UserMapper {
+    @Mapping(target = "hasPassword", expression = "java(user.getPassword() != null)")
     UserDto toDto(User user);
 
     @Mapping(target = "id", ignore = true)

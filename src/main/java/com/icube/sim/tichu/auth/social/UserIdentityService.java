@@ -18,9 +18,9 @@ public class UserIdentityService {
     private final UserIdentityRepository userIdentityRepository;
 
     @Transactional(readOnly = true)
-    public List<ConnectedIdentityResponse> getIdentities(Long userId) {
+    public List<UserIdentityDto> getIdentities(Long userId) {
         return userIdentityRepository.findAllByUserId(userId).stream()
-                .map(i -> new ConnectedIdentityResponse(i.getProvider(), i.getProviderEmail(), i.getCreatedAt()))
+                .map(i -> new UserIdentityDto(i.getProvider(), i.getProviderEmail(), i.getCreatedAt()))
                 .toList();
     }
 

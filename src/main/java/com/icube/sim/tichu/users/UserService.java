@@ -11,9 +11,13 @@ public class UserService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
 
+    public UserDto getUser(long id) {
+        return userMapper.toDto(userRepository.findById(id).orElseThrow());
+    }
+
     public UserDto register(RegisterUserRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new DuplicateUserException();
+            throw new DuplicateEmailException();
         }
 
         var user = userMapper.toEntity(request);
@@ -27,6 +31,18 @@ public class UserService {
     public void updateName(long userId, String name) {
         var user = userRepository.findById(userId).orElseThrow();
         user.setName(name);
+        userRepository.save(user);
+    }
+
+    public void updatePassword(long userId, UpdatePasswordRequest request) {
+        var user = userRepository.findById(userId).orElseThrow();
+        if (user.getPassword() == null) {
+            throw new NoPasswordException();
+        }
+        if (!passwordEncoder.matches(request.currentPassword(), user.getPassword())) {
+            throw new WrongPasswordException();
+        }
+        user.setPassword(passwordEncoder.encode(request.newPassword()));
         userRepository.save(user);
     }
 }
