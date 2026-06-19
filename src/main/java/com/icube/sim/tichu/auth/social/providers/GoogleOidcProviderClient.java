@@ -1,6 +1,6 @@
 package com.icube.sim.tichu.auth.social.providers;
 
-import com.icube.sim.tichu.auth.social.OidcProviderName;
+import com.icube.sim.tichu.auth.social.SocialAuthProviderName;
 import com.icube.sim.tichu.auth.social.SocialAuthUrlResponse;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResponseClient;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest;
@@ -24,7 +24,7 @@ import java.util.Base64;
 import java.util.UUID;
 
 @Service
-public class GoogleOidcProviderClient implements OidcProviderClient {
+public class GoogleOidcProviderClient implements SocialAuthProviderClient {
     private final ClientRegistration clientRegistration;
     private final OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> tokenResponseClient;
     private final JwtDecoderFactory<ClientRegistration> idTokenDecoderFactory;
@@ -43,8 +43,8 @@ public class GoogleOidcProviderClient implements OidcProviderClient {
     }
 
     @Override
-    public OidcProviderName provider() {
-        return OidcProviderName.GOOGLE;
+    public SocialAuthProviderName provider() {
+        return SocialAuthProviderName.GOOGLE;
     }
 
     @Override

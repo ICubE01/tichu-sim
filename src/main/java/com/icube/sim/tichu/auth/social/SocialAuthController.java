@@ -56,9 +56,9 @@ public class SocialAuthController {
         return ResponseEntity.noContent().build();
     }
 
-    private OidcProviderName parseProvider(String provider) {
+    private SocialAuthProviderName parseProvider(String provider) {
         try {
-            return OidcProviderName.valueOf(provider.toUpperCase());
+            return SocialAuthProviderName.valueOf(provider.toUpperCase());
         } catch (IllegalArgumentException e) {
             throw new UnknownProviderException();
         }

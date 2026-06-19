@@ -50,12 +50,12 @@ export interface MemberMessage {
   members: MemberDto[];
 }
 
-export enum OidcProviderName {
+export enum SocialAuthProviderName {
   GOOGLE = 'GOOGLE',
 }
 
 export interface UserIdentityDto {
-  provider: OidcProviderName;
+  provider: SocialAuthProviderName;
   providerEmail: string;
   connectedAt: string;
 }

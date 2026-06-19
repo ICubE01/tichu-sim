@@ -1,5 +1,5 @@
 package com.icube.sim.tichu.auth.social;
 
-public enum OidcProviderName {
+public enum SocialAuthProviderName {
     GOOGLE,
 }

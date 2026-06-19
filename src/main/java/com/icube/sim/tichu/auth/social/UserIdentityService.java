@@ -25,7 +25,7 @@ public class UserIdentityService {
     }
 
     @Transactional
-    public FindOrCreateResult findOrCreateUser(OidcProviderName provider, OidcIdToken idToken) {
+    public FindOrCreateResult findOrCreateUser(SocialAuthProviderName provider, OidcIdToken idToken) {
         var identity = userIdentityRepository.findByProviderAndProviderSubject(provider, idToken.getSubject());
         if (identity.isPresent()) {
             return new FindOrCreateResult(identity.get().getUser(), false);
@@ -36,8 +36,7 @@ public class UserIdentityService {
             throw new EmailConflictException();
         }
         try {
-            var name = getName(idToken);
-            user = createUser(idToken.getEmail(), name);
+            user = createUser(idToken.getEmail(), getName(idToken));
         } catch (DataIntegrityViolationException e) {
             throw new EmailConflictException();
         }
@@ -51,7 +50,7 @@ public class UserIdentityService {
     }
 
     @Transactional
-    public void connectIdentity(Long userId, OidcProviderName provider, OidcIdToken idToken) {
+    public void connectIdentity(Long userId, SocialAuthProviderName provider, OidcIdToken idToken) {
         userIdentityRepository.findByProviderAndProviderSubject(provider, idToken.getSubject())
                 .ifPresent(existing -> {
                     if (existing.getUser().getId().equals(userId)) {
@@ -69,7 +68,7 @@ public class UserIdentityService {
     }
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public void disconnectIdentity(Long userId, OidcProviderName provider) {
+    public void disconnectIdentity(Long userId, SocialAuthProviderName provider) {
         var user = userRepository.findById(userId).orElseThrow();
         var hasPassword = user.getPassword() != null;
         var otherIdentities = userIdentityRepository.countByUserIdAndProviderNot(userId, provider);
@@ -86,7 +85,7 @@ public class UserIdentityService {
         return userRepository.save(user);
     }
 
-    private void createIdentity(User user, OidcProviderName provider, String subject, String email) {
+    private void createIdentity(User user, SocialAuthProviderName provider, String subject, String email) {
         var identity = new UserIdentity();
         identity.setUser(user);
         identity.setProvider(provider);
@@ -97,10 +96,10 @@ public class UserIdentityService {
 
     private static String getName(OidcIdToken idToken) {
         var name = idToken.getNickName();
-        if (name == null || name.isBlank()){
+        if (name == null || name.isBlank()) {
             name = idToken.getGivenName();
         }
-        if (name == null || name.isBlank()){
+        if (name == null || name.isBlank()) {
             name = idToken.getEmail().split("@")[0];
         }
         return name;
