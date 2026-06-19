@@ -2,6 +2,7 @@ package com.icube.sim.tichu.auth.social.providers;
 
 import com.icube.sim.tichu.auth.social.SocialAuthProviderName;
 import com.icube.sim.tichu.auth.social.SocialAuthUrlResponse;
+import com.icube.sim.tichu.auth.social.SocialAuthUserInfo;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResponseClient;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
@@ -64,7 +65,7 @@ public class GoogleOidcProviderClient implements SocialAuthProviderClient {
     }
 
     @Override
-    public OidcIdToken fetchIdToken(String code, String state) {
+    public SocialAuthUserInfo fetchUserInfo(String code, String state) {
         var rawNonce = stateStore.consume(state)
                 .orElseThrow(() -> new OAuth2AuthorizationException(new OAuth2Error("invalid_state")));
 
@@ -77,7 +78,7 @@ public class GoogleOidcProviderClient implements SocialAuthProviderClient {
             throw new OAuth2AuthorizationException(new OAuth2Error("email_not_verified"));
         }
 
-        return idToken;
+        return new SocialAuthUserInfo(idToken.getSubject(), idToken.getEmail(), resolveName(idToken));
     }
 
     private OidcIdToken exchangeCodeForIdToken(ClientRegistration reg, String code) {
@@ -102,6 +103,17 @@ public class GoogleOidcProviderClient implements SocialAuthProviderClient {
         }
         var jwt = idTokenDecoderFactory.createDecoder(reg).decode(idTokenValue);
         return new OidcIdToken(jwt.getTokenValue(), jwt.getIssuedAt(), jwt.getExpiresAt(), jwt.getClaims());
+    }
+
+    private static String resolveName(OidcIdToken idToken) {
+        var name = idToken.getNickName();
+        if (name == null || name.isBlank()) {
+            name = idToken.getGivenName();
+        }
+        if (name == null || name.isBlank()) {
+            name = idToken.getEmail().split("@")[0];
+        }
+        return name;
     }
 
     private static String sha256(String value) {

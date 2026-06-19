@@ -17,16 +17,16 @@ public class SocialAuthService {
     }
 
     public SocialLoginResult socialLogin(SocialAuthProviderName provider, SocialAuthRequest request) {
-        var idToken = socialAuthProviderClientRegistry.get(provider).fetchIdToken(request.code(), request.state());
-        var findOrCreateResult = userIdentityService.findOrCreateUser(provider, idToken);
+        var userInfo = socialAuthProviderClientRegistry.get(provider).fetchUserInfo(request.code(), request.state());
+        var findOrCreateResult = userIdentityService.findOrCreateUser(provider, userInfo);
         var jwtIssueResult = authService.issueTokens(findOrCreateResult.user());
         return new SocialLoginResult(jwtIssueResult, findOrCreateResult.created());
     }
 
     public void connectProvider(SocialAuthProviderName provider, SocialAuthRequest request) {
         var currentUserId = authService.getCurrentUserId();
-        var idToken = socialAuthProviderClientRegistry.get(provider).fetchIdToken(request.code(), request.state());
-        userIdentityService.connectIdentity(currentUserId, provider, idToken);
+        var userInfo = socialAuthProviderClientRegistry.get(provider).fetchUserInfo(request.code(), request.state());
+        userIdentityService.connectIdentity(currentUserId, provider, userInfo);
     }
 
     public void disconnectProvider(SocialAuthProviderName provider) {

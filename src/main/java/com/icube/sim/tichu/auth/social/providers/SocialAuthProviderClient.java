@@ -2,10 +2,10 @@ package com.icube.sim.tichu.auth.social.providers;
 
 import com.icube.sim.tichu.auth.social.SocialAuthProviderName;
 import com.icube.sim.tichu.auth.social.SocialAuthUrlResponse;
-import org.springframework.security.oauth2.core.oidc.OidcIdToken;
+import com.icube.sim.tichu.auth.social.SocialAuthUserInfo;
 
 public interface SocialAuthProviderClient {
     SocialAuthProviderName provider();
     SocialAuthUrlResponse getAuthorizationUrl();
-    OidcIdToken fetchIdToken(String code, String state);
+    SocialAuthUserInfo fetchUserInfo(String code, String state);
 }
