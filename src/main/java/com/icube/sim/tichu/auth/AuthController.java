@@ -37,7 +37,9 @@ public class AuthController {
         return new JwtResponse(jwtIssueResult.getAccessToken().toString());
     }
 
-    @PostMapping("/logout")
+    // Mapped under /refresh (not /logout), so the refresh_token cookie, scoped to path /api/auth/refresh,
+    // is sent with the request.
+    @DeleteMapping("/refresh")
     public ResponseEntity<@NonNull Void> logout(
             @CookieValue(value = RefreshTokenCookieFactory.COOKIE_NAME, required = false) String refreshToken,
             HttpServletResponse response

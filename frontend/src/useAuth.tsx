@@ -39,7 +39,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+      await fetch('/api/auth/refresh', { method: 'DELETE', credentials: 'include' });
     } catch (error) {
       console.error('Failed to call logout endpoint:', error);
     }
