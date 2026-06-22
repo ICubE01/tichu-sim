@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/useAuth.tsx';
 import styles from './GoogleCallbackPage.module.css';
-import { JwtResponse } from "@/types.ts";
+import { JwtResponse, ErrorDto } from "@/types.ts";
 import { ALLOW_INIT_NAME_PAGE_KEY } from '@/InitNamePage.tsx';
 
 const GoogleCallbackPage = () => {
@@ -37,7 +37,12 @@ const GoogleCallbackPage = () => {
         });
 
         if (!response.ok) {
-          setErrorMessage('Google 로그인에 실패했습니다.');
+          try {
+            const error = await response.json() as Partial<ErrorDto>;
+            setErrorMessage(error.message ?? 'Google 로그인에 실패했습니다.');
+          } catch {
+            setErrorMessage('Google 로그인에 실패했습니다.');
+          }
           return;
         }
 

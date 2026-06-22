@@ -8,6 +8,10 @@ export interface JwtResponse {
   token: string;
 }
 
+export interface ErrorDto {
+  message: string;
+}
+
 export type Role = 'USER' | 'ADMIN' | 'BOT';
 
 export interface MeResponse {

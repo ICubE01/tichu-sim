@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/useAuth.tsx';
 import styles from './NaverCallbackPage.module.css';
-import { JwtResponse } from "@/types.ts";
+import { JwtResponse, ErrorDto } from "@/types.ts";
 import { ALLOW_INIT_NAME_PAGE_KEY } from '@/InitNamePage.tsx';
 
 const NaverCallbackPage = () => {
@@ -37,7 +37,12 @@ const NaverCallbackPage = () => {
         });
 
         if (!response.ok) {
-          setErrorMessage('Naver 로그인에 실패했습니다.');
+          try {
+            const error = await response.json() as Partial<ErrorDto>;
+            setErrorMessage(error.message ?? 'Naver 로그인에 실패했습니다.');
+          } catch {
+            setErrorMessage('Naver 로그인에 실패했습니다.');
+          }
           return;
         }
 
