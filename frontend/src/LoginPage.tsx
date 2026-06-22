@@ -3,6 +3,8 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { JwtResponse } from "@/types.ts";
 import { useAuth } from '@/useAuth.tsx';
 import googleIcon from '@/assets/GoogleIcon.svg';
+import naverIcon from '@/assets/NaverIcon.svg';
+import kakaoIcon from '@/assets/KakaoIcon.svg';
 import styles from './LoginPage.module.css';
 
 interface SocialAuthUrlResponse {
@@ -24,6 +26,34 @@ const LoginPage = () => {
       const response = await fetch('/api/auth/social/google/url');
       if (!response.ok) {
         setErrorMessage('Google 로그인을 시작할 수 없습니다.');
+        return;
+      }
+      const data = await response.json() as SocialAuthUrlResponse;
+      window.location.href = data.url;
+    } catch {
+      setErrorMessage('서버와 통신 중 오류가 발생했습니다.');
+    }
+  };
+
+  const handleNaverLogin = async () => {
+    try {
+      const response = await fetch('/api/auth/social/naver/url');
+      if (!response.ok) {
+        setErrorMessage('Naver 로그인을 시작할 수 없습니다.');
+        return;
+      }
+      const data = await response.json() as SocialAuthUrlResponse;
+      window.location.href = data.url;
+    } catch {
+      setErrorMessage('서버와 통신 중 오류가 발생했습니다.');
+    }
+  };
+
+  const handleKakaoLogin = async () => {
+    try {
+      const response = await fetch('/api/auth/social/kakao/url');
+      if (!response.ok) {
+        setErrorMessage('Kakao 로그인을 시작할 수 없습니다.');
         return;
       }
       const data = await response.json() as SocialAuthUrlResponse;
@@ -64,6 +94,14 @@ const LoginPage = () => {
         <button className={styles.googleButton} type="button" onClick={handleGoogleLogin}>
           <img src={googleIcon} className={styles.googleIcon} alt=""/>
           Google로 로그인
+        </button>
+        <button className={styles.naverButton} type="button" onClick={handleNaverLogin}>
+          <img src={naverIcon} className={styles.naverIcon} alt=""/>
+          네이버로 로그인
+        </button>
+        <button className={styles.kakaoButton} type="button" onClick={handleKakaoLogin}>
+          <img src={kakaoIcon} className={styles.kakaoIcon} alt=""/>
+          카카오로 로그인
         </button>
         <div className={styles.divider}><span>이메일로 로그인</span></div>
         <form className={styles.loginForm} onSubmit={handleSubmit}>

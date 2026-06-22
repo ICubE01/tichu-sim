@@ -52,6 +52,8 @@ export interface MemberMessage {
 
 export enum SocialAuthProviderName {
   GOOGLE = 'GOOGLE',
+  KAKAO = 'KAKAO',
+  NAVER = 'NAVER',
 }
 
 export interface UserIdentityDto {
