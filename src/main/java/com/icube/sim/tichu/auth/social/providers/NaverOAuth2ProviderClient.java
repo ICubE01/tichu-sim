@@ -102,7 +102,16 @@ public class NaverOAuth2ProviderClient implements SocialAuthProviderClient {
         }
 
         var profile = response.response();
-        return new SocialAuthUserInfo(profile.id(), profile.email(), resolveDisplayName(profile));
+        var id = profile.id();
+        if (id == null) {
+            throw new OAuth2AuthorizationException(new OAuth2Error("missing_subject"));
+        }
+        var email = profile.email();
+        if (email == null || email.isBlank()) {
+            throw new OAuth2AuthorizationException(new OAuth2Error("missing_email"));
+        }
+
+        return new SocialAuthUserInfo(id, email, resolveDisplayName(profile));
     }
 
     private static String resolveDisplayName(NaverUserProfile profile) {

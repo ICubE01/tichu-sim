@@ -71,12 +71,16 @@ public class KakaoOidcProviderClient implements SocialAuthProviderClient {
             throw new OAuth2AuthorizationException(new OAuth2Error("invalid_nonce"));
         }
 
+        var subject = idToken.getSubject();
+        if (subject == null) {
+            throw new OAuth2AuthorizationException(new OAuth2Error("missing_subject"));
+        }
         var email = idToken.getEmail();
         if (email == null || email.isBlank()) {
-            throw new OAuth2AuthorizationException(new OAuth2Error("email_required"));
+            throw new OAuth2AuthorizationException(new OAuth2Error("missing_email"));
         }
 
-        return new SocialAuthUserInfo(idToken.getSubject(), email, resolveName(idToken, email));
+        return new SocialAuthUserInfo(subject, email, resolveName(idToken, email));
     }
 
     private OidcIdToken exchangeCodeForIdToken(ClientRegistration reg, String code) {

@@ -78,7 +78,16 @@ public class GoogleOidcProviderClient implements SocialAuthProviderClient {
             throw new OAuth2AuthorizationException(new OAuth2Error("email_not_verified"));
         }
 
-        return new SocialAuthUserInfo(idToken.getSubject(), idToken.getEmail(), resolveName(idToken));
+        var subject = idToken.getSubject();
+        if (subject == null) {
+            throw new OAuth2AuthorizationException(new OAuth2Error("missing_subject"));
+        }
+        var email = idToken.getEmail();
+        if (email == null || email.isBlank()) {
+            throw new OAuth2AuthorizationException(new OAuth2Error("missing_email"));
+        }
+
+        return new SocialAuthUserInfo(subject, email, resolveName(idToken));
     }
 
     private OidcIdToken exchangeCodeForIdToken(ClientRegistration reg, String code) {
