@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/useAuth.tsx';
 import styles from './KakaoCallbackPage.module.css';
 import { JwtResponse, ErrorDto } from "@/types.ts";
+import { translateSocialAuthError } from '@/socialAuthErrors.ts';
 import { ALLOW_INIT_NAME_PAGE_KEY } from '@/InitNamePage.tsx';
 
 const KakaoCallbackPage = () => {
@@ -39,7 +40,7 @@ const KakaoCallbackPage = () => {
         if (!response.ok) {
           try {
             const error = await response.json() as Partial<ErrorDto>;
-            setErrorMessage(error.message ?? 'Kakao 로그인에 실패했습니다.');
+            setErrorMessage(translateSocialAuthError(error.message ?? 'Kakao 로그인에 실패했습니다.'));
           } catch {
             setErrorMessage('Kakao 로그인에 실패했습니다.');
           }
