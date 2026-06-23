@@ -26,6 +26,9 @@ spring:
         provider:
           kakao:
             issuer-uri: https://kauth.kakao.com
+            # Override the discovered OIDC userinfo endpoint: only the classic user API
+            # exposes the email-verification flags (is_email_verified / is_email_valid).
+            user-info-uri: https://kapi.kakao.com/v2/user/me
           naver:
             authorization-uri: https://nid.naver.com/oauth2.0/authorize
             token-uri: https://nid.naver.com/oauth2.0/token
