@@ -61,6 +61,10 @@ const SignupPage = () => {
     <div className={styles.signupContainer}>
       <div className={styles.signupCard}>
         <h2>가입</h2>
+        <p className={styles.socialSignupHint}>
+          소셜 로그인으로도 가입할 수 있습니다.
+          <Link to="/">소셜 로그인 이용</Link>
+        </p>
         {errorMessage && <div className={styles.errorMessage}>{errorMessage}</div>}
         <form className={styles.signupForm} onSubmit={handleSubmit}>
           <div className={styles.formGroup}>
