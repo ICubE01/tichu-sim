@@ -3,9 +3,8 @@ import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'rea
 import { AuthProvider, useAuth } from '@/useAuth.tsx';
 import LoginPage from '@/LoginPage.tsx';
 import SignupPage from '@/SignupPage.tsx';
-import GoogleCallbackPage from '@/GoogleCallbackPage.tsx';
-import NaverCallbackPage from '@/NaverCallbackPage.tsx';
-import KakaoCallbackPage from '@/KakaoCallbackPage.tsx';
+import SocialCallbackPage from '@/SocialCallbackPage.tsx';
+import { SocialAuthProviderName } from '@/types.ts';
 import InitNamePage from '@/InitNamePage.tsx';
 import NavBar from "@/NavBar.tsx";
 import AccountPage from '@/AccountPage.tsx';
@@ -45,9 +44,9 @@ const AppContent = () => {
 
   return (
     <Routes>
-      <Route path="/auth/callback/google" element={<GoogleCallbackPage/>}/>
-      <Route path="/auth/callback/naver" element={<NaverCallbackPage/>}/>
-      <Route path="/auth/callback/kakao" element={<KakaoCallbackPage/>}/>
+      <Route path="/auth/callback/google" element={<SocialCallbackPage provider={SocialAuthProviderName.GOOGLE}/>}/>
+      <Route path="/auth/callback/naver" element={<SocialCallbackPage provider={SocialAuthProviderName.NAVER}/>}/>
+      <Route path="/auth/callback/kakao" element={<SocialCallbackPage provider={SocialAuthProviderName.KAKAO}/>}/>
       {accessToken ? (<>
         <Route path="/init-name" element={<InitNamePage/>}/>
         <Route element={<AuthenticatedLayout/>}>

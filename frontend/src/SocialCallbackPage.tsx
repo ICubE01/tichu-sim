@@ -1,17 +1,24 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/useAuth.tsx';
-import styles from './KakaoCallbackPage.module.css';
-import { JwtResponse, ErrorDto } from "@/types.ts";
+import styles from './SocialCallbackPage.module.css';
+import { JwtResponse, ErrorDto, SocialAuthProviderName } from '@/types.ts';
 import { translateSocialAuthError } from '@/socialAuthErrors.ts';
 import { ALLOW_INIT_NAME_PAGE_KEY } from '@/InitNamePage.tsx';
 
-const KakaoCallbackPage = () => {
+interface Props {
+  provider: SocialAuthProviderName;
+}
+
+const SocialCallbackPage = ({ provider }: Props) => {
   const { login } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const hasFetchedRef = useRef(false);
+
+  const providerLower = provider.toLowerCase();
+  const providerDisplayName = provider.charAt(0) + provider.slice(1).toLowerCase();
 
   useEffect(() => {
     const code = searchParams.get('code');
@@ -31,7 +38,7 @@ const KakaoCallbackPage = () => {
       let token: string;
       let isNewUser: boolean;
       try {
-        const response = await fetch('/api/auth/social/kakao/login', {
+        const response = await fetch(`/api/auth/social/${providerLower}/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ code, state }),
@@ -40,9 +47,9 @@ const KakaoCallbackPage = () => {
         if (!response.ok) {
           try {
             const error = await response.json() as Partial<ErrorDto>;
-            setErrorMessage(translateSocialAuthError(error.message ?? 'Kakao 로그인에 실패했습니다.'));
+            setErrorMessage(translateSocialAuthError(error.message ?? `${providerDisplayName} 로그인에 실패했습니다.`));
           } catch {
-            setErrorMessage('Kakao 로그인에 실패했습니다.');
+            setErrorMessage(`${providerDisplayName} 로그인에 실패했습니다.`);
           }
           return;
         }
@@ -78,4 +85,4 @@ const KakaoCallbackPage = () => {
   );
 };
 
-export default KakaoCallbackPage;
+export default SocialCallbackPage;
