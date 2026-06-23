@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { JwtResponse } from "@/types.ts";
 import { useAuth } from '@/useAuth.tsx';
 import googleIcon from '@/assets/GoogleIcon.svg';
-import naverIcon from '@/assets/NaverIcon.svg';
+import naverIcon from '@/assets/NaverIconWhite.svg';
 import kakaoIcon from '@/assets/KakaoIcon.svg';
 import styles from './LoginPage.module.css';
 
