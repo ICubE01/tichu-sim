@@ -1,10 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/useAuth.tsx';
+import { useAxios } from '@/useAxios.tsx';
 import styles from './SocialCallbackPage.module.css';
 import { JwtResponse, ErrorDto, SocialAuthProviderName } from '@/types.ts';
 import { translateSocialAuthError } from '@/SocialCallbackPage/socialAuthErrors.ts';
 import { ALLOW_INIT_NAME_PAGE_KEY } from '@/InitNamePage.tsx';
+
+export const OAUTH_INTENT_PREFIX = 'oauth_intent_';
 
 interface Props {
   provider: SocialAuthProviderName;
@@ -12,6 +15,7 @@ interface Props {
 
 const SocialCallbackPage = ({ provider }: Props) => {
   const { login } = useAuth();
+  const api = useAxios();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -19,6 +23,12 @@ const SocialCallbackPage = ({ provider }: Props) => {
 
   const providerLower = provider.toLowerCase();
   const providerDisplayName = provider.charAt(0) + provider.slice(1).toLowerCase();
+
+  const initState = searchParams.get('state');
+  const isConnectRef = useRef(
+    initState !== null && sessionStorage.getItem(OAUTH_INTENT_PREFIX + initState) === 'connect'
+  );
+  const isConnect = isConnectRef.current;
 
   useEffect(() => {
     const code = searchParams.get('code');
@@ -34,9 +44,22 @@ const SocialCallbackPage = ({ provider }: Props) => {
     }
     hasFetchedRef.current = true;
 
+    sessionStorage.removeItem(OAUTH_INTENT_PREFIX + state);
+
+    if (isConnect) {
+      (async () => {
+        try {
+          await api.post(`/auth/social/${providerLower}/connect`, { code, state });
+          navigate('/account', { replace: true });
+        } catch (err) {
+          const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+          setErrorMessage(msg ? translateSocialAuthError(msg) : `${providerDisplayName} 연결에 실패했습니다.`);
+        }
+      })();
+      return;
+    }
+
     (async () => {
-      let token: string;
-      let isNewUser: boolean;
       try {
         const response = await fetch(`/api/auth/social/${providerLower}/login`, {
           method: 'POST',
@@ -45,27 +68,26 @@ const SocialCallbackPage = ({ provider }: Props) => {
         });
 
         if (!response.ok) {
+          const fallback = `${providerDisplayName} 로그인에 실패했습니다.`;
           try {
             const error = await response.json() as Partial<ErrorDto>;
-            setErrorMessage(translateSocialAuthError(error.message ?? `${providerDisplayName} 로그인에 실패했습니다.`));
+            setErrorMessage(translateSocialAuthError(error.message ?? fallback));
           } catch {
-            setErrorMessage(`${providerDisplayName} 로그인에 실패했습니다.`);
+            setErrorMessage(fallback);
           }
           return;
         }
 
-        ({ token } = await response.json() as JwtResponse);
-        isNewUser = response.status === 201;
+        const { token } = await response.json() as JwtResponse;
+        const isNewUser = response.status === 201;
+        await login(token);
+        if (isNewUser) {
+          sessionStorage.setItem(ALLOW_INIT_NAME_PAGE_KEY, '1');
+        }
+        navigate(isNewUser ? '/init-name' : '/', { replace: true });
       } catch {
         setErrorMessage('서버와 통신 중 오류가 발생했습니다.');
-        return;
       }
-
-      await login(token);
-      if (isNewUser) {
-        sessionStorage.setItem(ALLOW_INIT_NAME_PAGE_KEY, '1');
-      }
-      navigate(isNewUser ? '/init-name' : '/', { replace: true });
     })();
   }, []);
 
@@ -75,10 +97,12 @@ const SocialCallbackPage = ({ provider }: Props) => {
         {errorMessage ? (
           <>
             <p className={styles.errorMessage}>{errorMessage}</p>
-            <Link to="/" className={styles.backLink}>로그인 페이지로 돌아가기</Link>
+            <Link to={isConnect ? '/account' : '/'} className={styles.backLink}>
+              {isConnect ? '계정 페이지로 돌아가기' : '로그인 페이지로 돌아가기'}
+            </Link>
           </>
         ) : (
-          <p className={styles.loadingText}>로그인 중...</p>
+          <p className={styles.loadingText}>{isConnect ? '연결 중...' : '로그인 중...'}</p>
         )}
       </div>
     </div>
