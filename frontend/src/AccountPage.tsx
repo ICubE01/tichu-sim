@@ -2,8 +2,24 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/useAuth.tsx';
 import { useAxios } from '@/useAxios.tsx';
-import { AccountDto } from '@/types.ts';
+import { AccountDto, SocialAuthProviderName } from '@/types.ts';
+import { OAUTH_INTENT_PREFIX } from '@/SocialCallbackPage/SocialCallbackPage.tsx';
+import { translateSocialAuthError } from '@/SocialCallbackPage/socialAuthErrors.ts';
+import googleIcon from '@/assets/GoogleIcon.svg';
+import naverIcon from '@/assets/NaverIconGreen.svg';
+import kakaoIcon from '@/assets/KakaoIcon.svg';
 import styles from './AccountPage.module.css';
+
+interface SocialAuthUrlResponse {
+  url: string;
+  state: string;
+}
+
+const PROVIDERS = [
+  { name: SocialAuthProviderName.GOOGLE, label: 'Google', icon: googleIcon },
+  { name: SocialAuthProviderName.NAVER, label: '네이버', icon: naverIcon, iconClassName: styles.providerIconNaver },
+  { name: SocialAuthProviderName.KAKAO, label: '카카오', icon: kakaoIcon },
+];
 
 const AccountPage = () => {
   const { user, reloadUser } = useAuth();
@@ -15,6 +31,7 @@ const AccountPage = () => {
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState('');
   const [nameMessage, setNameMessage] = useState<{ text: string; error: boolean } | null>(null);
+  const [socialMessage, setSocialMessage] = useState<{ text: string; error: boolean } | null>(null);
 
   const fetchAccountData = async () => {
     if (!user) {
@@ -52,6 +69,32 @@ const AccountPage = () => {
       setNameMessage({ text: '별명이 변경되었습니다.', error: false });
     } catch {
       setNameMessage({ text: '별명 변경에 실패했습니다.', error: true });
+    }
+  };
+
+  const handleConnect = async (provider: SocialAuthProviderName) => {
+    setSocialMessage(null);
+    try {
+      const res = await api.get<SocialAuthUrlResponse>(`/auth/social/${provider.toLowerCase()}/url`);
+      sessionStorage.setItem(OAUTH_INTENT_PREFIX + res.data.state, 'connect');
+      window.location.href = res.data.url;
+    } catch {
+      setSocialMessage({ text: '연결을 시작할 수 없습니다.', error: true });
+    }
+  };
+
+  const handleDisconnect = async (provider: SocialAuthProviderName) => {
+    setSocialMessage(null);
+    try {
+      await api.delete(`/auth/social/${provider.toLowerCase()}`);
+      setSocialMessage({ text: '연결이 해제되었습니다.', error: false });
+      await fetchAccountData();
+    } catch (err) {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      setSocialMessage({
+        text: msg ? translateSocialAuthError(msg) : '연결 해제에 실패했습니다.',
+        error: true,
+      });
     }
   };
 
@@ -103,6 +146,40 @@ const AccountPage = () => {
             >
               비밀번호 변경
             </button>
+          </section>
+        )}
+
+        {accountData && (
+          <section className={styles.section}>
+            <h3 className={styles.sectionTitle}>외부 계정 연결</h3>
+            {PROVIDERS.map(({ name, label, icon, iconClassName }) => {
+              const identity = accountData.identities.find(i => i.provider === name);
+              return (
+                <div key={name} className={styles.field}>
+                  <span className={styles.label}>
+                    <img src={icon} className={`${styles.providerIcon} ${iconClassName ?? ''}`} alt=""/>
+                    {label}
+                  </span>
+                  <div className={styles.fieldValue}>
+                    {identity && (
+                      <span className={styles.fieldText}>{identity.providerEmail}</span>
+                    )}
+                    {identity ? (
+                      <button className={styles.btnDanger} onClick={() => handleDisconnect(name)}>
+                        연결 해제
+                      </button>
+                    ) : (
+                      <button className={styles.btnSecondary} onClick={() => handleConnect(name)}>
+                        연결
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+            {socialMessage && (
+              <p className={socialMessage.error ? styles.error : styles.success}>{socialMessage.text}</p>
+            )}
           </section>
         )}
       </div>
