@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/useAuth.tsx';
 import styles from './SocialCallbackPage.module.css';
 import { JwtResponse, ErrorDto, SocialAuthProviderName } from '@/types.ts';
-import { translateSocialAuthError } from '@/socialAuthErrors.ts';
+import { translateSocialAuthError } from '@/SocialCallbackPage/socialAuthErrors.ts';
 import { ALLOW_INIT_NAME_PAGE_KEY } from '@/InitNamePage.tsx';
 
 interface Props {

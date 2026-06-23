@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'rea
 import { AuthProvider, useAuth } from '@/useAuth.tsx';
 import LoginPage from '@/LoginPage.tsx';
 import SignupPage from '@/SignupPage.tsx';
-import SocialCallbackPage from '@/SocialCallbackPage.tsx';
+import SocialCallbackPage from '@/SocialCallbackPage/SocialCallbackPage.tsx';
 import { SocialAuthProviderName } from '@/types.ts';
 import InitNamePage from '@/InitNamePage.tsx';
 import NavBar from "@/NavBar.tsx";
