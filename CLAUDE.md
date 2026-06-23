@@ -115,6 +115,10 @@ GitHub Actions runs on every PR and push to `main`:
 
 Reusable workflows live in `.github/workflows/reusable-*.yaml`.
 
+## Code Style
+
+- Always use braces for `if` statements, even for single-line bodies.
+
 ## Commit Conventions
 
 - Do not include a `Co-Authored-By` trailer in commit messages.
