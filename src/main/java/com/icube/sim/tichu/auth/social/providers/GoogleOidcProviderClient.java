@@ -1,5 +1,6 @@
 package com.icube.sim.tichu.auth.social.providers;
 
+import com.icube.sim.tichu.auth.social.EmailNotVerifiedException;
 import com.icube.sim.tichu.auth.social.SocialAuthProviderName;
 import com.icube.sim.tichu.auth.social.SocialAuthUrlResponse;
 import com.icube.sim.tichu.auth.social.SocialAuthUserInfo;
@@ -75,7 +76,7 @@ public class GoogleOidcProviderClient implements SocialAuthProviderClient {
             throw new OAuth2AuthorizationException(new OAuth2Error("invalid_nonce"));
         }
         if (!Boolean.TRUE.equals(idToken.getEmailVerified())) {
-            throw new OAuth2AuthorizationException(new OAuth2Error("email_not_verified"));
+            throw new EmailNotVerifiedException();
         }
 
         var subject = idToken.getSubject();

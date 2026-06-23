@@ -2,6 +2,7 @@ package com.icube.sim.tichu.auth.social.providers;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.icube.sim.tichu.auth.social.EmailNotVerifiedException;
 import com.icube.sim.tichu.auth.social.SocialAuthProviderName;
 import com.icube.sim.tichu.auth.social.SocialAuthUrlResponse;
 import com.icube.sim.tichu.auth.social.SocialAuthUserInfo;
@@ -134,7 +135,7 @@ public class KakaoOidcProviderClient implements SocialAuthProviderClient {
         }
         var account = response.kakaoAccount();
         if (!Boolean.TRUE.equals(account.isEmailValid()) || !Boolean.TRUE.equals(account.isEmailVerified())) {
-            throw new OAuth2AuthorizationException(new OAuth2Error("email_not_verified"));
+            throw new EmailNotVerifiedException();
         }
     }
 

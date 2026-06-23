@@ -79,6 +79,12 @@ public class SocialAuthController {
         return ResponseEntity.badRequest().body(new ErrorDto("Unknown provider."));
     }
 
+    @ExceptionHandler(EmailNotVerifiedException.class)
+    public ResponseEntity<ErrorDto> handleEmailNotVerified() {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(
+                "The email on your social account is not verified. Please verify it with the provider and try again."));
+    }
+
     @ExceptionHandler(EmailConflictException.class)
     public ResponseEntity<ErrorDto> handleEmailConflict() {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorDto(
