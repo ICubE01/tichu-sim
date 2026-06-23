@@ -40,6 +40,7 @@
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 500;
+  font-size: 0.9rem;
   color: #555;
 }
 
@@ -74,7 +75,7 @@
 }
 
 .login-footer {
-  margin-top: 1.5rem;
+  margin-top: 0.5rem;
   font-size: 0.9rem;
   color: #666;
 }
@@ -101,7 +102,7 @@
 .divider {
   display: flex;
   align-items: center;
-  margin: 1.25rem 0;
+  margin: 1rem 0;
   color: #aaa;
   font-size: 0.85rem;
 }
@@ -116,6 +117,25 @@
 
 .divider span {
   padding: 0 0.75rem;
+}
+
+.emailToggle {
+  background: none;
+  border: none;
+  color: #bbb;
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 0.25rem 0;
+  align-self: center;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: #ddd;
+}
+
+.emailToggle:hover, .emailToggle:active {
+  background: none;
+  color: #888;
+  text-decoration-color: #aaa;
 }
 
 .naver-button {

@@ -20,6 +20,7 @@ const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [showEmailForm, setShowEmailForm] = useState(false);
 
   const handleGoogleLogin = async () => {
     try {
@@ -103,35 +104,43 @@ const LoginPage = () => {
           <img src={kakaoIcon} className={styles.kakaoIcon} alt=""/>
           카카오로 로그인
         </button>
-        <div className={styles.divider}><span>이메일로 로그인</span></div>
-        <form className={styles.loginForm} onSubmit={handleSubmit}>
-          <div className={styles.formGroup}>
-            <label htmlFor="email">이메일</label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder=""
-              required
-            />
-          </div>
-          <div className={styles.formGroup}>
-            <label htmlFor="password">비밀번호</label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder=""
-              required
-            />
-          </div>
-          <button className={styles.loginButton} type="submit">로그인</button>
-        </form>
-        <div className={styles.loginFooter}>
-          계정이 없으신가요? <Link to="/signup">가입</Link>
-        </div>
+        {showEmailForm ? (
+          <>
+            <div className={styles.divider}><span>이메일로 로그인</span></div>
+            <form className={styles.loginForm} onSubmit={handleSubmit}>
+              <div className={styles.formGroup}>
+                <label htmlFor="email">이메일</label>
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder=""
+                  required
+                />
+              </div>
+              <div className={styles.formGroup}>
+                <label htmlFor="password">비밀번호</label>
+                <input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder=""
+                  required
+                />
+              </div>
+              <button className={styles.loginButton} type="submit">로그인</button>
+            </form>
+            <div className={styles.loginFooter}>
+              계정이 없으신가요? <Link to="/signup">가입</Link>
+            </div>
+          </>
+        ) : (
+          <button type="button" className={styles.emailToggle} onClick={() => setShowEmailForm(true)}>
+            이메일로 로그인
+          </button>
+        )}
       </div>
     </div>
   );
