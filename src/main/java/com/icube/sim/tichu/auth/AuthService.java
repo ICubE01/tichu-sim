@@ -64,7 +64,7 @@ public class AuthService {
         return issueTokens(user);
     }
 
-    public void logout(String refreshToken) {
+    public void destroyRefreshToken(String refreshToken) {
         if (refreshToken == null) {
             return;
         }

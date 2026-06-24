@@ -44,7 +44,7 @@ public class AuthController {
             @CookieValue(value = RefreshTokenCookieFactory.COOKIE_NAME, required = false) String refreshToken,
             HttpServletResponse response
     ) {
-        authService.logout(refreshToken);
+        authService.destroyRefreshToken(refreshToken);
         response.addCookie(refreshTokenCookieFactory.createExpired());
         return ResponseEntity.noContent().build();
     }
