@@ -1,10 +1,10 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { JwtResponse, MeResponse } from "@/types.ts";
+import { JwtResponse, UserAuthDto } from "@/types.ts";
 
 interface Auth {
   ready: boolean;
   accessToken: string | null;
-  user: MeResponse | null;
+  user: UserAuthDto | null;
   impersonating: string | null;
   login: (token: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -18,15 +18,15 @@ const AuthContext = createContext<Auth | null>(null);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [ready, setReady] = useState(false);
   const [accessToken, setAccessToken] = useState<string | null>(null);
-  const [user, setUser] = useState<MeResponse | null>(null);
+  const [user, setUser] = useState<UserAuthDto | null>(null);
   const [impersonating, setImpersonating] = useState<string | null>(null);
 
-  const fetchUserInfo = async (token: string): Promise<MeResponse> => {
+  const fetchUserInfo = async (token: string): Promise<UserAuthDto> => {
     const response = await fetch('/api/auth/me', { headers: { 'Authorization': `Bearer ${token}` } });
     if (!response.ok) {
       throw new Error('Failed to fetch user info');
     }
-    return await response.json() as MeResponse;
+    return await response.json() as UserAuthDto;
   };
 
   const login = async (token: string) => {

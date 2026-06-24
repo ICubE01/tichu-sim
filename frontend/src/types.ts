@@ -14,7 +14,7 @@ export interface ErrorDto {
 
 export type Role = 'USER' | 'ADMIN' | 'BOT';
 
-export interface MeResponse {
+export interface UserAuthDto {
   id: number;
   name: string;
   role: Role;
