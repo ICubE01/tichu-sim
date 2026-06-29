@@ -8,6 +8,10 @@ export interface JwtResponse {
   token: string;
 }
 
+export interface ErrorDto {
+  message: string;
+}
+
 export type Role = 'USER' | 'ADMIN' | 'BOT';
 
 export interface MeResponse {
@@ -50,12 +54,14 @@ export interface MemberMessage {
   members: MemberDto[];
 }
 
-export enum OidcProviderName {
+export enum SocialAuthProviderName {
   GOOGLE = 'GOOGLE',
+  KAKAO = 'KAKAO',
+  NAVER = 'NAVER',
 }
 
 export interface UserIdentityDto {
-  provider: OidcProviderName;
+  provider: SocialAuthProviderName;
   providerEmail: string;
   connectedAt: string;
 }

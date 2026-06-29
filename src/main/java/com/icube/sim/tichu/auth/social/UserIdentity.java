@@ -29,7 +29,7 @@ public class UserIdentity {
     @NotNull
     @Enumerated(STRING)
     @Column(name = "provider", nullable = false)
-    private OidcProviderName provider;
+    private SocialAuthProviderName provider;
 
     @NotNull
     @Column(name = "provider_subject", nullable = false)

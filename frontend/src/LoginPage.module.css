@@ -15,6 +15,9 @@
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
   text-align: center;
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
 .login-card h2 {
@@ -37,6 +40,7 @@
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 500;
+  font-size: 0.9rem;
   color: #555;
 }
 
@@ -71,7 +75,7 @@
 }
 
 .login-footer {
-  margin-top: 1.5rem;
+  margin-top: 0.5rem;
   font-size: 0.9rem;
   color: #666;
 }
@@ -98,7 +102,7 @@
 .divider {
   display: flex;
   align-items: center;
-  margin: 1.25rem 0;
+  margin: 1rem 0;
   color: #aaa;
   font-size: 0.85rem;
 }
@@ -113,6 +117,79 @@
 
 .divider span {
   padding: 0 0.75rem;
+}
+
+.emailToggle {
+  background: none;
+  border: none;
+  color: #bbb;
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 0.25rem 0;
+  align-self: center;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: #ddd;
+}
+
+.emailToggle:hover, .emailToggle:active {
+  background: none;
+  color: #888;
+  text-decoration-color: #aaa;
+}
+
+.naver-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #03C75A;
+  color: #fff;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.naver-button:hover, .naver-button:active {
+  background-color: #02a84b;
+}
+
+.naver-icon {
+  width: 0.9rem;
+  height: 0.9rem;
+  flex-shrink: 0;
+}
+
+.kakao-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #FEE500;
+  color: #000;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.kakao-button:hover, .kakao-button:active {
+  background-color: #e6cf00;
+}
+
+.kakao-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
 }
 
 .google-button {

@@ -4,7 +4,6 @@ import com.icube.sim.tichu.users.User;
 import com.icube.sim.tichu.users.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.security.oauth2.core.oidc.OidcIdToken;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,24 +24,23 @@ public class UserIdentityService {
     }
 
     @Transactional
-    public FindOrCreateResult findOrCreateUser(OidcProviderName provider, OidcIdToken idToken) {
-        var identity = userIdentityRepository.findByProviderAndProviderSubject(provider, idToken.getSubject());
+    public FindOrCreateResult findOrCreateUser(SocialAuthProviderName provider, SocialAuthUserInfo userInfo) {
+        var identity = userIdentityRepository.findByProviderAndProviderSubject(provider, userInfo.subject());
         if (identity.isPresent()) {
             return new FindOrCreateResult(identity.get().getUser(), false);
         }
 
         User user;
-        if (userRepository.existsByEmail(idToken.getEmail())) {
+        if (userRepository.existsByEmail(userInfo.email())) {
             throw new EmailConflictException();
         }
         try {
-            var name = getName(idToken);
-            user = createUser(idToken.getEmail(), name);
+            user = createUser(userInfo.email(), userInfo.name());
         } catch (DataIntegrityViolationException e) {
             throw new EmailConflictException();
         }
         try {
-            createIdentity(user, provider, idToken.getSubject(), idToken.getEmail());
+            createIdentity(user, provider, userInfo.subject(), userInfo.email());
         } catch (DataIntegrityViolationException e) {
             throw new IdentityConflictException();
         }
@@ -51,8 +49,8 @@ public class UserIdentityService {
     }
 
     @Transactional
-    public void connectIdentity(Long userId, OidcProviderName provider, OidcIdToken idToken) {
-        userIdentityRepository.findByProviderAndProviderSubject(provider, idToken.getSubject())
+    public void connectIdentity(Long userId, SocialAuthProviderName provider, SocialAuthUserInfo userInfo) {
+        userIdentityRepository.findByProviderAndProviderSubject(provider, userInfo.subject())
                 .ifPresent(existing -> {
                     if (existing.getUser().getId().equals(userId)) {
                         throw new ProviderAlreadyConnectedException();
@@ -62,14 +60,14 @@ public class UserIdentityService {
 
         var user = userRepository.findById(userId).orElseThrow();
         try {
-            createIdentity(user, provider, idToken.getSubject(), idToken.getEmail());
+            createIdentity(user, provider, userInfo.subject(), userInfo.email());
         } catch (DataIntegrityViolationException e) {
             throw new IdentityConflictException();
         }
     }
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public void disconnectIdentity(Long userId, OidcProviderName provider) {
+    public void disconnectIdentity(Long userId, SocialAuthProviderName provider) {
         var user = userRepository.findById(userId).orElseThrow();
         var hasPassword = user.getPassword() != null;
         var otherIdentities = userIdentityRepository.countByUserIdAndProviderNot(userId, provider);
@@ -86,23 +84,12 @@ public class UserIdentityService {
         return userRepository.save(user);
     }
 
-    private void createIdentity(User user, OidcProviderName provider, String subject, String email) {
+    private void createIdentity(User user, SocialAuthProviderName provider, String subject, String email) {
         var identity = new UserIdentity();
         identity.setUser(user);
         identity.setProvider(provider);
         identity.setProviderSubject(subject);
         identity.setProviderEmail(email);
         userIdentityRepository.save(identity);
-    }
-
-    private static String getName(OidcIdToken idToken) {
-        var name = idToken.getNickName();
-        if (name == null || name.isBlank()){
-            name = idToken.getGivenName();
-        }
-        if (name == null || name.isBlank()){
-            name = idToken.getEmail().split("@")[0];
-        }
-        return name;
     }
 }

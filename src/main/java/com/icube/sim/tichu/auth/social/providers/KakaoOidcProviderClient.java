@@ -18,26 +18,22 @@ import org.springframework.security.oauth2.jwt.JwtDecoderFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
 import java.util.UUID;
 
 @Service
-public class GoogleOidcProviderClient implements SocialAuthProviderClient {
+public class KakaoOidcProviderClient implements SocialAuthProviderClient {
     private final ClientRegistration clientRegistration;
     private final OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> tokenResponseClient;
     private final JwtDecoderFactory<ClientRegistration> idTokenDecoderFactory;
     private final OidcStateStore stateStore;
 
-    public GoogleOidcProviderClient(
+    public KakaoOidcProviderClient(
             ClientRegistrationRepository clientRegistrationRepository,
             OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> tokenResponseClient,
             JwtDecoderFactory<ClientRegistration> idTokenDecoderFactory,
             OidcStateStore stateStore
     ) {
-        this.clientRegistration = clientRegistrationRepository.findByRegistrationId("google");
+        this.clientRegistration = clientRegistrationRepository.findByRegistrationId("kakao");
         this.tokenResponseClient = tokenResponseClient;
         this.idTokenDecoderFactory = idTokenDecoderFactory;
         this.stateStore = stateStore;
@@ -45,7 +41,7 @@ public class GoogleOidcProviderClient implements SocialAuthProviderClient {
 
     @Override
     public SocialAuthProviderName provider() {
-        return SocialAuthProviderName.GOOGLE;
+        return SocialAuthProviderName.KAKAO;
     }
 
     @Override
@@ -59,7 +55,7 @@ public class GoogleOidcProviderClient implements SocialAuthProviderClient {
                 .queryParam("scope", String.join(" ", clientRegistration.getScopes()))
                 .queryParam("redirect_uri", clientRegistration.getRedirectUri())
                 .queryParam("state", state)
-                .queryParam("nonce", sha256(rawNonce))
+                .queryParam("nonce", rawNonce)
                 .toUriString();
         return new SocialAuthUrlResponse(url, state);
     }
@@ -71,11 +67,8 @@ public class GoogleOidcProviderClient implements SocialAuthProviderClient {
 
         var idToken = exchangeCodeForIdToken(clientRegistration, code);
 
-        if (!sha256(rawNonce).equals(idToken.getNonce())) {
+        if (!rawNonce.equals(idToken.getNonce())) {
             throw new OAuth2AuthorizationException(new OAuth2Error("invalid_nonce"));
-        }
-        if (!Boolean.TRUE.equals(idToken.getEmailVerified())) {
-            throw new OAuth2AuthorizationException(new OAuth2Error("email_not_verified"));
         }
 
         var subject = idToken.getSubject();
@@ -87,7 +80,7 @@ public class GoogleOidcProviderClient implements SocialAuthProviderClient {
             throw new OAuth2AuthorizationException(new OAuth2Error("missing_email"));
         }
 
-        return new SocialAuthUserInfo(subject, email, resolveName(idToken));
+        return new SocialAuthUserInfo(subject, email, resolveName(idToken, email));
     }
 
     private OidcIdToken exchangeCodeForIdToken(ClientRegistration reg, String code) {
@@ -114,24 +107,11 @@ public class GoogleOidcProviderClient implements SocialAuthProviderClient {
         return new OidcIdToken(jwt.getTokenValue(), jwt.getIssuedAt(), jwt.getExpiresAt(), jwt.getClaims());
     }
 
-    private static String resolveName(OidcIdToken idToken) {
+    private static String resolveName(OidcIdToken idToken, String email) {
         var name = idToken.getNickName();
         if (name == null || name.isBlank()) {
-            name = idToken.getGivenName();
-        }
-        if (name == null || name.isBlank()) {
-            name = idToken.getEmail().split("@")[0];
+            name = email.split("@")[0];
         }
         return name;
-    }
-
-    private static String sha256(String value) {
-        try {
-            var hash = MessageDigest.getInstance("SHA-256")
-                    .digest(value.getBytes(StandardCharsets.UTF_8));
-            return Base64.getUrlEncoder().withoutPadding().encodeToString(hash);
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException(e);
-        }
     }
 }

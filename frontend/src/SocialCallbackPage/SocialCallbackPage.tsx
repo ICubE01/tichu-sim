@@ -1,16 +1,24 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/useAuth.tsx';
-import styles from './GoogleCallbackPage.module.css';
-import { JwtResponse } from "@/types.ts";
+import styles from './SocialCallbackPage.module.css';
+import { JwtResponse, ErrorDto, SocialAuthProviderName } from '@/types.ts';
+import { translateSocialAuthError } from '@/SocialCallbackPage/socialAuthErrors.ts';
 import { ALLOW_INIT_NAME_PAGE_KEY } from '@/InitNamePage.tsx';
 
-const GoogleCallbackPage = () => {
+interface Props {
+  provider: SocialAuthProviderName;
+}
+
+const SocialCallbackPage = ({ provider }: Props) => {
   const { login } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const hasFetchedRef = useRef(false);
+
+  const providerLower = provider.toLowerCase();
+  const providerDisplayName = provider.charAt(0) + provider.slice(1).toLowerCase();
 
   useEffect(() => {
     const code = searchParams.get('code');
@@ -30,14 +38,19 @@ const GoogleCallbackPage = () => {
       let token: string;
       let isNewUser: boolean;
       try {
-        const response = await fetch('/api/auth/social/google/login', {
+        const response = await fetch(`/api/auth/social/${providerLower}/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ code, state }),
         });
 
         if (!response.ok) {
-          setErrorMessage('Google 로그인에 실패했습니다.');
+          try {
+            const error = await response.json() as Partial<ErrorDto>;
+            setErrorMessage(translateSocialAuthError(error.message ?? `${providerDisplayName} 로그인에 실패했습니다.`));
+          } catch {
+            setErrorMessage(`${providerDisplayName} 로그인에 실패했습니다.`);
+          }
           return;
         }
 
@@ -72,4 +85,4 @@ const GoogleCallbackPage = () => {
   );
 };
 
-export default GoogleCallbackPage;
+export default SocialCallbackPage;

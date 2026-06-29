@@ -1,37 +1,35 @@
 package com.icube.sim.tichu.auth.social;
 
 import com.icube.sim.tichu.auth.AuthService;
-import com.icube.sim.tichu.auth.social.providers.OidcProviderClientRegistry;
+import com.icube.sim.tichu.auth.social.providers.SocialAuthProviderClientRegistry;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @AllArgsConstructor
 @Service
 public class SocialAuthService {
     private final AuthService authService;
     private final UserIdentityService userIdentityService;
-    private final OidcProviderClientRegistry oidcProviderClientRegistry;
+    private final SocialAuthProviderClientRegistry socialAuthProviderClientRegistry;
 
-    public SocialAuthUrlResponse getAuthorizationUrl(OidcProviderName provider) {
-        return oidcProviderClientRegistry.get(provider).getAuthorizationUrl();
+    public SocialAuthUrlResponse getAuthorizationUrl(SocialAuthProviderName provider) {
+        return socialAuthProviderClientRegistry.get(provider).getAuthorizationUrl();
     }
 
-    public SocialLoginResult socialLogin(OidcProviderName provider, SocialAuthRequest request) {
-        var idToken = oidcProviderClientRegistry.get(provider).fetchIdToken(request.code(), request.state());
-        var findOrCreateResult = userIdentityService.findOrCreateUser(provider, idToken);
+    public SocialLoginResult socialLogin(SocialAuthProviderName provider, SocialAuthRequest request) {
+        var userInfo = socialAuthProviderClientRegistry.get(provider).fetchUserInfo(request.code(), request.state());
+        var findOrCreateResult = userIdentityService.findOrCreateUser(provider, userInfo);
         var jwtIssueResult = authService.issueTokens(findOrCreateResult.user());
         return new SocialLoginResult(jwtIssueResult, findOrCreateResult.created());
     }
 
-    public void connectProvider(OidcProviderName provider, SocialAuthRequest request) {
+    public void connectProvider(SocialAuthProviderName provider, SocialAuthRequest request) {
         var currentUserId = authService.getCurrentUserId();
-        var idToken = oidcProviderClientRegistry.get(provider).fetchIdToken(request.code(), request.state());
-        userIdentityService.connectIdentity(currentUserId, provider, idToken);
+        var userInfo = socialAuthProviderClientRegistry.get(provider).fetchUserInfo(request.code(), request.state());
+        userIdentityService.connectIdentity(currentUserId, provider, userInfo);
     }
 
-    public void disconnectProvider(OidcProviderName provider) {
+    public void disconnectProvider(SocialAuthProviderName provider) {
         userIdentityService.disconnectIdentity(authService.getCurrentUserId(), provider);
     }
 }
