@@ -21,6 +21,7 @@ import org.springframework.security.oauth2.core.oidc.endpoint.OidcParameterNames
 import org.springframework.security.oauth2.jwt.JwtDecoderFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.UUID;
@@ -124,11 +125,16 @@ public class KakaoOidcProviderClient implements SocialAuthProviderClient {
     }
 
     private void verifyEmailOwnership(String accessToken) {
-        var response = restClient.get()
-                .uri(userInfoUri)
-                .header("Authorization", "Bearer " + accessToken)
-                .retrieve()
-                .body(KakaoUserInfoResponse.class);
+        KakaoUserInfoResponse response;
+        try {
+            response = restClient.get()
+                    .uri(userInfoUri)
+                    .header("Authorization", "Bearer " + accessToken)
+                    .retrieve()
+                    .body(KakaoUserInfoResponse.class);
+        } catch (RestClientException e) {
+            throw new OAuth2AuthorizationException(new OAuth2Error("user_info_fetch_failed"));
+        }
 
         if (response == null || response.kakaoAccount() == null) {
             throw new OAuth2AuthorizationException(new OAuth2Error("user_info_fetch_failed"));
