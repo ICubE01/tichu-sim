@@ -8,6 +8,15 @@ import { ALLOW_INIT_NAME_PAGE_KEY } from '@/InitNamePage.tsx';
 
 export const OAUTH_INTENT_PREFIX = 'oauth_intent_';
 
+const resolveResponseError = async (response: Response, fallback: string): Promise<string> => {
+  try {
+    const error = await response.json() as Partial<ErrorDto>;
+    return translateSocialAuthError(error.message ?? fallback);
+  } catch {
+    return fallback;
+  }
+};
+
 interface Props {
   provider: SocialAuthProviderName;
 }
@@ -48,7 +57,7 @@ const SocialCallbackPage = ({ provider }: Props) => {
       (async () => {
         const fallback = `${providerDisplayName} 연결에 실패했습니다.`;
         try {
-          // Always refresh first so the connect request carries a fresh access token,
+          // Always refresh first, so the connection request carries a fresh access token,
           // even if the user lingered on the provider's consent screen.
           const token = await refresh();
           if (!token) {
@@ -63,12 +72,7 @@ const SocialCallbackPage = ({ provider }: Props) => {
           });
 
           if (!response.ok) {
-            try {
-              const error = await response.json() as Partial<ErrorDto>;
-              setErrorMessage(translateSocialAuthError(error.message ?? fallback));
-            } catch {
-              setErrorMessage(fallback);
-            }
+            setErrorMessage(await resolveResponseError(response, fallback));
             return;
           }
 
@@ -90,12 +94,7 @@ const SocialCallbackPage = ({ provider }: Props) => {
 
         if (!response.ok) {
           const fallback = `${providerDisplayName} 로그인에 실패했습니다.`;
-          try {
-            const error = await response.json() as Partial<ErrorDto>;
-            setErrorMessage(translateSocialAuthError(error.message ?? fallback));
-          } catch {
-            setErrorMessage(fallback);
-          }
+          setErrorMessage(await resolveResponseError(response, fallback));
           return;
         }
 
