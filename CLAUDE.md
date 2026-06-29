@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Tichu Sim** is a full-stack real-time multiplayer Tichu card game (deployed at https://tichu-sim.com). It uses Spring Boot WebSockets (STOMP) for game synchronization and React for the UI.
+**Tichu Sim** is a full-stack real-time multiplayer Tichu card game (deployed at https://tichu-sim.com). It uses Spring Boot WebSockets (STOMP) for game synchronization and React for the UI. Players authenticate with email/password or social login (Google, Kakao, Naver), manage their account, and play in rooms with in-game chat.
 
 ## Commands
 
@@ -37,73 +37,99 @@ Requires a `.env` file — see Environment Variables below.
 
 ### Backend (`src/main/java/com/icube/sim/tichu/`)
 
-The backend is a Spring Boot 4 / Java 21 application with two communication layers:
-- **REST API** — authentication (`/api/auth/**`) and room management (`/api/rooms/**`)
-- **WebSocket (STOMP)** — all in-game real-time events at `/api/ws`
+Spring Boot 4 / Java 21. Spring Data JPA + JDBC over MySQL, Flyway migrations, MapStruct mappers. Two communication layers:
+- **REST API** — `/api/auth/**`, `/api/users/**`, `/api/rooms/**`, `/api/admin/**`
+- **WebSocket (STOMP)** — all in-game real-time events and chat at `/api/ws`
 
-#### Extensible game framework
+#### Package layout
 ```
-games/common/          ← Generic abstract layer
-  domain/AbstractGame, GameRule, GameBuilder
-  service/GameService
-games/tichu/           ← Tichu-specific implementation
-  Tichu.java           ← Main game state (thread-safe, uses ReentrantLock)
-  Round.java, Phase.java
-  TichuService.java    ← Orchestrates game events
-  TichuRule.java       ← Rule configuration
-  cards/               ← Card hierarchy (StandardCard, SpecialCard variants)
-  tricks/              ← 10+ trick-type validators (Single, Pair, Straight, Bomb, …)
-  controllers/         ← 8 STOMP message handlers (SetRule, Start, PlayTrick, …)
-  mappers/             ← MapStruct compile-time mappers
-  dtos/                ← DTOs for all WebSocket messages
+auth/                  ← Authentication
+  jwt/                 ← Jwt, JwtService, JwtAuthenticationFilter (REST), JwtAuthenticationInterceptor (WS), JwtConfig
+  social/              ← Social login orchestration (SocialAuthService, UserIdentity link/unlink, conflict exceptions)
+    providers/         ← GoogleOidcProviderClient, KakaoOidcProviderClient, NaverOAuth2ProviderClient + registry, OidcStateStore
+  SecurityConfig.java          ← Central Spring Security config
+  RefreshTokenCookieFactory.java  ← Builds/expires the HttpOnly refresh-token cookie
+users/                 ← User account CRUD, registration, password change (UserController, UserService, User, Role)
+admin/                 ← Bot accounts + impersonation (AdminController: create bots, issue bot tokens)
+chat/                  ← In-room chat (ChatController)
+rooms/                 ← Room management (RoomController) + WS room-scoping channel interceptors
+common/
+  websocket/           ← WebSocketConfig + STOMP channel interceptors
+games/
+  common/              ← Generic abstract layer
+    domain/            ← Game, AbstractGame, GameBuilder, GameName, GameRule, GameRuleWrapper
+    services/          ← GameService, AbstractGameService
+  tichu/               ← Tichu-specific implementation
+    Tichu.java         ← Main game state (thread-safe, uses ReentrantLock)
+    Round.java, Phase.java, ExchangePhase.java, Player.java, Team.java, TichuDeclaration.java
+    TichuService.java          ← Orchestrates game events
+    TichuEventHandler.java     ← Reacts to domain events
+    TichuRule.java             ← Rule configuration
+    cards/             ← Card hierarchy (StandardCard, SpecialCard variants)
+    tricks/            ← Trick-type validators (Single, Pair, Straight, Bomb, …)
+    controllers/       ← STOMP message handlers (Start, SetRule, PlayTrick, PlayBomb, Pass, Exchange, Get, Small/LargeTichu, SelectDragonReceiver)
+    events/, mappers/, dtos/, exceptions/
 ```
+
+#### Authentication
+- **Email/password** — `POST /api/users` to register, `POST /api/auth/login` to obtain tokens.
+- **Social login** — `GET /api/auth/social/{provider}/url` returns the provider authorization URL; the frontend callback page exchanges the code via `POST /api/auth/social/{provider}/login`. Logged-in users can additionally **connect/disconnect** a provider (`POST`/`DELETE /api/auth/social/{provider}`). Google and Kakao use OIDC; Naver uses OAuth2. Kakao's userinfo endpoint is overridden to the classic user API so email-verification flags are available. Social login requires a verified email (`EmailNotVerifiedException`) and guards against email/identity conflicts.
+- **Tokens** — `JwtService` issues a short-lived **access token** (returned in the response body, held in memory by the frontend) and a **refresh token** stored in an `HttpOnly` cookie scoped to `/api/auth/refresh`. `POST /api/auth/refresh` rotates tokens; `DELETE /api/auth/refresh` logs out (clears the cookie). `GET /api/auth/issue/web-socket-token` mints a very short-lived token for the WS handshake.
 
 #### WebSocket message flow
-1. Client sends to `/app/{roomId}/{action}` (e.g. `/app/abc12/play-trick`)
-2. `JwtAuthenticationInterceptor` validates the JWT on every SUBSCRIBE/SEND
-3. `DestinationGuardInterceptor` validates roomId ownership
-4. Controller handles the message → calls `TichuService` → publishes events
-5. Events broadcast to `/topic/{roomId}` (room-wide) or `/user/{username}/queue` (personal)
+1. Client sends to `/app/rooms/{roomId}/...`, e.g. `/app/rooms/abc12/game/tichu/play-trick` or `/app/rooms/abc12/chat`.
+2. Inbound channel interceptor chain (`WebSocketConfig`):
+   `JwtAuthenticationInterceptor` (validates JWT) → `DestinationCheckInitializeInterceptor` → `RoomInboundChannelInterceptor` (room membership) → `UserInboundChannelInterceptor` (guards `/user/{userId}/**` destinations) → `DestinationGuardInterceptor`.
+3. Controller handles the message → calls `TichuService` → publishes domain events.
+4. Events broadcast to `/topic/rooms/{roomId}/...` (room-wide) or `/user/{userId}/queue/...` (personal). `RoomOutboundChannelInterceptor` filters outbound messages so users only receive events for rooms they belong to.
 
-#### Room scoping
-`RoomMessageInterceptor` ensures users only receive messages for rooms they belong to.
+#### Admin & impersonation
+`/api/admin/**` requires the `ADMIN` role. Admins can create **bot** user accounts and issue bot access tokens; the frontend `AdminPage` uses these to impersonate a bot (shown via `ImpersonationOverlay`) for testing multiplayer games solo.
 
 ### Frontend (`frontend/src/`)
 
-React 19 + TypeScript 5 SPA. Key patterns:
+React 19 + TypeScript 5 SPA (Vite). Key hooks:
 
-- **`useAuth.tsx`** — `AuthContext` with login/logout/token-refresh (JWT access token 10 min, refresh 2 hr)
-- **`useAxios.tsx`** — Axios wrapper that auto-refreshes tokens on 401
-- **`useStomp.tsx`** — Class-based STOMP client wrapper (subscription lifecycle, reconnection)
-- **`useRoom.tsx`** — Room state hook
+- **`useAuth.tsx`** — `AuthContext`: login/logout, social login, token refresh, `reloadUser`, and bot `impersonateBot`. Access token kept in memory; refresh on window load via the cookie.
+- **`useAxios.tsx`** — Axios wrapper that auto-refreshes the access token on 401.
+- **`useStomp.tsx`** — Class-based STOMP client wrapper (subscription lifecycle, reconnection).
+- **`useRoom.tsx`** — Room state hook.
+
+Pages / routing (`App.tsx`): unauthenticated users see `LoginPage` / `SignupPage`; social OAuth callbacks route to `SocialCallbackPage` (`/auth/callback/{google,naver,kakao}`). Authenticated users get `HomePage`, `RoomDetailPage` (`/rooms/:roomId`), `AccountPage` + `ChangePasswordPage`, and `InitNamePage` (set display name after first social login). `AdminPage` is lazy-loaded and gated on `role === 'ADMIN'`.
 
 The frontend **mirrors the backend game domain** for offline/pre-validation:
 ```
-games/tichu/domain/    ← TichuGame, Card, Player, Team, Trick, TichuRule
+games/tichu/domain/    ← TichuGame, Card, Cards, Player, Team, Trick, TichuRule, TichuDeclaration
 games/tichu/dtos/      ← Message types matching backend DTOs
 games/tichu/mappers/   ← Convert server DTOs ↔ frontend domain models
 ```
 
-Game page hierarchy: `App (router)` → `HomePage` → `RoomDetailPage` → `TichuPage`
-
-### Security
-- Stateless JWT; access token 10 min, refresh 2 hr, WebSocket token 1 min (short-lived for WS handshake)
-- CORS origin controlled via `WEB_ORIGIN` env var
-- `SecurityConfig.java` is the central Spring Security configuration
-
 ### Database
-- MySQL 8, schema managed by **Flyway** (`src/main/resources/db/migration/`)
-- New migrations must follow `V{n}__description.sql` naming
+- MySQL 8, schema managed by **Flyway** (`src/main/resources/db/migration/`).
+- Tables: `users` (nullable password for social-only accounts, role, timestamps) and `user_identities` (links a user to a social provider subject).
+- New migrations must follow `V{n}__description.sql` naming.
+
+## Configuration
+
+Spring config lives in `src/main/resources/application.yaml`. Notable token / room settings:
+- Access token: 10 min · Refresh token: 7 days · WebSocket token: 5 s · Bot access token: 2 hr
+- Room expiry: 1 hr out of game, 6 hr in game · Room id length: 5
 
 ## Environment Variables
 
-Required for local dev (create a `.env` in the project root):
+Required for local dev (create a `.env` in the project root; see `.env.example`):
 ```
 JWT_SECRET=
 DATASOURCE_URL=jdbc:mysql://localhost:3306/tichu?createDatabaseIfNotExist=true
 DATASOURCE_USERNAME=
 DATASOURCE_PASSWORD=
-WEB_ORIGIN=http://localhost:5173
+WEB_ORIGIN=http://localhost:5173      # CORS origin + OAuth redirect base
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+KAKAO_CLIENT_ID=
+KAKAO_CLIENT_SECRET=
+NAVER_CLIENT_ID=
+NAVER_CLIENT_SECRET=
 ```
 
 ## CI/CD
