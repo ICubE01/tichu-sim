@@ -6,12 +6,23 @@ import { JwtResponse, ErrorDto, SocialAuthProviderName } from '@/types.ts';
 import { translateSocialAuthError } from '@/SocialCallbackPage/socialAuthErrors.ts';
 import { ALLOW_INIT_NAME_PAGE_KEY } from '@/InitNamePage.tsx';
 
+export const OAUTH_INTENT_PREFIX = 'oauth_intent_';
+
+const resolveResponseError = async (response: Response, fallback: string): Promise<string> => {
+  try {
+    const error = await response.json() as Partial<ErrorDto>;
+    return translateSocialAuthError(error.message ?? fallback);
+  } catch {
+    return fallback;
+  }
+};
+
 interface Props {
   provider: SocialAuthProviderName;
 }
 
 const SocialCallbackPage = ({ provider }: Props) => {
-  const { login } = useAuth();
+  const { login, refresh } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -19,6 +30,12 @@ const SocialCallbackPage = ({ provider }: Props) => {
 
   const providerLower = provider.toLowerCase();
   const providerDisplayName = provider.charAt(0) + provider.slice(1).toLowerCase();
+
+  const initState = searchParams.get('state');
+  const isConnectRef = useRef(
+    initState !== null && sessionStorage.getItem(OAUTH_INTENT_PREFIX + initState) === 'connect'
+  );
+  const isConnect = isConnectRef.current;
 
   useEffect(() => {
     const code = searchParams.get('code');
@@ -34,9 +51,40 @@ const SocialCallbackPage = ({ provider }: Props) => {
     }
     hasFetchedRef.current = true;
 
+    sessionStorage.removeItem(OAUTH_INTENT_PREFIX + state);
+
+    if (isConnect) {
+      (async () => {
+        const fallback = `${providerDisplayName} 연결에 실패했습니다.`;
+        try {
+          // Always refresh first, so the connection request carries a fresh access token,
+          // even if the user lingered on the provider's consent screen.
+          const token = await refresh();
+          if (!token) {
+            setErrorMessage(fallback);
+            return;
+          }
+
+          const response = await fetch(`/api/auth/social/${providerLower}/connect`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ code, state }),
+          });
+
+          if (!response.ok) {
+            setErrorMessage(await resolveResponseError(response, fallback));
+            return;
+          }
+
+          navigate('/account', { replace: true });
+        } catch {
+          setErrorMessage('서버와 통신 중 오류가 발생했습니다.');
+        }
+      })();
+      return;
+    }
+
     (async () => {
-      let token: string;
-      let isNewUser: boolean;
       try {
         const response = await fetch(`/api/auth/social/${providerLower}/login`, {
           method: 'POST',
@@ -45,27 +93,21 @@ const SocialCallbackPage = ({ provider }: Props) => {
         });
 
         if (!response.ok) {
-          try {
-            const error = await response.json() as Partial<ErrorDto>;
-            setErrorMessage(translateSocialAuthError(error.message ?? `${providerDisplayName} 로그인에 실패했습니다.`));
-          } catch {
-            setErrorMessage(`${providerDisplayName} 로그인에 실패했습니다.`);
-          }
+          const fallback = `${providerDisplayName} 로그인에 실패했습니다.`;
+          setErrorMessage(await resolveResponseError(response, fallback));
           return;
         }
 
-        ({ token } = await response.json() as JwtResponse);
-        isNewUser = response.status === 201;
+        const { token } = await response.json() as JwtResponse;
+        const isNewUser = response.status === 201;
+        await login(token);
+        if (isNewUser) {
+          sessionStorage.setItem(ALLOW_INIT_NAME_PAGE_KEY, '1');
+        }
+        navigate(isNewUser ? '/init-name' : '/', { replace: true });
       } catch {
         setErrorMessage('서버와 통신 중 오류가 발생했습니다.');
-        return;
       }
-
-      await login(token);
-      if (isNewUser) {
-        sessionStorage.setItem(ALLOW_INIT_NAME_PAGE_KEY, '1');
-      }
-      navigate(isNewUser ? '/init-name' : '/', { replace: true });
     })();
   }, []);
 
@@ -75,10 +117,12 @@ const SocialCallbackPage = ({ provider }: Props) => {
         {errorMessage ? (
           <>
             <p className={styles.errorMessage}>{errorMessage}</p>
-            <Link to="/" className={styles.backLink}>로그인 페이지로 돌아가기</Link>
+            <Link to={isConnect ? '/account' : '/'} className={styles.backLink}>
+              {isConnect ? '계정 페이지로 돌아가기' : '로그인 페이지로 돌아가기'}
+            </Link>
           </>
         ) : (
-          <p className={styles.loadingText}>로그인 중...</p>
+          <p className={styles.loadingText}>{isConnect ? '연결 중...' : '로그인 중...'}</p>
         )}
       </div>
     </div>

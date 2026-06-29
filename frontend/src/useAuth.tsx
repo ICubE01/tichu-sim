@@ -8,7 +8,7 @@ interface Auth {
   impersonating: string | null;
   login: (token: string) => Promise<void>;
   logout: () => Promise<void>;
-  refresh: () => Promise<void>;
+  refresh: () => Promise<string | null>;
   reloadUser: () => Promise<void>;
   impersonateBot: (token: string, botName: string) => Promise<void>;
 }
@@ -49,7 +49,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setReady(true);
   };
 
-  const refresh = async () => {
+  const refresh = async (): Promise<string | null> => {
     try {
       const response = await fetch('/api/auth/refresh', {
         method: 'POST',
@@ -65,6 +65,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setUser(userData);
           setAccessToken(newToken);
           setImpersonating(null);
+          return newToken;
         } else {
           await logout();
         }
@@ -77,6 +78,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } finally {
       setReady(true);
     }
+    return null;
   };
 
   const reloadUser = async () => {
