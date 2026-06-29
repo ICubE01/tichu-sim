@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/useAuth.tsx';
-import { useAxios } from '@/useAxios.tsx';
 import styles from './SocialCallbackPage.module.css';
 import { JwtResponse, ErrorDto, SocialAuthProviderName } from '@/types.ts';
 import { translateSocialAuthError } from '@/SocialCallbackPage/socialAuthErrors.ts';
@@ -14,8 +13,7 @@ interface Props {
 }
 
 const SocialCallbackPage = ({ provider }: Props) => {
-  const { login } = useAuth();
-  const api = useAxios();
+  const { login, refresh } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -48,12 +46,35 @@ const SocialCallbackPage = ({ provider }: Props) => {
 
     if (isConnect) {
       (async () => {
+        const fallback = `${providerDisplayName} 연결에 실패했습니다.`;
         try {
-          await api.post(`/auth/social/${providerLower}/connect`, { code, state });
+          // Always refresh first so the connect request carries a fresh access token,
+          // even if the user lingered on the provider's consent screen.
+          const token = await refresh();
+          if (!token) {
+            setErrorMessage(fallback);
+            return;
+          }
+
+          const response = await fetch(`/api/auth/social/${providerLower}/connect`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ code, state }),
+          });
+
+          if (!response.ok) {
+            try {
+              const error = await response.json() as Partial<ErrorDto>;
+              setErrorMessage(translateSocialAuthError(error.message ?? fallback));
+            } catch {
+              setErrorMessage(fallback);
+            }
+            return;
+          }
+
           navigate('/account', { replace: true });
-        } catch (err) {
-          const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
-          setErrorMessage(msg ? translateSocialAuthError(msg) : `${providerDisplayName} 연결에 실패했습니다.`);
+        } catch {
+          setErrorMessage('서버와 통신 중 오류가 발생했습니다.');
         }
       })();
       return;
