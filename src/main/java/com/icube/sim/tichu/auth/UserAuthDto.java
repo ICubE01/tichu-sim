@@ -6,7 +6,7 @@ import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
-public class MeResponse {
+public class UserAuthDto {
     private Long id;
     private String name;
     private Role role;
