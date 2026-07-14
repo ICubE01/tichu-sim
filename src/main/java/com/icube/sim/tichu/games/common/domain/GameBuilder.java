@@ -1,5 +1,7 @@
 package com.icube.sim.tichu.games.common.domain;
 
+import com.icube.sim.tichu.games.hanabi.Hanabi;
+import com.icube.sim.tichu.games.hanabi.HanabiRule;
 import com.icube.sim.tichu.games.tichu.Tichu;
 import com.icube.sim.tichu.games.tichu.TichuRule;
 import com.icube.sim.tichu.games.common.exceptions.InvalidMemberCountException;
@@ -15,6 +17,7 @@ public class GameBuilder {
 
         return switch (gameName) {
             case TICHU -> new Tichu((TichuRule) gameRule, members);
+            case HANABI -> new Hanabi((HanabiRule) gameRule, members);
         };
     }
 }

@@ -2,6 +2,7 @@ package com.icube.sim.tichu.games.common.domain;
 
 import com.icube.sim.tichu.games.common.exceptions.ImmutableGameRuleException;
 import com.icube.sim.tichu.games.common.exceptions.InvalidGameRuleException;
+import com.icube.sim.tichu.games.hanabi.HanabiRule;
 import com.icube.sim.tichu.games.tichu.TichuRule;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,6 +21,7 @@ public class GameRuleWrapper {
     public static GameRuleWrapper of(GameName gameName) {
         return switch (gameName) {
             case TICHU -> new GameRuleWrapper(TichuRule.createDefault());
+            case HANABI -> new GameRuleWrapper(HanabiRule.createDefault());
         };
     }
 
