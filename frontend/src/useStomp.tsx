@@ -1,4 +1,4 @@
-import { Client, StompSubscription } from "@stomp/stompjs";
+import { Client, ReconnectionTimeMode, StompSubscription } from "@stomp/stompjs";
 import { useMemo, useRef } from "react";
 
 interface SubscriptionEntry {
@@ -22,6 +22,8 @@ export class useStomp {
   private client = useMemo(() => new Client({
     brokerURL: `${window.location.origin.replace('http', 'ws')}/api/ws`,
     reconnectDelay: 1000,
+    reconnectTimeMode: ReconnectionTimeMode.EXPONENTIAL,
+    maxReconnectDelay: 60000,
     heartbeatIncoming: 10000,
     heartbeatOutgoing: 10000,
     debug: (str) => console.debug(str),
@@ -38,6 +40,7 @@ export class useStomp {
       try {
         this.client.connectHeaders.Authorization = `Bearer ${await this.issueToken.current()}`;
       } catch (e) {
+        delete this.client.connectHeaders.Authorization;
         console.error('Failed to issue a web socket token: ', e);
       }
     };
