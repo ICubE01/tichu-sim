@@ -29,26 +29,24 @@ const RoomDetailPage = () => {
   const roomApi = useRoom();
   const [room, setRoom] = useState<RoomDto | null>(null);
   const [loading, setLoading] = useState(true);
-  const stomp = new useStomp();
+  const stomp = useStomp();
   const api = useAxios();
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState('');
 
-  if (!roomId) {
-    navigate('/');
-    return;
-  }
-
-  const leaveRoom = async () => {
-    try {
-      await roomApi.leaveRoom(roomId);
+  // Redirecting is a side effect, so it cannot happen during render, and every hook below has to
+  // run unconditionally. Rendering bails out once they have all been called.
+  useEffect(() => {
+    if (!roomId) {
       navigate('/');
-    } catch (error) {
-      console.error('Failed to leave room:', error);
     }
-  };
+  }, [roomId, navigate]);
 
   useEffect(() => {
+    if (!roomId) {
+      return;
+    }
+
     const init = async () => {
       setLoading(true);
       let myRoom;
@@ -96,26 +94,8 @@ const RoomDetailPage = () => {
     setChatMessages((prev) => [...prev, chatMessage]);
   }, []);
 
-  const sendChatMessage = () => {
-    if (chatInput.trim() === '') {
-      return;
-    }
-
-    stomp.publish(`/app/rooms/${roomId}/chat`, {
-      message: chatInput
-    });
-
-    setChatInput('');
-  };
-
-  const chatInputKeyDown: KeyboardEventHandler = (e) => {
-    if (e.key === 'Enter') {
-      sendChatMessage();
-    }
-  };
-
   useEffect(() => {
-    if (!user || !room) {
+    if (!roomId || !user || !room) {
       return;
     }
 
@@ -157,6 +137,37 @@ const RoomDetailPage = () => {
       stomp.disconnect();
     };
   }, [roomId, room == null, user, handleMemberChange, handleReceiveChatMessage]);
+
+  if (!roomId) {
+    return null;
+  }
+
+  const leaveRoom = async () => {
+    try {
+      await roomApi.leaveRoom(roomId);
+      navigate('/');
+    } catch (error) {
+      console.error('Failed to leave room:', error);
+    }
+  };
+
+  const sendChatMessage = () => {
+    if (chatInput.trim() === '') {
+      return;
+    }
+
+    stomp.publish(`/app/rooms/${roomId}/chat`, {
+      message: chatInput
+    });
+
+    setChatInput('');
+  };
+
+  const chatInputKeyDown: KeyboardEventHandler = (e) => {
+    if (e.key === 'Enter') {
+      sendChatMessage();
+    }
+  };
 
   const startGame = () => {
     if (!room) {

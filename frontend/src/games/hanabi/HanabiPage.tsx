@@ -1,6 +1,6 @@
 import { RefObject, useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from "@/useAuth.tsx";
-import { useStomp } from "@/useStomp.tsx";
+import { Stomp } from "@/useStomp.tsx";
 import { ChatMessage } from "@/types.ts";
 import {
   BonusEffect,
@@ -79,14 +79,14 @@ const compareDiscards = (a: HanabiCardDto, b: HanabiCardDto) =>
 
 const HanabiPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
   roomId: string,
-  stomp: useStomp,
+  stomp: Stomp,
   chatMessages: ChatMessage[],
   onGameEnd: () => void,
 }) => {
   const { user } = useAuth();
-  if (user === null) {
-    return null;
-  }
+  // Every hook below has to run unconditionally, so the null check cannot happen here. The hooks
+  // read this instead of `user`, and rendering bails out once they have all been called.
+  const userId = user?.id ?? null;
 
   const [dto, setDto] = useState<HanabiDto | null>(null);
   const [hintTargetId, setHintTargetId] = useState<number | null>(null);
@@ -94,40 +94,52 @@ const HanabiPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
   // Only consulted by the narrow floating layout; the wide sidebar is always shown.
   const [chatOpen, setChatOpen] = useState(false);
 
+  // Kept in a ref so the subscription below never has to resubscribe to pick up a newer closure.
+  // Assigned in an effect rather than during render, which is not safe to do to a ref.
   const handleMessageRef = useRef<(message: HanabiMessage) => void>(() => {});
-  handleMessageRef.current = (message: HanabiMessage) => {
-    if (message.type === HanabiMessageType.STATE || message.type === HanabiMessageType.END) {
-      // Full-state snapshots (initial load, game start, game end) replace local state outright.
-      setDto(message.data as HanabiDto);
-    } else {
-      // Per-action deltas are folded onto the last known state.
-      setDto(prev => (prev === null ? prev : applyDelta(prev, message)));
-    }
-  };
+  useEffect(() => {
+    handleMessageRef.current = (message: HanabiMessage) => {
+      if (message.type === HanabiMessageType.STATE || message.type === HanabiMessageType.END) {
+        // Full-state snapshots (initial load, game start, game end) replace local state outright.
+        setDto(message.data as HanabiDto);
+      } else {
+        // Per-action deltas are folded onto the last known state.
+        setDto(prev => (prev === null ? prev : applyDelta(prev, message)));
+      }
+    };
+  });
 
   useEffect(() => {
+    if (userId === null) {
+      return;
+    }
+
     const callback = (message: HanabiMessage) => handleMessageRef.current(message);
-    const destination = `/user/${user.id}/queue/game/hanabi`;
+    const destination = `/user/${userId}/queue/game/hanabi`;
     stomp.subscribe(destination, callback);
     stomp.publish(`/app/rooms/${roomId}/game/hanabi/get`, {});
     return () => stomp.unsubscribe(destination, callback);
-  }, [roomId, user.id]);
+  }, [roomId, userId, stomp]);
 
   const giveHint = useCallback((targetId: number, clueType: ClueType, color: HanabiColor | null, value: number | null) => {
     stomp.publish(`/app/rooms/${roomId}/game/hanabi/hint`, { targetId, clueType, color, value });
-  }, [roomId]);
+  }, [roomId, stomp]);
 
   const playCard = useCallback((index: number) => {
     stomp.publish(`/app/rooms/${roomId}/game/hanabi/play`, { index });
-  }, [roomId]);
+  }, [roomId, stomp]);
 
   const discardCard = useCallback((index: number) => {
     stomp.publish(`/app/rooms/${roomId}/game/hanabi/discard`, { index });
-  }, [roomId]);
+  }, [roomId, stomp]);
 
   const resolveBonus = useCallback((payload: object) => {
     stomp.publish(`/app/rooms/${roomId}/game/hanabi/resolve-bonus`, payload);
-  }, [roomId]);
+  }, [roomId, stomp]);
+
+  if (user === null) {
+    return null;
+  }
 
   const sendChatMessage = () => {
     if (chatInput.trim() === '') {

@@ -47,13 +47,10 @@ export default defineConfig([
         { varsIgnorePattern: '^[A-Z_]', argsIgnorePattern: '^_' },
       ],
 
-      // TODO: restore these to 'error' once the existing violations are fixed. Bringing .ts/.tsx
-      // under ESLint surfaced 41 pre-existing ones, from two causes: early returns placed above
-      // hooks in the page components, and `useStomp` being a class that calls hooks. Both need a
-      // refactor rather than a lint fix, so they are warnings for now to keep `npm run lint`
-      // usable as a signal for everything else.
-      'react-hooks/rules-of-hooks': 'warn',
-      'react-hooks/refs': 'warn',
+      // TODO: restore these to 'error' once the existing violations are fixed. What remains is a
+      // mount fetch, two setState calls that react to a prop or validate the URL, one
+      // `window.location` redirect, and `useAuth.tsx` exporting both a provider and a hook. Each
+      // needs a judgement call about restructuring rather than a mechanical fix.
       'react-hooks/set-state-in-effect': 'warn',
       'react-hooks/immutability': 'warn',
       'react-refresh/only-export-components': 'warn',

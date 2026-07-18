@@ -20,105 +20,117 @@ interface PublicationEntry {
   message: unknown;
 }
 
-export class useStomp {
-  private subscriptions = useRef<SubscriptionEntry[]>([]);
+export interface Stomp {
+  connect: (issueToken: () => Promise<string>) => void;
+  disconnect: () => void;
+  subscribe: (destination: string, callback: MessageCallback) => void;
+  unsubscribe: (destination: string, callback: MessageCallback) => void;
+  publish: (destination: string, message: unknown) => void;
+}
 
-  private reservedPublications = useRef<PublicationEntry[]>([]);
+export const useStomp = (): Stomp => {
+  const subscriptions = useRef<SubscriptionEntry[]>([]);
 
-  private issueToken = useRef<(() => Promise<string>) | null>(null);
+  const reservedPublications = useRef<PublicationEntry[]>([]);
 
-  private client = useMemo(() => new Client({
-    brokerURL: `${window.location.origin.replace('http', 'ws')}/api/ws`,
-    reconnectDelay: 1000,
-    reconnectTimeMode: ReconnectionTimeMode.EXPONENTIAL,
-    maxReconnectDelay: 60000,
-    heartbeatIncoming: 10000,
-    heartbeatOutgoing: 10000,
-    onStompError: (frame) => {
-      console.error('Broker reported error: ' + frame.headers['message']);
-    },
-  }), []);
+  const issueToken = useRef<(() => Promise<string>) | null>(null);
 
-  constructor() {
-    this.client.beforeConnect = async () => {
-      if (!this.issueToken.current) {
+  const client = useMemo(() => {
+    const client = new Client({
+      brokerURL: `${window.location.origin.replace('http', 'ws')}/api/ws`,
+      reconnectDelay: 1000,
+      reconnectTimeMode: ReconnectionTimeMode.EXPONENTIAL,
+      maxReconnectDelay: 60000,
+      heartbeatIncoming: 10000,
+      heartbeatOutgoing: 10000,
+      onStompError: (frame) => {
+        console.error('Broker reported error: ' + frame.headers['message']);
+      },
+    });
+
+    client.beforeConnect = async () => {
+      if (!issueToken.current) {
         return;
       }
       try {
-        this.client.connectHeaders.Authorization = `Bearer ${await this.issueToken.current()}`;
+        client.connectHeaders.Authorization = `Bearer ${await issueToken.current()}`;
       } catch (e) {
-        delete this.client.connectHeaders.Authorization;
+        delete client.connectHeaders.Authorization;
         console.error('Failed to issue a web socket token: ', e);
       }
     };
 
-    this.client.onConnect = (_) => {
-      this.subscriptions.current.forEach(entry => {
-        entry.stompSubscription = this.client.subscribe(
+    client.onConnect = () => {
+      subscriptions.current.forEach(entry => {
+        entry.stompSubscription = client.subscribe(
           entry.destination,
           (message) => {
             entry.callback(JSON.parse(message.body))
           }
         );
       });
-      while (this.reservedPublications.current.length > 0) {
-        const entry = this.reservedPublications.current[0];
-        this.client.publish({
+      while (reservedPublications.current.length > 0) {
+        const entry = reservedPublications.current[0];
+        client.publish({
           destination: entry.destination,
           body: JSON.stringify(entry.message)
         });
-        this.reservedPublications.current.shift();
+        reservedPublications.current.shift();
       }
-    }
-  }
-
-  connect(issueToken: () => Promise<string>) {
-    this.issueToken.current = issueToken;
-    if (!this.client.active) {
-      this.client.activate();
-    }
-  }
-
-  disconnect() {
-    this.client.deactivate().then();
-  };
-
-  subscribe(destination: string, callback: MessageCallback) {
-    const entry = {
-      destination,
-      callback,
-      stompSubscription: !this.client.active ?
-        null :
-        this.client.subscribe(
-          destination,
-          (message) => {
-            callback(JSON.parse(message.body))
-          }
-        )
     };
-    this.subscriptions.current.push(entry);
-  };
 
-  unsubscribe(destination: string, callback: MessageCallback) {
-    const index = this.subscriptions.current.findIndex(
-      entry => entry.destination === destination && entry.callback === callback
-    );
+    return client;
+  }, []);
 
-    if (index !== -1) {
-      const entry = this.subscriptions.current[index];
-      entry.stompSubscription?.unsubscribe();
-      this.subscriptions.current.splice(index, 1);
-    }
-  };
+  return useMemo(() => ({
+    connect: (newIssueToken: () => Promise<string>) => {
+      issueToken.current = newIssueToken;
+      if (!client.active) {
+        client.activate();
+      }
+    },
 
-  publish(destination: string, message: unknown) {
-    if (this.client.active) {
-      this.client.publish({
-        destination: destination,
-        body: JSON.stringify(message)
-      });
-    } else {
-      this.reservedPublications.current.push({ destination, message });
-    }
-  };
-}
+    disconnect: () => {
+      client.deactivate().then();
+    },
+
+    subscribe: (destination: string, callback: MessageCallback) => {
+      const entry = {
+        destination,
+        callback,
+        stompSubscription: !client.active ?
+          null :
+          client.subscribe(
+            destination,
+            (message) => {
+              callback(JSON.parse(message.body))
+            }
+          )
+      };
+      subscriptions.current.push(entry);
+    },
+
+    unsubscribe: (destination: string, callback: MessageCallback) => {
+      const index = subscriptions.current.findIndex(
+        entry => entry.destination === destination && entry.callback === callback
+      );
+
+      if (index !== -1) {
+        const entry = subscriptions.current[index];
+        entry.stompSubscription?.unsubscribe();
+        subscriptions.current.splice(index, 1);
+      }
+    },
+
+    publish: (destination: string, message: unknown) => {
+      if (client.active) {
+        client.publish({
+          destination: destination,
+          body: JSON.stringify(message)
+        });
+      } else {
+        reservedPublications.current.push({ destination, message });
+      }
+    },
+  }), [client]);
+};

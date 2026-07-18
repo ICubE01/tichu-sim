@@ -32,10 +32,11 @@ const SocialCallbackPage = ({ provider }: Props) => {
   const providerDisplayName = provider.charAt(0) + provider.slice(1).toLowerCase();
 
   const initState = searchParams.get('state');
-  const isConnectRef = useRef(
-    initState !== null && sessionStorage.getItem(OAUTH_INTENT_PREFIX + initState) === 'connect'
+  // Captured once on mount: the intent is removed from sessionStorage while the callback runs, so
+  // a later read would come back false.
+  const [isConnect] = useState(
+    () => initState !== null && sessionStorage.getItem(OAUTH_INTENT_PREFIX + initState) === 'connect'
   );
-  const isConnect = isConnectRef.current;
 
   useEffect(() => {
     const code = searchParams.get('code');
