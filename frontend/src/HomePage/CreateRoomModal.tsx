@@ -105,7 +105,7 @@ const CreateRoomModal = ({ isOpen, onClose, onCreate }: CreateRoomModalProps) =>
             onChange={(e) => setGameName(e.target.value as GameName)}
           >
             <option value={GameName.TICHU}>티츄 (Tichu)</option>
-            {/* 향후 다른 게임 추가 가능 */}
+            <option value={GameName.HANABI}>하나비 (Hanabi) [Beta]</option>
           </select>
         </div>
 

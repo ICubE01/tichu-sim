@@ -5,12 +5,22 @@ import { useAuth } from '@/useAuth.tsx';
 import { useAxios } from "@/useAxios.tsx";
 import { useRoom } from "@/useRoom.tsx";
 import { useStomp } from "@/useStomp.tsx"
-import { GameRule } from "@/games/types.ts";
+import { GameMessage, GameName, GameRule } from "@/games/types.ts";
 import TichuPage from "@/games/tichu/TichuPage.tsx";
 import { Team } from "@/games/tichu/domain/Team.ts";
 import { TichuRule, TichuWinningScore } from "@/games/tichu/domain/TichuRule.ts";
-import { TichuMessage, TichuMessageType } from "@/games/tichu/dtos/TichuMessage.ts";
+import HanabiPage from "@/games/hanabi/HanabiPage.tsx";
+import { HanabiRule, RainbowMode } from "@/games/hanabi/domain/HanabiRule.ts";
 import styles from './RoomDetailPage.module.css';
+
+const gameSlugOf = (gameName: GameName) => {
+  switch (gameName) {
+    case GameName.TICHU:
+      return 'tichu';
+    case GameName.HANABI:
+      return 'hanabi';
+  }
+};
 
 const RoomDetailPage = () => {
   const { roomId } = useParams();
@@ -105,28 +115,33 @@ const RoomDetailPage = () => {
   };
 
   useEffect(() => {
-    if (!user || !room) return;
+    if (!user || !room) {
+      return;
+    }
 
-    const handleTichuMessage = (message: TichuMessage) => {
-      if (message.type === TichuMessageType.START) {
+    const gameSlug = gameSlugOf(room.gameName);
+
+    const handleGameMessage = (message: GameMessage) => {
+      if (message.type === 'START') {
         setRoom(prev => ({
           ...prev!,
           hasGameStarted: true,
         }));
-      } else if (message.type === TichuMessageType.SET_RULE) {
+      } else if (message.type === 'SET_RULE') {
         setRoom(prev => ({
           ...prev!,
-          gameRule: message.data as TichuRule
+          gameRule: message.data as GameRule,
         }));
       }
     };
+
     const handleError = (error: Error) => {
       alert(`Error: ${error.message || 'Unknown error'}`);
     };
 
     stomp.subscribe(`/topic/rooms/${roomId}/members`, handleMemberChange);
     stomp.subscribe(`/topic/rooms/${roomId}/chat`, handleReceiveChatMessage);
-    stomp.subscribe(`/user/${user.id}/queue/game/tichu`, handleTichuMessage);
+    stomp.subscribe(`/user/${user.id}/queue/game/${gameSlug}`, handleGameMessage);
     stomp.subscribe(`/user/${user.id}/queue/errors`, handleError);
 
     api.get<JwtResponse>('/auth/issue/web-socket-token')
@@ -136,14 +151,17 @@ const RoomDetailPage = () => {
     return () => {
       stomp.unsubscribe(`/topic/rooms/${roomId}/members`, handleMemberChange);
       stomp.unsubscribe(`/topic/rooms/${roomId}/chat`, handleReceiveChatMessage);
-      stomp.unsubscribe(`/user/${user.id}/queue/game/tichu`, handleTichuMessage);
+      stomp.unsubscribe(`/user/${user.id}/queue/game/${gameSlug}`, handleGameMessage);
       stomp.unsubscribe(`/user/${user.id}/queue/errors`, handleError);
       stomp.disconnect();
     };
   }, [roomId, room == null, user, handleMemberChange, handleReceiveChatMessage]);
 
   const startGame = () => {
-    stomp.publish(`/app/rooms/${roomId}/game/tichu/start`, {});
+    if (!room) {
+      return;
+    }
+    stomp.publish(`/app/rooms/${roomId}/game/${gameSlugOf(room.gameName)}/start`, {});
   }
 
   const toggleReady = () => {
@@ -152,7 +170,10 @@ const RoomDetailPage = () => {
   };
 
   const setRule = (newRule: GameRule) => {
-    stomp.publish(`/app/rooms/${roomId}/game/tichu/set-rule`, newRule);
+    if (!room) {
+      return;
+    }
+    stomp.publish(`/app/rooms/${roomId}/game/${gameSlugOf(room.gameName)}/set-rule`, newRule);
   };
 
   const changeWinningScore = (score: TichuWinningScore) => {
@@ -174,22 +195,28 @@ const RoomDetailPage = () => {
     setRule(newRule);
   };
 
+  const changeHanabiRule = (patch: Partial<HanabiRule>) => {
+    setRule({ ...(room!.gameRule as HanabiRule), ...patch });
+  };
+
   if (loading || room === null) {
     return <div style={{ padding: '20px' }}>Loading...</div>;
   }
 
   if (room.hasGameStarted) {
-    return <TichuPage
-      roomId={room.id}
-      stomp={stomp}
-      chatMessages={chatMessages}
-      onGameEnd={() => {
-        setRoom(prev => ({
-          ...prev!,
-          hasGameStarted: false,
-        }))
-      }}
-    />
+    const onGameEnd = () => {
+      setRoom(prev => ({
+        ...prev!,
+        hasGameStarted: false,
+      }));
+    };
+
+    switch (room.gameName) {
+      case GameName.TICHU:
+        return <TichuPage roomId={room.id} stomp={stomp} chatMessages={chatMessages} onGameEnd={onGameEnd} />;
+      case GameName.HANABI:
+        return <HanabiPage roomId={room.id} stomp={stomp} chatMessages={chatMessages} onGameEnd={onGameEnd} />;
+    }
   }
 
   const currentMember = room.members.find(m => m.id === user?.id);
@@ -214,6 +241,9 @@ const RoomDetailPage = () => {
     }
   }
 
+  const isHanabi = room.gameName === GameName.HANABI;
+  const hanabiRule = room.gameRule as HanabiRule;
+
   return (
     <div className={`${styles.roomDetailContainer} content`}>
       <div className={styles.roomDetailHeader}>
@@ -230,7 +260,7 @@ const RoomDetailPage = () => {
       <div className={styles.roomContent}>
         <div className={styles.roomInfoSection}>
           <div className={styles.infoCard}>
-            <h3>참가자 ({room.members?.length || 0} / 4)</h3>
+            <h3>참가자 ({room.members?.length || 0} / {room.gameRule.maxPlayers})</h3>
             <ul className={styles.memberList}>
               {room.members?.map((member) => (
                 <li key={member.id} className={styles.memberItem}>
@@ -244,46 +274,92 @@ const RoomDetailPage = () => {
 
           <div className={styles.infoCard}>
             <h3>게임 설정</h3>
-            <div className={styles.ruleBox}>
-              <div className={styles.ruleItem}>
-                <span>승리 점수</span>
-                <div className={styles.ruleButtonGroup}>
-                  {[TichuWinningScore.ZERO, TichuWinningScore.TWO_HUNDRED, TichuWinningScore.FIVE_HUNDRED, TichuWinningScore.ONE_THOUSAND].map((score) => (
-                    <button
-                      key={score}
-                      className={`${styles.ruleButton} ${!isHost ? styles.ruleButtonReadonly : ''} ${(room.gameRule as TichuRule).winningScore === score ? styles.active : ''}`}
-                      onClick={() => changeWinningScore(score)}
+            {isHanabi ? (
+              <div className={styles.ruleBox}>
+                <div className={styles.ruleItem}>
+                  <span>무지개 색 (Colour Avalanche)</span>
+                  <input
+                    type="checkbox"
+                    disabled={!isHost}
+                    checked={hanabiRule.isRainbowEnabled}
+                    onChange={(e) => changeHanabiRule({ isRainbowEnabled: e.target.checked })}
+                  />
+                </div>
+                {hanabiRule.isRainbowEnabled && (
+                  <div className={styles.ruleItem}>
+                    <span>무지개 모드</span>
+                    <select
+                      disabled={!isHost}
+                      value={hanabiRule.rainbowMode}
+                      onChange={(e) => changeHanabiRule({ rainbowMode: e.target.value as RainbowMode })}
                     >
-                      {formatWinningScore(score) || score}
-                    </button>
-                  ))}
+                      <option value={RainbowMode.WILDCARD}>와일드카드 (모든 색 힌트, 공식)</option>
+                      <option value={RainbowMode.SIXTH_LONG}>여섯 번째 색 (10장)</option>
+                      <option value={RainbowMode.SIXTH_SHORT}>여섯 번째 색 (5장, 어려움)</option>
+                    </select>
+                  </div>
+                )}
+                <div className={styles.ruleItem}>
+                  <span>흑색 화약 (Black Gunpowder)</span>
+                  <input
+                    type="checkbox"
+                    disabled={!isHost}
+                    checked={hanabiRule.isBlackEnabled}
+                    onChange={(e) => changeHanabiRule({ isBlackEnabled: e.target.checked })}
+                  />
+                </div>
+                <div className={styles.ruleItem}>
+                  <span>화려한 불꽃놀이 (Flamboyant Fireworks)</span>
+                  <input
+                    type="checkbox"
+                    disabled={!isHost}
+                    checked={hanabiRule.isBonusEnabled}
+                    onChange={(e) => changeHanabiRule({ isBonusEnabled: e.target.checked })}
+                  />
                 </div>
               </div>
-              <div className={styles.ruleItem}>
-                <span>팀 선택</span>
-                <div className={styles.ruleItemBox}>
-                  {room.members.map((member) => {
-                    const assignedTeam = (room.gameRule as TichuRule).teamAssignment[member.id] ?? Team.NONE;
-                    return (
-                      <div key={`team-assignment-${member.id}`} className={styles.ruleItem}>
-                        <span>{member.name}</span>
-                        <div className={styles.ruleButtonGroup}>
-                          {[Team.RED, Team.NONE, Team.BLUE].map((team) => (
-                            <button
-                              key={`team-assignment-${member.id}-${team.toLowerCase()}`}
-                              className={`${styles.ruleButton} ${!isHost ? styles.ruleButtonReadonly : ''} ${team === Team.NONE ? '' : team === Team.RED ? styles.teamRed : styles.teamBlue} ${assignedTeam === team ? styles.active : ''}`}
-                              onClick={() => changeTeam(member, team)}
-                            >
-                              {team === 'NONE' ? '자동' : team}
-                            </button>
-                          ))}
+            ) : (
+              <div className={styles.ruleBox}>
+                <div className={styles.ruleItem}>
+                  <span>승리 점수</span>
+                  <div className={styles.ruleButtonGroup}>
+                    {[TichuWinningScore.ZERO, TichuWinningScore.TWO_HUNDRED, TichuWinningScore.FIVE_HUNDRED, TichuWinningScore.ONE_THOUSAND].map((score) => (
+                      <button
+                        key={score}
+                        className={`${styles.ruleButton} ${!isHost ? styles.ruleButtonReadonly : ''} ${(room.gameRule as TichuRule).winningScore === score ? styles.active : ''}`}
+                        onClick={() => changeWinningScore(score)}
+                      >
+                        {formatWinningScore(score) || score}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className={styles.ruleItem}>
+                  <span>팀 선택</span>
+                  <div className={styles.ruleItemBox}>
+                    {room.members.map((member) => {
+                      const assignedTeam = (room.gameRule as TichuRule).teamAssignment[member.id] ?? Team.NONE;
+                      return (
+                        <div key={`team-assignment-${member.id}`} className={styles.ruleItem}>
+                          <span>{member.name}</span>
+                          <div className={styles.ruleButtonGroup}>
+                            {[Team.RED, Team.NONE, Team.BLUE].map((team) => (
+                              <button
+                                key={`team-assignment-${member.id}-${team.toLowerCase()}`}
+                                className={`${styles.ruleButton} ${!isHost ? styles.ruleButtonReadonly : ''} ${team === Team.NONE ? '' : team === Team.RED ? styles.teamRed : styles.teamBlue} ${assignedTeam === team ? styles.active : ''}`}
+                                onClick={() => changeTeam(member, team)}
+                              >
+                                {team === 'NONE' ? '자동' : team}
+                              </button>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
 
