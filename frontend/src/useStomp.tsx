@@ -26,7 +26,6 @@ export class useStomp {
     maxReconnectDelay: 60000,
     heartbeatIncoming: 10000,
     heartbeatOutgoing: 10000,
-    debug: (str) => console.debug(str),
     onStompError: (frame) => {
       console.error('Broker reported error: ' + frame.headers['message']);
     },
