@@ -1,4 +1,4 @@
-import { Client, StompSubscription } from "@stomp/stompjs";
+import { Client, ReconnectionTimeMode, StompSubscription } from "@stomp/stompjs";
 import { useMemo, useRef } from "react";
 
 interface SubscriptionEntry {
@@ -17,18 +17,33 @@ export class useStomp {
 
   private reservedPublications = useRef<PublicationEntry[]>([]);
 
+  private issueToken = useRef<(() => Promise<string>) | null>(null);
+
   private client = useMemo(() => new Client({
     brokerURL: `${window.location.origin.replace('http', 'ws')}/api/ws`,
     reconnectDelay: 1000,
-    heartbeatIncoming: 0,
-    heartbeatOutgoing: 0,
-    debug: (str) => console.debug(str),
+    reconnectTimeMode: ReconnectionTimeMode.EXPONENTIAL,
+    maxReconnectDelay: 60000,
+    heartbeatIncoming: 10000,
+    heartbeatOutgoing: 10000,
     onStompError: (frame) => {
       console.error('Broker reported error: ' + frame.headers['message']);
     },
   }), []);
 
   constructor() {
+    this.client.beforeConnect = async () => {
+      if (!this.issueToken.current) {
+        return;
+      }
+      try {
+        this.client.connectHeaders.Authorization = `Bearer ${await this.issueToken.current()}`;
+      } catch (e) {
+        delete this.client.connectHeaders.Authorization;
+        console.error('Failed to issue a web socket token: ', e);
+      }
+    };
+
     this.client.onConnect = (_) => {
       this.subscriptions.current.forEach(entry => {
         entry.stompSubscription = this.client.subscribe(
@@ -49,8 +64,8 @@ export class useStomp {
     }
   }
 
-  connect(token: string) {
-    this.client.connectHeaders.Authorization = `Bearer ${token}`;
+  connect(issueToken: () => Promise<string>) {
+    this.issueToken.current = issueToken;
     if (!this.client.active) {
       this.client.activate();
     }
