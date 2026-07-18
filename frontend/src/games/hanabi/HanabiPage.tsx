@@ -81,7 +81,7 @@ const HanabiPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
   roomId: string,
   stomp: useStomp,
   chatMessages: ChatMessage[],
-  onGameEnd: Function,
+  onGameEnd: () => void,
 }) => {
   const { user } = useAuth();
   if (user === null) {

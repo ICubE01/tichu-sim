@@ -1,9 +1,17 @@
 import { Client, ReconnectionTimeMode, StompSubscription } from "@stomp/stompjs";
 import { useMemo, useRef } from "react";
 
+/**
+ * A subscriber for a parsed message body. This layer cannot know the payload shape, so callers
+ * declare the type they expect; `any` keeps that assignment bivariant, where `unknown` would
+ * reject every typed handler under `strictFunctionTypes`.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type MessageCallback = (message: any) => void;
+
 interface SubscriptionEntry {
   destination: string;
-  callback: Function;
+  callback: MessageCallback;
   stompSubscription: StompSubscription | null;
 }
 
@@ -75,7 +83,7 @@ export class useStomp {
     this.client.deactivate().then();
   };
 
-  subscribe(destination: string, callback: Function) {
+  subscribe(destination: string, callback: MessageCallback) {
     const entry = {
       destination,
       callback,
@@ -91,7 +99,7 @@ export class useStomp {
     this.subscriptions.current.push(entry);
   };
 
-  unsubscribe(destination: string, callback: Function) {
+  unsubscribe(destination: string, callback: MessageCallback) {
     const index = this.subscriptions.current.findIndex(
       entry => entry.destination === destination && entry.callback === callback
     );
