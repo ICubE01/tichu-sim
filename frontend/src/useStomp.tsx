@@ -22,8 +22,8 @@ export class useStomp {
   private client = useMemo(() => new Client({
     brokerURL: `${window.location.origin.replace('http', 'ws')}/api/ws`,
     reconnectDelay: 1000,
-    heartbeatIncoming: 0,
-    heartbeatOutgoing: 0,
+    heartbeatIncoming: 10000,
+    heartbeatOutgoing: 10000,
     debug: (str) => console.debug(str),
     onStompError: (frame) => {
       console.error('Broker reported error: ' + frame.headers['message']);

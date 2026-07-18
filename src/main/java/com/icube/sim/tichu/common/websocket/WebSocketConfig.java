@@ -4,10 +4,14 @@ import com.icube.sim.tichu.auth.jwt.JwtAuthenticationInterceptor;
 import com.icube.sim.tichu.rooms.RoomInboundChannelInterceptor;
 import com.icube.sim.tichu.rooms.RoomOutboundChannelInterceptor;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
@@ -18,9 +22,16 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Value("${spring.cors.allowed-origin}")
     private String corsAllowedOrigin;
+    private TaskScheduler messageBrokerTaskScheduler;
     private final JwtAuthenticationInterceptor jwtAuthenticationInterceptor;
     private final RoomInboundChannelInterceptor roomInboundChannelInterceptor;
     private final RoomOutboundChannelInterceptor roomOutboundChannelInterceptor;
+
+    @Autowired
+    public void setMessageBrokerTaskScheduler(
+            @Lazy @Qualifier("messageBrokerTaskScheduler") TaskScheduler taskScheduler) {
+        this.messageBrokerTaskScheduler = taskScheduler;
+    }
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
@@ -30,7 +41,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-        registry.enableSimpleBroker("/topic", "/user");
+        registry.enableSimpleBroker("/topic", "/user")
+                .setTaskScheduler(messageBrokerTaskScheduler)
+                .setHeartbeatValue(new long[]{10000, 10000});
         registry.setApplicationDestinationPrefixes("/app");
         registry.setUserDestinationPrefix("/user");
     }
