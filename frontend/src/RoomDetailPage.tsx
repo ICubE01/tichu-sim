@@ -144,9 +144,10 @@ const RoomDetailPage = () => {
     stomp.subscribe(`/user/${user.id}/queue/game/${gameSlug}`, handleGameMessage);
     stomp.subscribe(`/user/${user.id}/queue/errors`, handleError);
 
-    api.get<JwtResponse>('/auth/issue/web-socket-token')
-      .then(response => response.data.token)
-      .then(token => stomp.connect(token));
+    stomp.connect(() =>
+      api.get<JwtResponse>('/auth/issue/web-socket-token')
+        .then(response => response.data.token)
+    );
 
     return () => {
       stomp.unsubscribe(`/topic/rooms/${roomId}/members`, handleMemberChange);

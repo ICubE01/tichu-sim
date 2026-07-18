@@ -17,6 +17,8 @@ export class useStomp {
 
   private reservedPublications = useRef<PublicationEntry[]>([]);
 
+  private issueToken = useRef<(() => Promise<string>) | null>(null);
+
   private client = useMemo(() => new Client({
     brokerURL: `${window.location.origin.replace('http', 'ws')}/api/ws`,
     reconnectDelay: 1000,
@@ -29,6 +31,17 @@ export class useStomp {
   }), []);
 
   constructor() {
+    this.client.beforeConnect = async () => {
+      if (!this.issueToken.current) {
+        return;
+      }
+      try {
+        this.client.connectHeaders.Authorization = `Bearer ${await this.issueToken.current()}`;
+      } catch (e) {
+        console.error('Failed to issue a web socket token: ', e);
+      }
+    };
+
     this.client.onConnect = (_) => {
       this.subscriptions.current.forEach(entry => {
         entry.stompSubscription = this.client.subscribe(
@@ -49,8 +62,8 @@ export class useStomp {
     }
   }
 
-  connect(token: string) {
-    this.client.connectHeaders.Authorization = `Bearer ${token}`;
+  connect(issueToken: () => Promise<string>) {
+    this.issueToken.current = issueToken;
     if (!this.client.active) {
       this.client.activate();
     }
