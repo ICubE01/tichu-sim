@@ -6,4 +6,5 @@ export interface GameRule {
 
 export enum GameName {
   TICHU = 'TICHU',
+  HANABI = 'HANABI',
 }
