@@ -450,7 +450,7 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
     stomp.subscribe(destination, processTichuMessage);
     stomp.publish(`/app/rooms/${roomId}/game/tichu/get`, {});
     return () => stomp.unsubscribe(destination, processTichuMessage);
-  }, [roomId, handleTichuMessage, userId, processQueue]);
+  }, [roomId, userId, stomp, handleTichuMessage, processQueue]);
 
   if (user === null) {
     return null;

@@ -109,23 +109,23 @@ const HanabiPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
     stomp.subscribe(destination, callback);
     stomp.publish(`/app/rooms/${roomId}/game/hanabi/get`, {});
     return () => stomp.unsubscribe(destination, callback);
-  }, [roomId, userId]);
+  }, [roomId, userId, stomp]);
 
   const giveHint = useCallback((targetId: number, clueType: ClueType, color: HanabiColor | null, value: number | null) => {
     stomp.publish(`/app/rooms/${roomId}/game/hanabi/hint`, { targetId, clueType, color, value });
-  }, [roomId]);
+  }, [roomId, stomp]);
 
   const playCard = useCallback((index: number) => {
     stomp.publish(`/app/rooms/${roomId}/game/hanabi/play`, { index });
-  }, [roomId]);
+  }, [roomId, stomp]);
 
   const discardCard = useCallback((index: number) => {
     stomp.publish(`/app/rooms/${roomId}/game/hanabi/discard`, { index });
-  }, [roomId]);
+  }, [roomId, stomp]);
 
   const resolveBonus = useCallback((payload: object) => {
     stomp.publish(`/app/rooms/${roomId}/game/hanabi/resolve-bonus`, payload);
-  }, [roomId]);
+  }, [roomId, stomp]);
 
   const sendChatMessage = () => {
     if (chatInput.trim() === '') {

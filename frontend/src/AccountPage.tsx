@@ -49,7 +49,7 @@ const AccountPage = () => {
     (async () => {
       await fetchAccountData();
     })();
-  }, []);
+  }, [fetchAccountData]);
 
   const handleEditName = () => {
     setNameInput(user?.name ?? '');

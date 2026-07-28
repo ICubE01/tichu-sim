@@ -33,7 +33,7 @@ const ChangePasswordPage = () => {
         navigate('/account', { replace: true });
       }
     })();
-  }, []);
+  }, [api, navigate, user]);
 
   const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();

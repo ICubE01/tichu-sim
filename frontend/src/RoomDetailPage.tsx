@@ -84,7 +84,7 @@ const RoomDetailPage = () => {
     };
 
     init().then();
-  }, [roomId]);
+  }, [roomId, navigate, roomApi]);
 
   const handleMemberChange = useCallback((memberMessage: MemberMessage) => {
     setRoom((prevRoom) => {
@@ -118,7 +118,7 @@ const RoomDetailPage = () => {
   };
 
   useEffect(() => {
-    if (!roomId || !user || !room) {
+    if (!roomId || !user || !room?.gameName) {
       return;
     }
 
@@ -159,7 +159,7 @@ const RoomDetailPage = () => {
       stomp.unsubscribe(`/user/${user.id}/queue/errors`, handleError);
       stomp.disconnect();
     };
-  }, [roomId, room == null, user, handleMemberChange, handleReceiveChatMessage]);
+  }, [roomId, room?.gameName, user, api, stomp, handleMemberChange, handleReceiveChatMessage]);
 
   if (!roomId) {
     navigate('/');

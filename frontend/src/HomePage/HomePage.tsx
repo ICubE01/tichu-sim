@@ -62,7 +62,7 @@ const HomePage = () => {
     checkMyRoom().then();
     fetchRooms().then();
     setLoading(false);
-  }, []);
+  }, [checkMyRoom, fetchRooms]);
 
   const formatGameName = (gameName: GameName) => {
     switch (gameName) {

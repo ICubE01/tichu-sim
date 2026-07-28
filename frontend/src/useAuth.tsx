@@ -103,7 +103,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // Refresh tokens when a window is refreshed
   useEffect(() => {
     refresh().then();
-  }, []);
+  }, [refresh]);
 
   return (
     <AuthContext.Provider value={{ ready, accessToken, user, impersonating, login, logout, refresh, reloadUser, impersonateBot }}>

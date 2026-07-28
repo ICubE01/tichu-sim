@@ -27,7 +27,7 @@ const InitNamePage = () => {
     if (!keyExists) {
       navigate('/', { replace: true });
     }
-  }, []);
+  }, [navigate]);
 
   if (!user || allowed !== true) {
     return null;

@@ -109,7 +109,7 @@ const SocialCallbackPage = ({ provider }: Props) => {
         setErrorMessage('서버와 통신 중 오류가 발생했습니다.');
       }
     })();
-  }, []);
+  }, [isConnect, login, navigate, providerDisplayName, providerLower, refresh, searchParams]);
 
   return (
     <div className={styles.container}>

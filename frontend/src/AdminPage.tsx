@@ -51,7 +51,7 @@ const AdminPage = () => {
 
   useEffect(() => {
     fetchBots().then();
-  }, []);
+  }, [fetchBots]);
 
   return (
     <div className="content">
