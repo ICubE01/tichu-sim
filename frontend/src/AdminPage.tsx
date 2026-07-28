@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState, SubmitEvent } from 'react';
 import { useAxios } from '@/useAxios.tsx';
 import { useAuth } from '@/useAuth.tsx';
 import { JwtResponse } from '@/types.ts';
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 
 interface BotDto {
   id: number;

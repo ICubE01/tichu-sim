@@ -1,5 +1,5 @@
 import { SubmitEvent, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import styles from './SignupPage.module.css';
 
 const SignupPage = () => {

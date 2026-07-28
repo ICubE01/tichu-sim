@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useMatch } from 'react-router-dom';
+import { Link, useMatch } from 'react-router';
 import { useAuth } from '@/useAuth.tsx';
 import styles from './NavBar.module.css';
 

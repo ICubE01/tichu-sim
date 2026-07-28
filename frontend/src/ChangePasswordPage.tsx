@@ -1,5 +1,5 @@
 import { useState, useEffect, SubmitEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { useAuth } from '@/useAuth.tsx';
 import { useAxios } from '@/useAxios.tsx';
 import { AccountDto } from '@/types.ts';
