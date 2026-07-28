@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { RoomOpaqueDto } from "@/types.ts";
 import { CreateRoomRequest, useRoom } from "@/useRoom.tsx";
@@ -13,7 +13,7 @@ const HomePage = () => {
   const [loading, setLoading] = useState(false);
   const [isCreateRoomModalOpen, setIsCreateModalOpen] = useState(false);
 
-  const checkMyRoom = async () => {
+  const checkMyRoom = useCallback(async () => {
     try {
       const myRoom = await roomApi.fetchMyRoom();
       if (myRoom !== null) {
@@ -22,16 +22,16 @@ const HomePage = () => {
     } catch (error) {
       console.error('Failed to fetch my room:', error);
     }
-  };
+  }, [roomApi, navigate]);
 
-  const fetchRooms = async () => {
+  const fetchRooms = useCallback(async () => {
     try {
       setRooms(await roomApi.fetchRooms());
     } catch (error) {
       console.error('Failed to fetch rooms:', error);
       alert('Failed to get rooms data. Please try again.')
     }
-  }
+  }, [roomApi]);
 
   const createRoom = async (createRoomRequest: CreateRoomRequest) => {
     try {
