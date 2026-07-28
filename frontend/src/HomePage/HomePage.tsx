@@ -127,11 +127,12 @@ const HomePage = () => {
         </table>
       )}
 
-      <CreateRoomModal
-        isOpen={isCreateRoomModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onCreate={createRoom}
-      />
+      {isCreateRoomModalOpen && (
+        <CreateRoomModal
+          onClose={() => setIsCreateModalOpen(false)}
+          onCreate={createRoom}
+        />
+      )}
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import { useState, useEffect, KeyboardEvent, MouseEvent } from 'react';
+import { useState, KeyboardEvent, MouseEvent } from 'react';
 import styles from './CreateRoomModal.module.css';
 import { GameName } from '@/games/types.ts';
 import { CreateRoomRequest } from "@/useRoom.tsx";
@@ -17,28 +17,16 @@ const ROOM_NAME_PLACEHOLDERS = [
 ];
 
 interface CreateRoomModalProps {
-  isOpen: boolean;
   onClose: () => void;
   onCreate: (createRoomRequest: CreateRoomRequest) => void;
 }
 
-const CreateRoomModal = ({ isOpen, onClose, onCreate }: CreateRoomModalProps) => {
-  const [roomName, setRoomName] = useState('');
+const CreateRoomModal = ({ onClose, onCreate }: CreateRoomModalProps) => {
+  const [roomName, setRoomName] = useState(
+    () => ROOM_NAME_PLACEHOLDERS[Math.floor(Math.random() * ROOM_NAME_PLACEHOLDERS.length)]
+  );
   const [gameName, setGameName] = useState<GameName>(GameName.TICHU);
-
   const [isOverlayMouseDown, setIsOverlayMouseDown] = useState(false);
-
-  useEffect(() => {
-    if (isOpen) {
-      setRoomName(ROOM_NAME_PLACEHOLDERS[Math.floor(Math.random() * ROOM_NAME_PLACEHOLDERS.length)]);
-    } else {
-      setRoomName('');
-    }
-  }, [isOpen]);
-
-  if (!isOpen) {
-    return null;
-  }
 
   const overlayMouseDown = (e: MouseEvent) => {
     if (e.target === e.currentTarget) {
