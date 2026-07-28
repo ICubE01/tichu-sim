@@ -58,10 +58,14 @@ const HomePage = () => {
   };
 
   useEffect(() => {
-    setLoading(true);
-    checkMyRoom().then();
-    fetchRooms().then();
-    setLoading(false);
+    (async () => {
+      setLoading(true);
+      try {
+        await Promise.all([checkMyRoom(), fetchRooms()]);
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, [checkMyRoom, fetchRooms]);
 
   const formatGameName = (gameName: GameName) => {

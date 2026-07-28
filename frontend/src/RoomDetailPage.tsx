@@ -83,7 +83,9 @@ const RoomDetailPage = () => {
       }
     };
 
-    init().then();
+    (async () => {
+      await init();
+    })();
   }, [roomId, navigate, roomApi]);
 
   const handleMemberChange = useCallback((memberMessage: MemberMessage) => {

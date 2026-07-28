@@ -50,7 +50,9 @@ const AdminPage = () => {
   };
 
   useEffect(() => {
-    fetchBots().then();
+    (async () => {
+      await fetchBots();
+    })();
   }, [fetchBots]);
 
   return (
