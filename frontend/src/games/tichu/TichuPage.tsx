@@ -85,9 +85,7 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
   onGameEnd: Function
 }) => {
   const { user } = useAuth();
-  if (user === null) {
-    return null;
-  }
+  const userId = user?.id;
 
   const [game, setGame] = useState<TichuGame>(new TichuGame());
   const messageQueue = useRef<TichuMessage[]>([]);
@@ -120,6 +118,10 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
   }, []); // No dependencies needed as it uses Refs
 
   const handleTichuMessage = useCallback((message: TichuMessage) => {
+    if (!userId) {
+      return;
+    }
+
     switch (message.type) {
       case TichuMessageType.START:
         const playerDtos = message.data as PlayerDto[];
@@ -278,7 +280,7 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
         const playTrickMessage = message.data as PlayTrickMessage;
         const trick = TrickMapper.toTrick(playTrickMessage.trick);
         setGame(prev => {
-          const newHand = user.id === playTrickMessage.playerId
+          const newHand = userId === playTrickMessage.playerId
             ? prev.hand.filter(c => !trick.cards.some(tc => tc.equals(c)))
             : prev.hand;
           const newWish = playTrickMessage.wish !== null
@@ -331,7 +333,7 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
         const playBombMessage = message.data as PlayBombMessage;
         const bomb = TrickMapper.toTrick(playBombMessage.bomb);
         setGame(prev => {
-          const newHand = user.id === playBombMessage.playerId
+          const newHand = userId === playBombMessage.playerId
             ? prev.hand.filter(c => !bomb.cards.some(bc => bc.equals(c)))
             : prev.hand;
           const newWish = prev.wish !== null
@@ -424,7 +426,7 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
       default:
         break;
     }
-  }, [user.id, processQueue]);
+  }, [userId, processQueue]);
 
   useEffect(() => {
     handleTichuMessageRef.current = handleTichuMessage;
@@ -432,6 +434,10 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
 
 
   useEffect(() => {
+    if (!userId) {
+      return;
+    }
+
     const processTichuMessage = (message: TichuMessage) => {
       if (isPaused.current) {
         messageQueue.current.push(message);
@@ -440,11 +446,15 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
       }
     };
 
-    const destination = `/user/${user.id}/queue/game/tichu`;
+    const destination = `/user/${userId}/queue/game/tichu`;
     stomp.subscribe(destination, processTichuMessage);
     stomp.publish(`/app/rooms/${roomId}/game/tichu/get`, {});
     return () => stomp.unsubscribe(destination, processTichuMessage);
-  }, [roomId, handleTichuMessage, user, processQueue]);
+  }, [roomId, handleTichuMessage, userId, processQueue]);
+
+  if (user === null) {
+    return null;
+  }
 
   const playerMe = game.players.find(p => p.id === user.id);
   const myIndex = playerMe?.index;

@@ -84,9 +84,7 @@ const HanabiPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
   onGameEnd: Function,
 }) => {
   const { user } = useAuth();
-  if (user === null) {
-    return null;
-  }
+  const userId = user?.id;
 
   const [dto, setDto] = useState<HanabiDto | null>(null);
   const [hintTargetId, setHintTargetId] = useState<number | null>(null);
@@ -107,11 +105,11 @@ const HanabiPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
 
   useEffect(() => {
     const callback = (message: HanabiMessage) => handleMessageRef.current(message);
-    const destination = `/user/${user.id}/queue/game/hanabi`;
+    const destination = `/user/${userId}/queue/game/hanabi`;
     stomp.subscribe(destination, callback);
     stomp.publish(`/app/rooms/${roomId}/game/hanabi/get`, {});
     return () => stomp.unsubscribe(destination, callback);
-  }, [roomId, user.id]);
+  }, [roomId, userId]);
 
   const giveHint = useCallback((targetId: number, clueType: ClueType, color: HanabiColor | null, value: number | null) => {
     stomp.publish(`/app/rooms/${roomId}/game/hanabi/hint`, { targetId, clueType, color, value });
@@ -136,6 +134,10 @@ const HanabiPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
     stomp.publish(`/app/rooms/${roomId}/chat`, { message: chatInput });
     setChatInput('');
   };
+
+  if (user === null) {
+    return null;
+  }
 
   if (dto === null) {
     return <div className={styles.loading}>게임을 불러오는 중...</div>;

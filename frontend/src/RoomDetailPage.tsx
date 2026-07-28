@@ -34,12 +34,11 @@ const RoomDetailPage = () => {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState('');
 
-  if (!roomId) {
-    navigate('/');
-    return;
-  }
-
   const leaveRoom = async () => {
+    if (!roomId) {
+      return;
+    }
+
     try {
       await roomApi.leaveRoom(roomId);
       navigate('/');
@@ -49,6 +48,10 @@ const RoomDetailPage = () => {
   };
 
   useEffect(() => {
+    if (!roomId) {
+      return;
+    }
+
     const init = async () => {
       setLoading(true);
       let myRoom;
@@ -115,7 +118,7 @@ const RoomDetailPage = () => {
   };
 
   useEffect(() => {
-    if (!user || !room) {
+    if (!roomId || !user || !room) {
       return;
     }
 
@@ -157,6 +160,11 @@ const RoomDetailPage = () => {
       stomp.disconnect();
     };
   }, [roomId, room == null, user, handleMemberChange, handleReceiveChatMessage]);
+
+  if (!roomId) {
+    navigate('/');
+    return;
+  }
 
   const startGame = () => {
     if (!room) {
