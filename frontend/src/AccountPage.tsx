@@ -79,7 +79,7 @@ const AccountPage = () => {
     try {
       const res = await api.get<SocialAuthUrlResponse>(`/auth/social/${provider.toLowerCase()}/url`);
       sessionStorage.setItem(OAUTH_INTENT_PREFIX + res.data.state, 'connect');
-      window.location.href = res.data.url;
+      window.location.assign(res.data.url);
     } catch {
       setSocialMessage({ text: '연결을 시작할 수 없습니다.', error: true });
     }
