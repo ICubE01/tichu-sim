@@ -1,5 +1,5 @@
 import { SubmitEvent, useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { useAuth } from '@/useAuth.tsx';
 import { useAxios } from '@/useAxios.tsx';
 import styles from './InitNamePage.module.css';

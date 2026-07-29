@@ -1,5 +1,5 @@
 import { SubmitEvent, useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router';
 import { JwtResponse } from "@/types.ts";
 import { useAuth } from '@/useAuth.tsx';
 import googleIcon from '@/assets/GoogleIcon.svg';

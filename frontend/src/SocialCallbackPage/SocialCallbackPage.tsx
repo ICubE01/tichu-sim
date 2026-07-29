@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router';
 import { useAuth } from '@/useAuth.tsx';
 import styles from './SocialCallbackPage.module.css';
 import { JwtResponse, ErrorDto, SocialAuthProviderName } from '@/types.ts';
