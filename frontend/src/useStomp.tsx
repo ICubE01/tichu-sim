@@ -1,9 +1,11 @@
 import { Client, ReconnectionTimeMode, StompSubscription } from "@stomp/stompjs";
-import { useMemo, useRef } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
+
+type MessageCallback = (message: any) => void;
 
 interface SubscriptionEntry {
   destination: string;
-  callback: Function;
+  callback: MessageCallback;
   stompSubscription: StompSubscription | null;
 }
 
@@ -12,105 +14,138 @@ interface PublicationEntry {
   message: unknown;
 }
 
-export class useStomp {
-  private subscriptions = useRef<SubscriptionEntry[]>([]);
+export interface StompApi {
+  connect: (issueToken: () => Promise<string>) => void;
+  disconnect: () => void;
+  subscribe: (destination: string, callback: MessageCallback) => void;
+  unsubscribe: (destination: string, callback: MessageCallback) => void;
+  publish: (destination: string, message: unknown) => void;
+}
 
-  private reservedPublications = useRef<PublicationEntry[]>([]);
+export const useStomp = () => {
+  const subscriptions = useRef<SubscriptionEntry[]>([]);
 
-  private issueToken = useRef<(() => Promise<string>) | null>(null);
+  const reservedPublications = useRef<PublicationEntry[]>([]);
 
-  private client = useMemo(() => new Client({
-    brokerURL: `${window.location.origin.replace('http', 'ws')}/api/ws`,
-    reconnectDelay: 1000,
-    reconnectTimeMode: ReconnectionTimeMode.EXPONENTIAL,
-    maxReconnectDelay: 60000,
-    heartbeatIncoming: 10000,
-    heartbeatOutgoing: 10000,
-    onStompError: (frame) => {
-      console.error('Broker reported error: ' + frame.headers['message']);
-    },
-  }), []);
+  const issueToken = useRef<(() => Promise<string>) | null>(null);
 
-  constructor() {
-    this.client.beforeConnect = async () => {
-      if (!this.issueToken.current) {
+  // `active` spans connect() → disconnect() and stays true while reconnecting;
+  // `connected` is true only while a STOMP session is live. Reconnecting is `active && !connected`.
+  const [active, setActive] = useState(false);
+  const [connected, setConnected] = useState(false);
+
+  const client = useMemo(() => {
+    const client = new Client({
+      brokerURL: `${window.location.origin.replace('http', 'ws')}/api/ws`,
+      reconnectDelay: 1000,
+      reconnectTimeMode: ReconnectionTimeMode.EXPONENTIAL,
+      maxReconnectDelay: 60000,
+      heartbeatIncoming: 10000,
+      heartbeatOutgoing: 10000,
+      onStompError: (frame) => {
+        console.error('Broker reported error: ' + frame.headers['message']);
+      },
+    });
+
+    client.beforeConnect = async () => {
+      if (!issueToken.current) {
         return;
       }
       try {
-        this.client.connectHeaders.Authorization = `Bearer ${await this.issueToken.current()}`;
+        client.connectHeaders.Authorization = `Bearer ${await issueToken.current()}`;
       } catch (e) {
-        delete this.client.connectHeaders.Authorization;
+        delete client.connectHeaders.Authorization;
         console.error('Failed to issue a web socket token: ', e);
       }
     };
 
-    this.client.onConnect = (_) => {
-      this.subscriptions.current.forEach(entry => {
-        entry.stompSubscription = this.client.subscribe(
+    client.onConnect = () => {
+      setConnected(true);
+      subscriptions.current.forEach(entry => {
+        entry.stompSubscription = client.subscribe(
           entry.destination,
           (message) => {
             entry.callback(JSON.parse(message.body))
           }
         );
       });
-      while (this.reservedPublications.current.length > 0) {
-        const entry = this.reservedPublications.current[0];
-        this.client.publish({
+      while (reservedPublications.current.length > 0) {
+        const entry = reservedPublications.current[0];
+        client.publish({
           destination: entry.destination,
           body: JSON.stringify(entry.message)
         });
-        this.reservedPublications.current.shift();
+        reservedPublications.current.shift();
       }
+    };
+
+    client.onWebSocketClose = () => {
+      setConnected(false);
+    };
+
+    return client;
+  }, []);
+
+  const connect = useCallback((issueTokenFn: () => Promise<string>) => {
+    issueToken.current = issueTokenFn;
+    if (!client.active) {
+      client.activate();
+      setActive(true);
     }
-  }
+  }, [client]);
 
-  connect(issueToken: () => Promise<string>) {
-    this.issueToken.current = issueToken;
-    if (!this.client.active) {
-      this.client.activate();
-    }
-  }
+  const disconnect = useCallback(() => {
+    client.deactivate().then();
+    setActive(false);
+    setConnected(false);
+  }, [client]);
 
-  disconnect() {
-    this.client.deactivate().then();
-  };
-
-  subscribe(destination: string, callback: Function) {
+  const subscribe = useCallback((destination: string, callback: MessageCallback) => {
     const entry = {
       destination,
       callback,
-      stompSubscription: !this.client.active ?
+      stompSubscription: !client.active ?
         null :
-        this.client.subscribe(
+        client.subscribe(
           destination,
           (message) => {
             callback(JSON.parse(message.body))
           }
         )
     };
-    this.subscriptions.current.push(entry);
-  };
+    subscriptions.current.push(entry);
+  }, [client]);
 
-  unsubscribe(destination: string, callback: Function) {
-    const index = this.subscriptions.current.findIndex(
+  const unsubscribe = useCallback((destination: string, callback: MessageCallback) => {
+    const index = subscriptions.current.findIndex(
       entry => entry.destination === destination && entry.callback === callback
     );
 
     if (index !== -1) {
-      const entry = this.subscriptions.current[index];
+      const entry = subscriptions.current[index];
       entry.stompSubscription?.unsubscribe();
-      this.subscriptions.current.splice(index, 1);
+      subscriptions.current.splice(index, 1);
     }
-  };
+  }, []);
 
-  publish(destination: string, message: unknown) {
-    if (this.client.active) {
-      this.client.publish({
+  const publish = useCallback((destination: string, message: unknown) => {
+    if (client.active) {
+      client.publish({
         destination: destination,
         body: JSON.stringify(message)
       });
     } else {
-      this.reservedPublications.current.push({ destination, message });
+      reservedPublications.current.push({ destination, message });
     }
-  };
-}
+  }, [client]);
+
+  const stomp = useMemo<StompApi>(() => ({
+    connect,
+    disconnect,
+    subscribe,
+    unsubscribe,
+    publish,
+  }), [connect, disconnect, subscribe, unsubscribe, publish]);
+
+  return { stomp, active, connected };
+};

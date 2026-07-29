@@ -1,6 +1,6 @@
 import { RefObject, useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from "@/useAuth.tsx";
-import { useStomp } from "@/useStomp.tsx";
+import { StompApi } from "@/useStomp.tsx";
 import { ChatMessage } from "@/types.ts";
 import {
   BonusEffect,
@@ -79,7 +79,7 @@ const compareDiscards = (a: HanabiCardDto, b: HanabiCardDto) =>
 
 const HanabiPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
   roomId: string,
-  stomp: useStomp,
+  stomp: StompApi,
   chatMessages: ChatMessage[],
   onGameEnd: Function,
 }) => {
