@@ -1,6 +1,7 @@
 import { Client, ReconnectionTimeMode, StompSubscription } from "@stomp/stompjs";
 import { useCallback, useMemo, useRef, useState } from "react";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type MessageCallback = (message: any) => void;
 
 interface SubscriptionEntry {
