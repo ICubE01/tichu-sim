@@ -29,7 +29,7 @@ const RoomDetailPage = () => {
   const roomApi = useRoom();
   const [room, setRoom] = useState<RoomDto | null>(null);
   const [loading, setLoading] = useState(true);
-  const stomp = new useStomp();
+  const { stomp } = useStomp();
   const api = useAxios();
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState('');
