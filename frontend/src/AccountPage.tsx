@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/useAuth.tsx';
 import { useAxios } from '@/useAxios.tsx';
@@ -23,6 +23,8 @@ const PROVIDERS = [
 
 const AccountPage = () => {
   const { user, reloadUser } = useAuth();
+  const userId = user?.id;
+
   const api = useAxios();
   const navigate = useNavigate();
 
@@ -33,23 +35,23 @@ const AccountPage = () => {
   const [nameMessage, setNameMessage] = useState<{ text: string; error: boolean } | null>(null);
   const [socialMessage, setSocialMessage] = useState<{ text: string; error: boolean } | null>(null);
 
-  const fetchAccountData = async () => {
-    if (!user) {
+  const fetchAccountData = useCallback(async () => {
+    if (!userId) {
       return;
     }
     try {
-      const res = await api.get<AccountDto>(`/users/${user.id}`);
+      const res = await api.get<AccountDto>(`/users/${userId}`);
       setAccountData(res.data);
     } catch {
       // leave accountData null; page will show empty state
     }
-  };
+  }, [userId, api]);
 
   useEffect(() => {
     (async () => {
       await fetchAccountData();
     })();
-  }, []);
+  }, [fetchAccountData]);
 
   const handleEditName = () => {
     setNameInput(user?.name ?? '');
@@ -77,7 +79,7 @@ const AccountPage = () => {
     try {
       const res = await api.get<SocialAuthUrlResponse>(`/auth/social/${provider.toLowerCase()}/url`);
       sessionStorage.setItem(OAUTH_INTENT_PREFIX + res.data.state, 'connect');
-      window.location.href = res.data.url;
+      window.location.assign(res.data.url);
     } catch {
       setSocialMessage({ text: '연결을 시작할 수 없습니다.', error: true });
     }

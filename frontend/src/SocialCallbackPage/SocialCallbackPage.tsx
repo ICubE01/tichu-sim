@@ -24,25 +24,22 @@ interface Props {
 const SocialCallbackPage = ({ provider }: Props) => {
   const { login, refresh } = useAuth();
   const navigate = useNavigate();
+
   const [searchParams] = useSearchParams();
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const code = searchParams.get('code');
+  const state = searchParams.get('state');
+  const [isConnect] = useState(() =>
+    state !== null && sessionStorage.getItem(OAUTH_INTENT_PREFIX + state) === 'connect'
+  );
+  const [errorMessage, setErrorMessage] = useState<string | null>(code && state ? null : '잘못된 접근입니다.');
+
   const hasFetchedRef = useRef(false);
 
   const providerLower = provider.toLowerCase();
   const providerDisplayName = provider.charAt(0) + provider.slice(1).toLowerCase();
 
-  const initState = searchParams.get('state');
-  const isConnectRef = useRef(
-    initState !== null && sessionStorage.getItem(OAUTH_INTENT_PREFIX + initState) === 'connect'
-  );
-  const isConnect = isConnectRef.current;
-
   useEffect(() => {
-    const code = searchParams.get('code');
-    const state = searchParams.get('state');
-
     if (!code || !state) {
-      setErrorMessage('잘못된 접근입니다.');
       return;
     }
 
@@ -53,10 +50,11 @@ const SocialCallbackPage = ({ provider }: Props) => {
 
     sessionStorage.removeItem(OAUTH_INTENT_PREFIX + state);
 
-    if (isConnect) {
-      (async () => {
-        const fallback = `${providerDisplayName} 연결에 실패했습니다.`;
-        try {
+    (async () => {
+      try {
+        if (isConnect) {
+          const fallback = `${providerDisplayName} 연결에 실패했습니다.`;
+
           // Always refresh first, so the connection request carries a fresh access token,
           // even if the user lingered on the provider's consent screen.
           const token = await refresh();
@@ -77,39 +75,32 @@ const SocialCallbackPage = ({ provider }: Props) => {
           }
 
           navigate('/account', { replace: true });
-        } catch {
-          setErrorMessage('서버와 통신 중 오류가 발생했습니다.');
-        }
-      })();
-      return;
-    }
+        } else {
+          const response = await fetch(`/api/auth/social/${providerLower}/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code, state }),
+          });
 
-    (async () => {
-      try {
-        const response = await fetch(`/api/auth/social/${providerLower}/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ code, state }),
-        });
+          if (!response.ok) {
+            const fallback = `${providerDisplayName} 로그인에 실패했습니다.`;
+            setErrorMessage(await resolveResponseError(response, fallback));
+            return;
+          }
 
-        if (!response.ok) {
-          const fallback = `${providerDisplayName} 로그인에 실패했습니다.`;
-          setErrorMessage(await resolveResponseError(response, fallback));
-          return;
+          const { token } = await response.json() as JwtResponse;
+          const isNewUser = response.status === 201;
+          await login(token);
+          if (isNewUser) {
+            sessionStorage.setItem(ALLOW_INIT_NAME_PAGE_KEY, '1');
+          }
+          navigate(isNewUser ? '/init-name' : '/', { replace: true });
         }
-
-        const { token } = await response.json() as JwtResponse;
-        const isNewUser = response.status === 201;
-        await login(token);
-        if (isNewUser) {
-          sessionStorage.setItem(ALLOW_INIT_NAME_PAGE_KEY, '1');
-        }
-        navigate(isNewUser ? '/init-name' : '/', { replace: true });
       } catch {
         setErrorMessage('서버와 통신 중 오류가 발생했습니다.');
       }
     })();
-  }, []);
+  }, [code, state, isConnect, login, navigate, providerDisplayName, providerLower, refresh]);
 
   return (
     <div className={styles.container}>

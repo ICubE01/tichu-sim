@@ -1,4 +1,4 @@
-import { useEffect, useState, SubmitEvent } from 'react';
+import { useCallback, useEffect, useState, SubmitEvent } from 'react';
 import { useAxios } from '@/useAxios.tsx';
 import { useAuth } from '@/useAuth.tsx';
 import { JwtResponse } from '@/types.ts';
@@ -18,14 +18,14 @@ const AdminPage = () => {
   const [newBotName, setNewBotName] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-  const fetchBots = async () => {
+  const fetchBots = useCallback(async () => {
     try {
       const res = await api.get<BotDto[]>('/admin/bots');
       setBots(res.data);
     } catch {
       setError('Failed to load bots.');
     }
-  };
+  }, [api]);
 
   const createBot = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -50,8 +50,10 @@ const AdminPage = () => {
   };
 
   useEffect(() => {
-    fetchBots().then();
-  }, []);
+    (async () => {
+      await fetchBots();
+    })();
+  }, [fetchBots]);
 
   return (
     <div className="content">

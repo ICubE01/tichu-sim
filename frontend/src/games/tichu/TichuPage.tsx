@@ -82,17 +82,16 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
   roomId: string,
   stomp: StompApi,
   chatMessages: ChatMessage[],
-  onGameEnd: Function
+  onGameEnd: () => void,
 }) => {
   const { user } = useAuth();
-  if (user === null) {
-    return null;
-  }
+  const userId = user?.id;
 
   const [game, setGame] = useState<TichuGame>(new TichuGame());
   const messageQueue = useRef<TichuMessage[]>([]);
   const isPaused = useRef(false);
-  const handleTichuMessageRef = useRef<((message: TichuMessage) => void)>((_) => {});
+  const handleTichuMessageRef = useRef<((message: TichuMessage) => void)>((_) => {
+  });
 
   const [selectedCards, setSelectedCards] = useState<Card[]>([]);
   const [exchangeSelection, setExchangeSelection] = useState<ExchangeSelection>(new ExchangeSelection());
@@ -120,8 +119,12 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
   }, []); // No dependencies needed as it uses Refs
 
   const handleTichuMessage = useCallback((message: TichuMessage) => {
+    if (!userId) {
+      return;
+    }
+
     switch (message.type) {
-      case TichuMessageType.START:
+      case TichuMessageType.START: {
         const playerDtos = message.data as PlayerDto[];
         setGame(prev => ({
           ...prev,
@@ -130,7 +133,8 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
           ),
         }));
         break;
-      case TichuMessageType.GET:
+      }
+      case TichuMessageType.GET: {
         const tichuDto = message.data as TichuDto;
         const calcPassed = (index: PlayerIndex, tichuDto: TichuDto) => {
           if (
@@ -189,7 +193,8 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
           tricks: tichuDto.tricks === null ? [] : tichuDto.tricks.map(TrickMapper.toTrick),
         });
         break;
-      case TichuMessageType.INIT_FIRST_DRAWS:
+      }
+      case TichuMessageType.INIT_FIRST_DRAWS: {
         const firstDraw = message.data as CardDto[];
         setSelectedCards([]);
         setGame(prev => ({
@@ -209,14 +214,16 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
           tricks: [],
         }));
         break;
-      case TichuMessageType.LARGE_TICHU:
+      }
+      case TichuMessageType.LARGE_TICHU: {
         const tichuDecl = message.data as TichuDeclaration[];
         setGame(prev => ({
           ...prev,
           players: prev.players.map((p, i) => ({ ...p, tichuDeclaration: tichuDecl[i] })),
         }));
         break;
-      case TichuMessageType.ADD_SECOND_DRAWS:
+      }
+      case TichuMessageType.ADD_SECOND_DRAWS: {
         const hand = message.data as CardDto[];
         setGame(prev => ({
           ...prev,
@@ -225,7 +232,8 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
           roundStatus: RoundStatus.EXCHANGING,
         }));
         break;
-      case TichuMessageType.SMALL_TICHU:
+      }
+      case TichuMessageType.SMALL_TICHU: {
         const playerId = message.data as number;
         setGame(prev => ({
           ...prev,
@@ -238,7 +246,8 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
           }),
         }));
         break;
-      case TichuMessageType.EXCHANGE:
+      }
+      case TichuMessageType.EXCHANGE: {
         const exchangeMessage = message.data as ExchangeMessage;
         setExchangeSelection(new ExchangeSelection());
         setExchangeResult(exchangeMessage);
@@ -264,7 +273,8 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
           });
         });
         break;
-      case TichuMessageType.PHASE_START:
+      }
+      case TichuMessageType.PHASE_START: {
         const firstPlayerIndex = message.data as PlayerIndex;
         setGame(prev => ({
           ...prev,
@@ -274,11 +284,12 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
           tricks: [],
         }));
         break;
-      case TichuMessageType.PLAY_TRICK:
+      }
+      case TichuMessageType.PLAY_TRICK: {
         const playTrickMessage = message.data as PlayTrickMessage;
         const trick = TrickMapper.toTrick(playTrickMessage.trick);
         setGame(prev => {
-          const newHand = user.id === playTrickMessage.playerId
+          const newHand = userId === playTrickMessage.playerId
             ? prev.hand.filter(c => !trick.cards.some(tc => tc.equals(c)))
             : prev.hand;
           const newWish = playTrickMessage.wish !== null
@@ -327,11 +338,12 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
           }, 1000);
         }
         break;
-      case TichuMessageType.PLAY_BOMB:
+      }
+      case TichuMessageType.PLAY_BOMB: {
         const playBombMessage = message.data as PlayBombMessage;
         const bomb = TrickMapper.toTrick(playBombMessage.bomb);
         setGame(prev => {
-          const newHand = user.id === playBombMessage.playerId
+          const newHand = userId === playBombMessage.playerId
             ? prev.hand.filter(c => !bomb.cards.some(bc => bc.equals(c)))
             : prev.hand;
           const newWish = prev.wish !== null
@@ -368,7 +380,8 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
           };
         });
         break;
-      case TichuMessageType.PASS:
+      }
+      case TichuMessageType.PASS: {
         const playerId2 = message.data as number;
         setGame(prev => {
           if (prev.turn === null) {
@@ -385,7 +398,8 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
           });
         });
         break;
-      case TichuMessageType.PHASE_END_WITH_DRAGON:
+      }
+      case TichuMessageType.PHASE_END_WITH_DRAGON: {
         const playerIndex = message.data as PlayerIndex;
         setGame(prev => ({
           ...prev,
@@ -393,9 +407,11 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
           turn: playerIndex,
         }));
         break;
-      case TichuMessageType.SELECT_DRAGON_RECEIVER:
+      }
+      case TichuMessageType.SELECT_DRAGON_RECEIVER: {
         break;
-      case TichuMessageType.ROUND_END:
+      }
+      case TichuMessageType.ROUND_END: {
         const scoresHistory = message.data as number[][];
         setGame(prev => ({
           ...prev,
@@ -408,7 +424,8 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
           processQueue();
         }, 1000);
         break;
-      case TichuMessageType.END:
+      }
+      case TichuMessageType.END: {
         const scoresHistory2 = message.data as number[][];
         setGame(prev => ({
           ...prev,
@@ -421,10 +438,12 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
           processQueue();
         }, 1000);
         break;
-      default:
+      }
+      default: {
         break;
+      }
     }
-  }, [user.id, processQueue]);
+  }, [userId, processQueue]);
 
   useEffect(() => {
     handleTichuMessageRef.current = handleTichuMessage;
@@ -432,6 +451,10 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
 
 
   useEffect(() => {
+    if (!userId) {
+      return;
+    }
+
     const processTichuMessage = (message: TichuMessage) => {
       if (isPaused.current) {
         messageQueue.current.push(message);
@@ -440,11 +463,15 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
       }
     };
 
-    const destination = `/user/${user.id}/queue/game/tichu`;
+    const destination = `/user/${userId}/queue/game/tichu`;
     stomp.subscribe(destination, processTichuMessage);
     stomp.publish(`/app/rooms/${roomId}/game/tichu/get`, {});
     return () => stomp.unsubscribe(destination, processTichuMessage);
-  }, [roomId, handleTichuMessage, user, processQueue]);
+  }, [roomId, userId, stomp, handleTichuMessage, processQueue]);
+
+  if (user === null) {
+    return null;
+  }
 
   const playerMe = game.players.find(p => p.id === user.id);
   const myIndex = playerMe?.index;
@@ -596,7 +623,7 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
     };
 
     switch (trick.type) {
-      case TrickType.SINGLE:
+      case TrickType.SINGLE: {
         const rank = (trick as SingleTrick).rank;
         const card = trick.cards[0];
         switch (card.type) {
@@ -616,6 +643,7 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
           default:
             return 'ERROR';
         }
+      }
       case TrickType.PAIR:
         return `${formatRank((trick as PairTrick).rank)} Pair`;
       case TrickType.CONSECUTIVE_PAIRS:

@@ -34,12 +34,11 @@ const RoomDetailPage = () => {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState('');
 
-  if (!roomId) {
-    navigate('/');
-    return;
-  }
-
   const leaveRoom = async () => {
+    if (!roomId) {
+      return;
+    }
+
     try {
       await roomApi.leaveRoom(roomId);
       navigate('/');
@@ -49,6 +48,10 @@ const RoomDetailPage = () => {
   };
 
   useEffect(() => {
+    if (!roomId) {
+      return;
+    }
+
     const init = async () => {
       setLoading(true);
       let myRoom;
@@ -80,8 +83,10 @@ const RoomDetailPage = () => {
       }
     };
 
-    init().then();
-  }, [roomId]);
+    (async () => {
+      await init();
+    })();
+  }, [roomId, navigate, roomApi]);
 
   const handleMemberChange = useCallback((memberMessage: MemberMessage) => {
     setRoom((prevRoom) => {
@@ -115,7 +120,7 @@ const RoomDetailPage = () => {
   };
 
   useEffect(() => {
-    if (!user || !room) {
+    if (!roomId || !user || !room?.gameName) {
       return;
     }
 
@@ -156,7 +161,12 @@ const RoomDetailPage = () => {
       stomp.unsubscribe(`/user/${user.id}/queue/errors`, handleError);
       stomp.disconnect();
     };
-  }, [roomId, room == null, user, handleMemberChange, handleReceiveChatMessage]);
+  }, [roomId, room?.gameName, user, api, stomp, handleMemberChange, handleReceiveChatMessage]);
+
+  if (!roomId) {
+    navigate('/');
+    return;
+  }
 
   const startGame = () => {
     if (!room) {

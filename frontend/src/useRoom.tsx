@@ -1,5 +1,6 @@
 import { useAxios } from "./useAxios.tsx";
 import { HttpStatusCode } from "axios";
+import { useCallback, useMemo } from "react";
 import { RoomDto, RoomOpaqueDto } from "@/types.ts";
 import { GameName } from "@/games/types.ts";
 
@@ -15,39 +16,45 @@ interface CreateRoomResponse {
 export const useRoom = () => {
   const api = useAxios();
 
-  const fetchRooms = () =>
+  const fetchRooms = useCallback(() =>
     api.get<RoomOpaqueDto[]>('/rooms')
-      .then(response => response.data);
+      .then(response => response.data),
+    [api]);
 
-  const createRoom = (createRoomRequest: CreateRoomRequest) =>
+  const createRoom = useCallback((createRoomRequest: CreateRoomRequest) =>
     api.post<CreateRoomResponse>('/rooms', createRoomRequest)
-      .then(response => response.data);
+      .then(response => response.data),
+    [api]);
 
-  const fetchMyRoom = () =>
+  const fetchMyRoom = useCallback(() =>
     api.get<RoomDto | null>('/rooms/me')
       .then(response => {
         if (response.status === HttpStatusCode.NoContent) {
           return null;
         }
         return response.data as RoomDto;
-      });
+      }),
+    [api]);
 
-  const fetchRoom = (roomId: string) =>
+  const fetchRoom = useCallback((roomId: string) =>
     api.get<RoomDto>(`/rooms/${roomId}`)
-      .then(response => response.data);
+      .then(response => response.data),
+    [api]);
 
-  const enterRoom = (roomId: string) =>
-    api.post(`/rooms/${roomId}`);
+  const enterRoom = useCallback((roomId: string) =>
+    api.post(`/rooms/${roomId}`),
+    [api]);
 
-  const leaveRoom = (roomId: string) =>
-    api.delete(`/rooms/${roomId}`);
+  const leaveRoom = useCallback((roomId: string) =>
+    api.delete(`/rooms/${roomId}`),
+    [api]);
 
-  return {
+  return useMemo(() => ({
     fetchRooms,
     createRoom,
     fetchMyRoom,
     enterRoom,
     leaveRoom,
     fetchRoom,
-  };
+  }), [fetchRooms, createRoom, fetchMyRoom, enterRoom, leaveRoom, fetchRoom]);
 };

@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
-import { AuthProvider, useAuth } from '@/useAuth.tsx';
+import { AuthProvider } from '@/AuthProvider.tsx';
+import { useAuth } from '@/useAuth.tsx';
 import LoginPage from '@/LoginPage.tsx';
 import SignupPage from '@/SignupPage.tsx';
 import SocialCallbackPage from '@/SocialCallbackPage/SocialCallbackPage.tsx';

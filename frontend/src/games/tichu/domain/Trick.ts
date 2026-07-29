@@ -652,7 +652,7 @@ export class StraightFlushTrick extends Trick {
   public static canFulfillWish(wish: CardRank, hand: Card[], prevTrick: StraightFlushTrick | null): boolean {
     const standardCards = Cards.extractStandardCards(hand);
     const wishCards = standardCards.filter(card => card.rank === wish);
-    for (let wishCard of wishCards) {
+    for (const wishCard of wishCards) {
       const cardsInSameSuit = standardCards.filter(card => card.suit === wishCard.suit);
       const ranks = new Set(cardsInSameSuit.map(card => card.rank));
 

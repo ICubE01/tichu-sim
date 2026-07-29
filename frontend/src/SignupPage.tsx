@@ -36,7 +36,7 @@ const SignupPage = () => {
           setErrorMessage("가입에 실패했습니다.")
         }
       }
-    } catch (err) {
+    } catch {
       setErrorMessage('서버와 통신 중 오류가 발생했습니다.');
     }
   };
