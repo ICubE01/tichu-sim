@@ -90,7 +90,8 @@ const TichuPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
   const [game, setGame] = useState<TichuGame>(new TichuGame());
   const messageQueue = useRef<TichuMessage[]>([]);
   const isPaused = useRef(false);
-  const handleTichuMessageRef = useRef<((message: TichuMessage) => void)>((_) => {});
+  const handleTichuMessageRef = useRef<((message: TichuMessage) => void)>((_) => {
+  });
 
   const [selectedCards, setSelectedCards] = useState<Card[]>([]);
   const [exchangeSelection, setExchangeSelection] = useState<ExchangeSelection>(new ExchangeSelection());
