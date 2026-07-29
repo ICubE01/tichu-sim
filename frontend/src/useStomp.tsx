@@ -1,5 +1,5 @@
 import { Client, ReconnectionTimeMode, StompSubscription } from "@stomp/stompjs";
-import { useCallback, useMemo, useRef } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 
 type MessageCallback = (message: any) => void;
 
@@ -29,6 +29,11 @@ export const useStomp = () => {
 
   const issueToken = useRef<(() => Promise<string>) | null>(null);
 
+  // `active` spans connect() → disconnect() and stays true while reconnecting;
+  // `connected` is true only while a STOMP session is live. Reconnecting is `active && !connected`.
+  const [active, setActive] = useState(false);
+  const [connected, setConnected] = useState(false);
+
   const client = useMemo(() => {
     const client = new Client({
       brokerURL: `${window.location.origin.replace('http', 'ws')}/api/ws`,
@@ -55,6 +60,7 @@ export const useStomp = () => {
     };
 
     client.onConnect = () => {
+      setConnected(true);
       subscriptions.current.forEach(entry => {
         entry.stompSubscription = client.subscribe(
           entry.destination,
@@ -74,6 +80,7 @@ export const useStomp = () => {
     };
 
     client.onWebSocketClose = () => {
+      setConnected(false);
     };
 
     return client;
@@ -83,11 +90,14 @@ export const useStomp = () => {
     issueToken.current = issueTokenFn;
     if (!client.active) {
       client.activate();
+      setActive(true);
     }
   }, [client]);
 
   const disconnect = useCallback(() => {
     client.deactivate().then();
+    setActive(false);
+    setConnected(false);
   }, [client]);
 
   const subscribe = useCallback((destination: string, callback: MessageCallback) => {
@@ -137,5 +147,5 @@ export const useStomp = () => {
     publish,
   }), [connect, disconnect, subscribe, unsubscribe, publish]);
 
-  return { stomp };
+  return { stomp, active, connected };
 };
