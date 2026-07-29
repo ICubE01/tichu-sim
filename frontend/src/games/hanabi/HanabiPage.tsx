@@ -92,8 +92,7 @@ const HanabiPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
   // Only consulted by the narrow floating layout; the wide sidebar is always shown.
   const [chatOpen, setChatOpen] = useState(false);
 
-  const handleMessageRef = useRef<(message: HanabiMessage) => void>(() => {});
-  handleMessageRef.current = (message: HanabiMessage) => {
+  const handleMessage = useCallback((message: HanabiMessage) => {
     if (message.type === HanabiMessageType.STATE || message.type === HanabiMessageType.END) {
       // Full-state snapshots (initial load, game start, game end) replace local state outright.
       setDto(message.data as HanabiDto);
@@ -101,15 +100,14 @@ const HanabiPage = ({ roomId, stomp, chatMessages, onGameEnd }: {
       // Per-action deltas are folded onto the last known state.
       setDto(prev => (prev === null ? prev : applyDelta(prev, message)));
     }
-  };
+  }, []);
 
   useEffect(() => {
-    const callback = (message: HanabiMessage) => handleMessageRef.current(message);
     const destination = `/user/${userId}/queue/game/hanabi`;
-    stomp.subscribe(destination, callback);
+    stomp.subscribe(destination, handleMessage);
     stomp.publish(`/app/rooms/${roomId}/game/hanabi/get`, {});
-    return () => stomp.unsubscribe(destination, callback);
-  }, [roomId, userId, stomp]);
+    return () => stomp.unsubscribe(destination, handleMessage);
+  }, [roomId, userId, stomp, handleMessage]);
 
   const giveHint = useCallback((targetId: number, clueType: ClueType, color: HanabiColor | null, value: number | null) => {
     stomp.publish(`/app/rooms/${roomId}/game/hanabi/hint`, { targetId, clueType, color, value });

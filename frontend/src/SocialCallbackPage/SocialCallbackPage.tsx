@@ -24,18 +24,19 @@ interface Props {
 const SocialCallbackPage = ({ provider }: Props) => {
   const { login, refresh } = useAuth();
   const navigate = useNavigate();
+
   const [searchParams] = useSearchParams();
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const code = searchParams.get('code');
+  const state = searchParams.get('state');
+  const [isConnect] = useState(() =>
+    state !== null && sessionStorage.getItem(OAUTH_INTENT_PREFIX + state) === 'connect'
+  );
+  const [errorMessage, setErrorMessage] = useState<string | null>(code && state ? null : '잘못된 접근입니다.');
+
   const hasFetchedRef = useRef(false);
 
   const providerLower = provider.toLowerCase();
   const providerDisplayName = provider.charAt(0) + provider.slice(1).toLowerCase();
-
-  const initState = searchParams.get('state');
-  const isConnectRef = useRef(
-    initState !== null && sessionStorage.getItem(OAUTH_INTENT_PREFIX + initState) === 'connect'
-  );
-  const isConnect = isConnectRef.current;
 
   useEffect(() => {
     const code = searchParams.get('code');
